@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Node / Vite
+node_modules/
+frontend-app/dist/
+frontend-app/.vite/
+*.tsbuildinfo
+npm-debug.log*
+
+# Runtime / scientific outputs
+backend/runtime/
+backend/evidence/
+backend/.cache/
+*.parquet
+*.arrow
+*.feather
+*.npy
+*.npz
+*.nii
+*.nii.gz
+*.dcm
+
+# Secrets / local env
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local reports
+coverage.xml
+htmlcov/
+reports/
+
+# Generated manifests unless explicitly committed
+MANIFEST_LOCAL*
+# Keep runtime directory marker but never commit runtime result payloads
+backend/runtime/*.json
+!backend/runtime/.gitkeep
+!backend/runtime/README.md

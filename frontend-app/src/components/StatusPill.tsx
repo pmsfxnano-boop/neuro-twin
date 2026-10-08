@@ -1,0 +1,1 @@
+export function StatusPill({label,active=false,danger=false}:{label:string;active?:boolean;danger?:boolean}){return <span className={`status-pill ${active?'active':''} ${danger?'danger':''}`}><i/>{label}</span>}

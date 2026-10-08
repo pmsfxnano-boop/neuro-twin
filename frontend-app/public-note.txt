@@ -1,0 +1,2 @@
+The application is presentation-only. Scientific inference stays in the Python runtime.
+No synthetic/reference runtime is rendered by the production UI.

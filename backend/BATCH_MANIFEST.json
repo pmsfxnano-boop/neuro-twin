@@ -1,0 +1,745 @@
+{
+  "batch": "19",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 2514,
+      "sha256": "4287b7ddbd223f850af36982d48da9889a028529bf7a76c39980a2fd68a9f3c4"
+    },
+    {
+      "path": "README_BATCH03.md",
+      "bytes": 1473,
+      "sha256": "0d87d6671f835f77b8e4c36c1b4c1e5157e9f1a4787874e6e966fa1124485caa"
+    },
+    {
+      "path": "README_BATCH04.md",
+      "bytes": 1629,
+      "sha256": "5788394d4f66ab62a5cd7dd7effc478a41801ea83c34b1ecbd95fc46fa449400"
+    },
+    {
+      "path": "README_BATCH05.md",
+      "bytes": 2005,
+      "sha256": "8868b3b8c5bda9dc90181142f2f007094ee3149d6ffdd1d981efb1f69dec7d7e"
+    },
+    {
+      "path": "README_BATCH06.md",
+      "bytes": 2024,
+      "sha256": "a7e8ddadc1d3e3d7cc5aff20122795467863f9d5fc4ccce3a974dd66a4c24d36"
+    },
+    {
+      "path": "README_BATCH07.md",
+      "bytes": 1013,
+      "sha256": "332855b8bc4ad58a1a06a725170f64c3c48fc968dfb056e8d353604901cb49f7"
+    },
+    {
+      "path": "README_BATCH08.md",
+      "bytes": 2067,
+      "sha256": "1ba34d576e7a02dd7252590d7e42ee75bdd1a611949db92c74f70cc68a43bea6"
+    },
+    {
+      "path": "README_BATCH09.md",
+      "bytes": 2209,
+      "sha256": "44e53be2486adbebece7ef415954c0ee789a80a23223d1ad1e53040df0611d56"
+    },
+    {
+      "path": "README_BATCH10.md",
+      "bytes": 2275,
+      "sha256": "2c75a953ea6ec3a64c2c2f1ef3953cc9f7b09a6cf90467e421f8be665b022232"
+    },
+    {
+      "path": "README_BATCH11.md",
+      "bytes": 1574,
+      "sha256": "0bef0ed9bf9698df8019ff411edee9350eea93e47a6bdc6bbb710e029bb20e81"
+    },
+    {
+      "path": "README_BATCH12.md",
+      "bytes": 1787,
+      "sha256": "f159c85df640fc8a3a3110b330c55b0526f1e12f493a123cfe861e141e7f92c5"
+    },
+    {
+      "path": "README_BATCH13.md",
+      "bytes": 1931,
+      "sha256": "91085baf34d6bf2826e2a1537c5d12c1604379936911cf2d3c59890496eee4a6"
+    },
+    {
+      "path": "README_BATCH14.md",
+      "bytes": 3165,
+      "sha256": "d4733045e2f589285e8c1c7ca514c9b7813f12602210ee27b4b45fbcb8b501e2"
+    },
+    {
+      "path": "README_BATCH15.md",
+      "bytes": 2999,
+      "sha256": "d4996e0e1f4a19886adb08458f0dd149bf914fdd38b3f27968ad380b5f1cb75a"
+    },
+    {
+      "path": "README_BATCH16.md",
+      "bytes": 3575,
+      "sha256": "00edeeacde9bf4e71bd3e5ea0d8de6d11b9101b47342d40c011956afbbcb69f6"
+    },
+    {
+      "path": "README_BATCH17.md",
+      "bytes": 4114,
+      "sha256": "1bbbf7358f68bf80d01c059d9b7d732f04edfc18bfc3e68b0ee5e6494f6dc80d"
+    },
+    {
+      "path": "README_BATCH18.md",
+      "bytes": 2889,
+      "sha256": "c865156cddbc9581590c48e45283559a952c9df176ddb23266072b78567aa9fc"
+    },
+    {
+      "path": "README_BATCH19.md",
+      "bytes": 5270,
+      "sha256": "1291d95d1381717953b935d21536703e1e07d659a3cda842a5560408dd1f2f71"
+    },
+    {
+      "path": "evidence/batch06_benchmark.json",
+      "bytes": 243,
+      "sha256": "e70680e6ff5624c8e30173b92db45088f31218bf246d6d7e35273d601116ff8a"
+    },
+    {
+      "path": "evidence/batch07_benchmark.json",
+      "bytes": 647,
+      "sha256": "0c1c4b08c30579e6de0a049942941cb92169b4e0141aab7e50ffa6be3d9e68a5"
+    },
+    {
+      "path": "evidence/batch08_benchmark.json",
+      "bytes": 1000,
+      "sha256": "3081c7c0b9393397cb4912b7e23950f781e2edf9e9c72597171dfb740d53afe5"
+    },
+    {
+      "path": "evidence/batch09_benchmark.json",
+      "bytes": 516,
+      "sha256": "dde65bf1ca78089ca20ed7e62c6b52f4de7468f2589eccf286f8f555435b6951"
+    },
+    {
+      "path": "evidence/batch10_benchmark.json",
+      "bytes": 1027,
+      "sha256": "66a5a796b89236e92fcb7610ed70d22ed0db44b615ef5bec55306144a412700c"
+    },
+    {
+      "path": "evidence/batch10_quality_gate.json",
+      "bytes": 899,
+      "sha256": "e1e147f8e59baee5577906c0239b85b90efb02b7eda535ef8fb91c4bb70e74c3"
+    },
+    {
+      "path": "evidence/batch13_benchmark.json",
+      "bytes": 977,
+      "sha256": "086fc7f24f2e398bcef30414aac4f4d35ea6bf3973155054763dbab1f9e92939"
+    },
+    {
+      "path": "evidence/batch13_readme.sha256",
+      "bytes": 65,
+      "sha256": "2322d363b057a25e3405af9a20aa789d6318d99ef4b4a715c4e0a66fed0931ef"
+    },
+    {
+      "path": "evidence/batch15_benchmark.json",
+      "bytes": 774,
+      "sha256": "5dc4e9d2c013025301db66df4a6569507e5fc6ed16aec4d59e14247ecc034a4b"
+    },
+    {
+      "path": "evidence/batch17_frame_kinetics_benchmark.json",
+      "bytes": 1356,
+      "sha256": "d44c0097728e6fbe7818da42a8afb698d7bd615098f5b0fd7da5b3bca2435813"
+    },
+    {
+      "path": "evidence/batch17_test_execution.json",
+      "bytes": 913,
+      "sha256": "406be134fdfc55f135422918f520124ae80a25915d91f6cf6e18f04b7808be9d"
+    },
+    {
+      "path": "evidence/batch18_aif_uncertainty_benchmark.json",
+      "bytes": 1172,
+      "sha256": "95fad85274119c63ea10f1031d93641d663cb0e2827b4a9216ec6ae0718a81da"
+    },
+    {
+      "path": "evidence/batch18_aif_uncertainty_benchmark.py",
+      "bytes": 2786,
+      "sha256": "9b980a4639b376f3e057c44c8d3ac55587e91cbf3d21f2ab3bd7e7fd5113bfc2"
+    },
+    {
+      "path": "evidence/batch18_sources.md",
+      "bytes": 1373,
+      "sha256": "0878cb6e6630a2c4af7f859cfd6befa5b349642e611b234653db666a8f8fba04"
+    },
+    {
+      "path": "evidence/batch18_test_execution.json",
+      "bytes": 287,
+      "sha256": "103cca2d6386cd1ed7901c7c1a6a52603c81b27568f8bab6b33a24e0de5afe59"
+    },
+    {
+      "path": "evidence/batch19_joint_inference_benchmark.json",
+      "bytes": 1196,
+      "sha256": "084dc69012d3608ed94cd0c81885d183b7b31c101ab0921df6a1cb65de16295b"
+    },
+    {
+      "path": "evidence/batch19_test_execution.json",
+      "bytes": 459,
+      "sha256": "db040e7058a50c8674fdbe2f0aaae08ab05287e9a35e37c83f662729380879d7"
+    },
+    {
+      "path": "evidence/public_source_snapshot_2026-10-07.md",
+      "bytes": 1067,
+      "sha256": "e50cceba59e22bb4b1a541068344199094ae98a780fccd1caf9babef7e4b9d89"
+    },
+    {
+      "path": "evidence/source_snapshots/openneuro_ds004767_verified.json",
+      "bytes": 829,
+      "sha256": "ea6daf2f405be6185ec045165a09008ea375d213faaf9c6d1506f06ee3e9aa9b"
+    },
+    {
+      "path": "neuro_twin/__init__.py",
+      "bytes": 22,
+      "sha256": "91447944015cec709e8aa7655f7e9d64e1e4508e7023a57fe3746911c0fc6fed"
+    },
+    {
+      "path": "neuro_twin/catalog/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "neuro_twin/catalog/sources_v1.json",
+      "bytes": 1803,
+      "sha256": "96f00f5e294d73be710521da957a05a3b4c8ffc91d1254cf844a03be1b6ac17d"
+    },
+    {
+      "path": "neuro_twin/core/__init__.py",
+      "bytes": 84,
+      "sha256": "65b3c24117760b7e1bec595c1fa637ba235f061cf075c09255ad8e4926e5b11f"
+    },
+    {
+      "path": "neuro_twin/core/dynamics.py",
+      "bytes": 6090,
+      "sha256": "9219bdab144f0d8e638be475296b989468ff963c0773f03d4248d84e3c107081"
+    },
+    {
+      "path": "neuro_twin/core/observation.py",
+      "bytes": 2559,
+      "sha256": "29c81d6b559976f768bd5ce2a6b9bcaa4cc1e8372218b0cdeecb61232b272449"
+    },
+    {
+      "path": "neuro_twin/core/parameters.py",
+      "bytes": 1273,
+      "sha256": "1cc4d5c942716c1039d9c857dc41941fd7f4b0c0c1a0aec362e1929345e24b88"
+    },
+    {
+      "path": "neuro_twin/data/__init__.py",
+      "bytes": 291,
+      "sha256": "710557e1c674411946c0b2cab968137868a993b952d95d143c604f9951992c35"
+    },
+    {
+      "path": "neuro_twin/data/adapters.py",
+      "bytes": 1482,
+      "sha256": "6d83e55d2a887d5a75f3972231870596373375d62c8037a5c2feed318575c0d2"
+    },
+    {
+      "path": "neuro_twin/data/adapters_public.py",
+      "bytes": 9772,
+      "sha256": "0af410e65363884f45cf06f331b4a11af8fad88573dc8eb5c858352c0a6052eb"
+    },
+    {
+      "path": "neuro_twin/data/availability.py",
+      "bytes": 1497,
+      "sha256": "b2af15186f257c7ee6961ca1e5ac24e898ce5ec815244543f20dd88f687e7678"
+    },
+    {
+      "path": "neuro_twin/data/bids.py",
+      "bytes": 1581,
+      "sha256": "039ce67795fd6df29ff373229a430267a53f6350924a99cb0b5a9398bb6dee6b"
+    },
+    {
+      "path": "neuro_twin/data/bids_timing.py",
+      "bytes": 2262,
+      "sha256": "e214709d0a558451f5bbc6f982e4a9bf6f50c3f67eedbe77925aecbafd808ee8"
+    },
+    {
+      "path": "neuro_twin/data/harmonize.py",
+      "bytes": 2435,
+      "sha256": "7f78789f3cffe12d5c3d74b2c1e6f5330bcfa4f10b6641a764f6fbe9dc63bc3d"
+    },
+    {
+      "path": "neuro_twin/data/http.py",
+      "bytes": 1471,
+      "sha256": "fe22b6e51145ea8f1999edbbeb58ef71fdf1c0e6d0d8d97b15eee04ddd64a8fe"
+    },
+    {
+      "path": "neuro_twin/data/image_manifest.py",
+      "bytes": 2137,
+      "sha256": "66e3aedf9304b628e042a92ac29c74e13763ad72c4c06b1baf3f09456a2a693c"
+    },
+    {
+      "path": "neuro_twin/data/openneuro_manifest.py",
+      "bytes": 1620,
+      "sha256": "311bad1ce86194f18dad449b793dd8aba6b671c3ebf1dc7ffc4c6779afbf8937"
+    },
+    {
+      "path": "neuro_twin/data/qc.py",
+      "bytes": 942,
+      "sha256": "c677f414985782ac4a764385dd5be66f31ad6293fc661294a39f799549fe5f31"
+    },
+    {
+      "path": "neuro_twin/data/schema.py",
+      "bytes": 4040,
+      "sha256": "32f3a079845458e1f1c242691cc3c579607aa42bc206e53c197ca8793fbe1910"
+    },
+    {
+      "path": "neuro_twin/data/snapshot.py",
+      "bytes": 3799,
+      "sha256": "727e148a67d464f7af307580f150e3ec8fb1cf5c1882298ff65fa0ca631dd30b"
+    },
+    {
+      "path": "neuro_twin/data/source_sync.py",
+      "bytes": 2477,
+      "sha256": "93f6d56a68876972627cf0b1c99a10b85a2bbce6ee263ce5b8709bfe11e3c863"
+    },
+    {
+      "path": "neuro_twin/data/sources.py",
+      "bytes": 2708,
+      "sha256": "76f17a1db441cb0c83f35416ed9badf5956ac5701e9592c3b31242fe007e8411"
+    },
+    {
+      "path": "neuro_twin/diagnostics/__init__.py",
+      "bytes": 319,
+      "sha256": "eecec281ecedbe161e292f6e685818add5dca6a4be0ea7d123bac1051f6d586b"
+    },
+    {
+      "path": "neuro_twin/diagnostics/bayesian.py",
+      "bytes": 8605,
+      "sha256": "2ad0a9df697b8d4e70f0658b60c42fb0bf211b3a9b727640a57e52cd875a059f"
+    },
+    {
+      "path": "neuro_twin/features/__init__.py",
+      "bytes": 225,
+      "sha256": "db4201ec5935fed73be3d8e9876a769e8dd88ab39143fbb5ca4dee484df0486c"
+    },
+    {
+      "path": "neuro_twin/features/bids_records.py",
+      "bytes": 1758,
+      "sha256": "effe77cd242596236c7ff76b7d262b2650f11401121cc455f456a7923fa57c3e"
+    },
+    {
+      "path": "neuro_twin/features/mri.py",
+      "bytes": 6287,
+      "sha256": "df7106eee7e8d52e9fbee414903df8b317bae3207027c8baeee135f00f66feef"
+    },
+    {
+      "path": "neuro_twin/features/observation_bridge.py",
+      "bytes": 3336,
+      "sha256": "5ca9759512732779b1b7a6d48b59277108a075dbcc7c6e2567d5514b3b4efdf1"
+    },
+    {
+      "path": "neuro_twin/features/pet.py",
+      "bytes": 4712,
+      "sha256": "9602607dc1121f5dd16cba4b43f46d9ee73e45c4f8cd86320e3f29480552820e"
+    },
+    {
+      "path": "neuro_twin/features/pet_observation_bridge.py",
+      "bytes": 3372,
+      "sha256": "7b3c5c3be67478733fe6e24b4c101377aaddc9c707df45af59f0dd0ed0b36697"
+    },
+    {
+      "path": "neuro_twin/features/quantitative.py",
+      "bytes": 2201,
+      "sha256": "f1196d137c9ef2057ff4f23aab45a99fc3aba281c782990b26b9f820d4150d04"
+    },
+    {
+      "path": "neuro_twin/hierarchical/__init__.py",
+      "bytes": 168,
+      "sha256": "8ca78b79b0ffb9ea24084d5623562d4e9bb0de8b9c69a7faba93170c9af3b6e5"
+    },
+    {
+      "path": "neuro_twin/hierarchical/bayesian_hierarchical.py",
+      "bytes": 22420,
+      "sha256": "784e9d486ea788cd7aa91ebdb5994fb096b9e69dfe2ae3bc8398bb8c72bcb12c"
+    },
+    {
+      "path": "neuro_twin/hierarchical/joint_map.py",
+      "bytes": 11443,
+      "sha256": "579fecf6d6a6a437dcff7c06238423447e4f4e8086415bb72a987171c1254a17"
+    },
+    {
+      "path": "neuro_twin/hierarchical/noncentered.py",
+      "bytes": 6300,
+      "sha256": "305c9aeb456ecebada2a2d136bc170a289a9b521fa2455d46cbf129ff002e3e5"
+    },
+    {
+      "path": "neuro_twin/hierarchical/pooling.py",
+      "bytes": 6291,
+      "sha256": "d2a2b6304fd0b7f01eed62b72ee35ab55ce669b76917912d24809cba3ca27607"
+    },
+    {
+      "path": "neuro_twin/hierarchical/random_effects.py",
+      "bytes": 2727,
+      "sha256": "63691d572e8f61ad008b7992934a12701a9babe789571e741c56353d74e1afd3"
+    },
+    {
+      "path": "neuro_twin/imaging/README.md",
+      "bytes": 201,
+      "sha256": "02c2266b2e737ab17bc170dba05df883bb03d925dcea00dbb64c801c5c604bb6"
+    },
+    {
+      "path": "neuro_twin/imaging/__init__.py",
+      "bytes": 596,
+      "sha256": "3377c9ba0d94781cc651deda343c01fce2ea8f8079273e9113e47420af322c88"
+    },
+    {
+      "path": "neuro_twin/imaging/bids_entities.py",
+      "bytes": 2949,
+      "sha256": "aaa7e74dddb1335f599582b33aa0f92f41f5a0c49c9a609d10793da941b7b81b"
+    },
+    {
+      "path": "neuro_twin/imaging/nifti.py",
+      "bytes": 8694,
+      "sha256": "0eccceb108354e0ba20f8105a3cbcbb589109370c5126527e5160c9653a6abce"
+    },
+    {
+      "path": "neuro_twin/imaging/qc.py",
+      "bytes": 2541,
+      "sha256": "4bd60f4b06f2f087b536f29600538ae5bd15ce1f03b22cdff140d8dc8483d5ed"
+    },
+    {
+      "path": "neuro_twin/imaging/spatial.py",
+      "bytes": 4971,
+      "sha256": "e810352ddbfe433d3ed6ac90e978fe708a17569ff2d6f9c08f3bd0a3498ff93d"
+    },
+    {
+      "path": "neuro_twin/inference/__init__.py",
+      "bytes": 246,
+      "sha256": "69463d6a5b4f8a7e120c1771a05cfc4ecddf88c99a95a14710fe68adcff4b033"
+    },
+    {
+      "path": "neuro_twin/inference/bayesian.py",
+      "bytes": 2413,
+      "sha256": "e9edb49d6521c60b03701b87fe956e180be5cf86e277729edeafea28ea338714"
+    },
+    {
+      "path": "neuro_twin/inference/ekf.py",
+      "bytes": 4465,
+      "sha256": "4a03c76bcc7cf1cc9cb621d0630a12957d8c90fc198c8b24e7c916e64a0fb8cc"
+    },
+    {
+      "path": "neuro_twin/inference/fit.py",
+      "bytes": 4924,
+      "sha256": "3f7e4856871a57b9a03dc40d69bfacf9d6e550b7d7e23f74533ee779810f83f3"
+    },
+    {
+      "path": "neuro_twin/inference/identifiability.py",
+      "bytes": 2288,
+      "sha256": "11ddb462779c40ac841622e1d4ee2a5936970a2366e92c21095ce602312f8ead"
+    },
+    {
+      "path": "neuro_twin/inference/jax_ekf.py",
+      "bytes": 5045,
+      "sha256": "a356651397d5d5fe473182b06a2c1ed07db5f16b837a3b73c7e7b87c9457238e"
+    },
+    {
+      "path": "neuro_twin/inference/jax_likelihood.py",
+      "bytes": 6790,
+      "sha256": "169bc21629c4842e5dfc94490a7890c4a365bf2b051ba8d065a94fc7bf8c2ce5"
+    },
+    {
+      "path": "neuro_twin/inference/marginal.py",
+      "bytes": 5103,
+      "sha256": "f47167137e40d89327e4b8276038b606e077ca1eeafe4b0a8e79a754e022565c"
+    },
+    {
+      "path": "neuro_twin/inference/profile.py",
+      "bytes": 4282,
+      "sha256": "4c6c3c825a1c28959526a50ac1c45e9cf7a8dfed66929e362d7db8d3760736ca"
+    },
+    {
+      "path": "neuro_twin/inference/ukf.py",
+      "bytes": 6154,
+      "sha256": "2bea4d3fb81f813c3588877fb62a26eca552c5a0ed0ce79d96919d2749829a7f"
+    },
+    {
+      "path": "neuro_twin/inference/uncertainty.py",
+      "bytes": 845,
+      "sha256": "c17feb36f2d955d5dd62e7f4f8a11727e57573e6472e4ac96ece6eaa9072aee0"
+    },
+    {
+      "path": "neuro_twin/longitudinal/__init__.py",
+      "bytes": 442,
+      "sha256": "11da287d7269d11ccb33b69f9b652cdca8cb7f48bf92f5b00092116e811c3200"
+    },
+    {
+      "path": "neuro_twin/longitudinal/split.py",
+      "bytes": 1891,
+      "sha256": "532c0b094db5e66547dfa6e7110d8a546a884bf6fefd53e025643e8bee2b2475"
+    },
+    {
+      "path": "neuro_twin/longitudinal/state_space.py",
+      "bytes": 10499,
+      "sha256": "d63f92de74d370dd7a93891600c12616fbc683a222d3991a7a0bb121d77ee61a"
+    },
+    {
+      "path": "neuro_twin/model/__init__.py",
+      "bytes": 84,
+      "sha256": "3d97b6d80264fa5da928668dc6eef4426c762144b6fa10bf816c4b76bffe1c62"
+    },
+    {
+      "path": "neuro_twin/model/observation_registry.py",
+      "bytes": 4406,
+      "sha256": "a0053f33609f012fb16838dc5e9729b5638145d596e73b477eadaed944f056bb"
+    },
+    {
+      "path": "neuro_twin/neuro_twin_dummy",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "neuro_twin/observation/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "neuro_twin/observation/multimodal.py",
+      "bytes": 2624,
+      "sha256": "adf90582e8038277e09cdbf6494e2ba6a8f3f86b1b18722afe70abe00b87211e"
+    },
+    {
+      "path": "neuro_twin/observation/nonlinear.py",
+      "bytes": 6702,
+      "sha256": "c1ad694a058c59d8346514c7582ca27c99dddd410e1f3b1052f0ffe69590f6ac"
+    },
+    {
+      "path": "neuro_twin/observation/registry.py",
+      "bytes": 1619,
+      "sha256": "5654c3195444e8bc5ea3a8c4f54ccd06e444f80b19bd22bd6959e4ad6afd84ac"
+    },
+    {
+      "path": "neuro_twin/optional/__init__.py",
+      "bytes": 50,
+      "sha256": "1fcaa74354214f03c4c6f4aa0c1ca2acb35beee4edab544a2fcb2a533c6ec3ec"
+    },
+    {
+      "path": "neuro_twin/pet/__init__.py",
+      "bytes": 2474,
+      "sha256": "6985d8f46c0417af15883598edb2177deb6d5145295282d6c4dba5df66dc3d68"
+    },
+    {
+      "path": "neuro_twin/pet/aif_uncertainty.py",
+      "bytes": 13449,
+      "sha256": "d292d58b887919899ba688c65d33cb2c8a359c81232a8fe8de737e9fa6b8af5b"
+    },
+    {
+      "path": "neuro_twin/pet/bids.py",
+      "bytes": 5582,
+      "sha256": "917f8c4ca2d24986516d6d2e34f423d14f58ef013a63ebdfcda197dd1979bba3"
+    },
+    {
+      "path": "neuro_twin/pet/blood.py",
+      "bytes": 6457,
+      "sha256": "02ada411f80f1ca7c481f7409ef447f6e82e12787d6f1be62f19b7f999b42c6e"
+    },
+    {
+      "path": "neuro_twin/pet/frame_models.py",
+      "bytes": 13707,
+      "sha256": "10e500f0ab47f9a0e469f39fd927e64d89ab88bde8efb78edb879ff6607f34e3"
+    },
+    {
+      "path": "neuro_twin/pet/joint_inference.py",
+      "bytes": 19402,
+      "sha256": "f8f7baff7a95427ec0b38d4aa2f3fa64b6eab59529ec6463904ddf0ecc17d91a"
+    },
+    {
+      "path": "neuro_twin/pet/kinetics.py",
+      "bytes": 23154,
+      "sha256": "f8763af86ee2dc1351a18cfd63217cf056b70b32f7477651fa11b608afec7c8e"
+    },
+    {
+      "path": "neuro_twin/pet/quantification.py",
+      "bytes": 3877,
+      "sha256": "e359d334528b98af8d3f89805642c6f63215ad148764bd3cb3b6e2e82cb52da5"
+    },
+    {
+      "path": "neuro_twin/pet/spatial.py",
+      "bytes": 3865,
+      "sha256": "447279b46a0a54cff985f4bc260e0e13b3e15cdfc94f8027c89673e91de64674"
+    },
+    {
+      "path": "neuro_twin/pipeline/__init__.py",
+      "bytes": 244,
+      "sha256": "457d3a17a901cd6bc5c14666b521028a4793bde08ed2e94966fdf4c9901f275e"
+    },
+    {
+      "path": "neuro_twin/pipeline/ingest.py",
+      "bytes": 907,
+      "sha256": "1c5d75a36908f76a65f6aaedf9245067198372c2ba6962a89ceb172c8b92a07c"
+    },
+    {
+      "path": "neuro_twin/pipeline/mri_bids.py",
+      "bytes": 4006,
+      "sha256": "d2e0c124949d0be8fcf72be00b58d922a7fa0ab4eb4176d8c7b8bc436376bc97"
+    },
+    {
+      "path": "neuro_twin/pipeline/mri_extract.py",
+      "bytes": 1218,
+      "sha256": "38a97731c2c0549b26dfeb3dd6a62f84237bade36a32b05c018dfcdf5de2f2da"
+    },
+    {
+      "path": "neuro_twin/storage/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "neuro_twin/uncertainty/__init__.py",
+      "bytes": 56,
+      "sha256": "cac82b5f959a16fdf812454cdd1676784cafef93d7988210ad65508e2d76b0c2"
+    },
+    {
+      "path": "neuro_twin/uncertainty/covariance.py",
+      "bytes": 1744,
+      "sha256": "2f6d44992f49d300ac3e5d93bf6833320710c3905b1bcc3d743ecc4aca963ded"
+    },
+    {
+      "path": "neuro_twin/uncertainty/laplace.py",
+      "bytes": 2474,
+      "sha256": "3c7782825fe0675f5a28a793cf822bc7447570573711eb6dd0ae1ebd5a4598a0"
+    },
+    {
+      "path": "neuro_twin/validation/__init__.py",
+      "bytes": 172,
+      "sha256": "5b94639eb61268576d2cda50f1cbfd7da325ac286eadef5aed59658a6fd3e0b3"
+    },
+    {
+      "path": "neuro_twin/validation/bayesian_stress.py",
+      "bytes": 3848,
+      "sha256": "155df60a1221f5cdb8d6c50eba6137ec25fd8dfab0505911e0b7ba801f1fb0f1"
+    },
+    {
+      "path": "neuro_twin/validation/external.py",
+      "bytes": 2295,
+      "sha256": "cbef59ac6a238fd471ac71289e6ba4309f1c1efda6f1add02c02a8338b66267a"
+    },
+    {
+      "path": "neuro_twin/validation/gates.py",
+      "bytes": 1084,
+      "sha256": "4c7e3603e863d859adc32ee2fc02ca6cf997dbb2da19b8770d7efaab8082984b"
+    },
+    {
+      "path": "neuro_twin/validation/synthetic.py",
+      "bytes": 1291,
+      "sha256": "b20b358a9e270d917de9c12ba2ac773c3e61e557a33afc592239190399871ee4"
+    },
+    {
+      "path": "pyproject.toml",
+      "bytes": 692,
+      "sha256": "8f9b0e13a27595e9bd90d296e5f39525ed30a79289ddec3c9317338c40b7d6a2"
+    },
+    {
+      "path": "tests/test_adapters_public.py",
+      "bytes": 775,
+      "sha256": "1ee58c9dc3d110100273a03d6144a9d1630b66b86dc1865c6b7abb8b4cfaae6d"
+    },
+    {
+      "path": "tests/test_batch02.py",
+      "bytes": 2580,
+      "sha256": "78b1561979e0b937e6288c955f1379ed3d091702c97839a8bdedaf1805358288"
+    },
+    {
+      "path": "tests/test_batch03.py",
+      "bytes": 2285,
+      "sha256": "c61dad1c031ad9137574a9c8dbf69c2906d9c07d3cb4ef4a35e44ce3b0b12220"
+    },
+    {
+      "path": "tests/test_batch04.py",
+      "bytes": 3521,
+      "sha256": "fa9d8fa23cc17c06180eb56b2bbb2fa8a7303e27186b378b434ea96b59a900c6"
+    },
+    {
+      "path": "tests/test_batch05.py",
+      "bytes": 2595,
+      "sha256": "dfd523148a14e37bd979e49c4a104c003a09578853bd2f75b206d33c48d321de"
+    },
+    {
+      "path": "tests/test_batch06.py",
+      "bytes": 3310,
+      "sha256": "9801886e2938beb56610619d01cacb3d6947ac69461bd75bad508906a23614ff"
+    },
+    {
+      "path": "tests/test_batch07.py",
+      "bytes": 3113,
+      "sha256": "81713c3b58b37d4ed9cd87b078f4aa1dfd0c5b1f91eb03e3d12b6c2d30264256"
+    },
+    {
+      "path": "tests/test_batch08.py",
+      "bytes": 3673,
+      "sha256": "c1743fa7cb3b9e0c59c9b95850a337db7810b625f35c9057836a7228f428eae7"
+    },
+    {
+      "path": "tests/test_batch09.py",
+      "bytes": 2988,
+      "sha256": "01c07ab835bc2f3cc543f0189326a18340c3bba34417ca7f8bdf00c3121c9f56"
+    },
+    {
+      "path": "tests/test_batch10.py",
+      "bytes": 4028,
+      "sha256": "e8c2a897a2208bc4ccc32fcb9024f9d7809024caa599a6b0d0fc2f2f63a80865"
+    },
+    {
+      "path": "tests/test_batch11.py",
+      "bytes": 2177,
+      "sha256": "4629a3c41478951ad3677c9e08dac4e57a3d63ac8e05a100daba7f46ed50295f"
+    },
+    {
+      "path": "tests/test_batch12.py",
+      "bytes": 3807,
+      "sha256": "20df469d972c094656ceb3313227d1a63164b353050c50ed4d442f1d2b5a11e8"
+    },
+    {
+      "path": "tests/test_batch13.py",
+      "bytes": 3906,
+      "sha256": "7b85c2f60f7912f89d98f26835a6cbd0c6c9c7385fe208a85109e46b07e5ce67"
+    },
+    {
+      "path": "tests/test_batch14.py",
+      "bytes": 6318,
+      "sha256": "05126e89ff906f81928e15d8600d561e7a632501db3a6a24e7093bad46f8a918"
+    },
+    {
+      "path": "tests/test_batch15.py",
+      "bytes": 4314,
+      "sha256": "39982000cc48dd6aaa6d1c7b96391e4b99be861d318d35b79ff1d73b89425f57"
+    },
+    {
+      "path": "tests/test_batch16_pet_kinetics.py",
+      "bytes": 2816,
+      "sha256": "cd95e1d6493f9b66012573706b1c382a8d72582775b5f93ae30a5f07b5d58691"
+    },
+    {
+      "path": "tests/test_batch17_frame_models.py",
+      "bytes": 4592,
+      "sha256": "ebb204bdca30c112bef3aee3f9a15f09df3c8de05d246fa6e25a005cf4b5b40a"
+    },
+    {
+      "path": "tests/test_batch18_aif_uncertainty.py",
+      "bytes": 4192,
+      "sha256": "27f7a9732c167bd0c90ed5da5ffa46b960eb14306f7437baeaccd49eb9b7c6fc"
+    },
+    {
+      "path": "tests/test_batch19_joint_pet.py",
+      "bytes": 4665,
+      "sha256": "ca35eb8b558f5ce10d3a1f50220ea281691fd5aa3f8cc28c596f011b3fc02dea"
+    },
+    {
+      "path": "tests/test_core.py",
+      "bytes": 1615,
+      "sha256": "6f1e11b7bce785ad157ba4a865a4cc1cafd1b334c32296ee7ca381dc8fbae3ba"
+    },
+    {
+      "path": "tests/test_inference_temporal.py",
+      "bytes": 2164,
+      "sha256": "1a7da8bb31f286a7bdafb78710d10b59de1d12f2ae3ac078e1180b0dfec37065"
+    },
+    {
+      "path": "tests/test_schema.py",
+      "bytes": 1630,
+      "sha256": "ba878cc482434f0dc993dc65afc90c8f43d1e837fe5d090411268a2cc0982821"
+    },
+    {
+      "path": "tests/test_sources.py",
+      "bytes": 490,
+      "sha256": "1fcfb1c284de198428052e727b31d5a61138609e59d877dedb535857f34626ec"
+    }
+  ]
+}

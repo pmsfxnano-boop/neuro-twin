@@ -1,0 +1,31 @@
+name: Scientific bug
+about: Report a numerical, inference, PIT/OOS or data-contract issue
+labels: scientific, bug
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is scientifically or numerically incorrect?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Minimal reproducible case without protected data.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation evidence
+      description: Tests, residuals, parameter recovery, PIT/OOS evidence, etc.
+    validations:
+      required: true

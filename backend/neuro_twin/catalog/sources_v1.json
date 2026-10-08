@@ -1,0 +1,49 @@
+{
+  "catalog_version": "2026-10-07",
+  "sources": [
+    {
+      "name": "openneuro",
+      "access_tier": "public_api",
+      "endpoint": "https://openneuro.org/crn/graphql",
+      "mechanism": "GraphQL",
+      "primary_role": "public BIDS neuroimaging discovery and dataset metadata",
+      "notes": "Public datasets can be browsed/downloaded without an account; API supports dataset/snapshot/file metadata."
+    },
+    {
+      "name": "biostudies",
+      "access_tier": "public_api",
+      "endpoint": "https://www.ebi.ac.uk/biostudies/api/v1",
+      "mechanism": "REST",
+      "primary_role": "study discovery, metadata, and file locations"
+    },
+    {
+      "name": "ncbi_entrez",
+      "access_tier": "public_api",
+      "endpoint": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils",
+      "mechanism": "E-utilities",
+      "primary_role": "GEO/Entrez discovery and retrieval"
+    },
+    {
+      "name": "ad_knowledge_portal",
+      "access_tier": "controlled_dataset",
+      "endpoint": "https://adknowledgeportal.synapse.org/",
+      "mechanism": "Synapse clients/API",
+      "primary_role": "AD multimodal and metadata-rich research datasets",
+      "notes": "Open and controlled access tiers; individual-level human data may require additional authorization."
+    },
+    {
+      "name": "adni",
+      "access_tier": "controlled_dataset",
+      "endpoint": "https://ida.loni.usc.edu/",
+      "mechanism": "LONI IDA/data portal",
+      "primary_role": "longitudinal clinical, cognitive, biomarker, MRI, PET research data"
+    },
+    {
+      "name": "oasis",
+      "access_tier": "controlled_dataset",
+      "endpoint": "https://sites.wustl.edu/oasisbrains/",
+      "mechanism": "research data distribution",
+      "primary_role": "longitudinal MRI/PET/clinical/cognitive neuroimaging"
+    }
+  ]
+}

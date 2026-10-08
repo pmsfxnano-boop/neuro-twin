@@ -1,0 +1,56 @@
+# NEURO-TWIN Render Blueprint
+# Production topology: React/Vite static UI + FastAPI scientific runtime.
+# No synthetic runtime data is created by either service.
+services:
+  - type: web
+    name: neuro-twin-api
+    runtime: python
+    plan: starter
+    rootDir: backend
+    buildCommand: pip install .[api]
+    startCommand: uvicorn neuro_twin.api_server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - backend/**
+      ignoredPaths:
+        - backend/**/*.md
+    envVars:
+      - key: NEURO_TWIN_CORS_ORIGINS
+        sync: false
+      - key: NEURO_TWIN_ENV
+        value: production
+
+  - type: web
+    name: neuro-twin-frontend
+    runtime: static
+    rootDir: frontend-app
+    buildCommand: npm install --no-audit --no-fund && npm run build
+    staticPublishPath: dist
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - frontend-app/**
+      ignoredPaths:
+        - frontend-app/**/*.md
+    envVars:
+      - key: VITE_NEURO_TWIN_API_URL
+        sync: false
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Permissions-Policy
+        value: camera=(), microphone=(), geolocation=()
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
