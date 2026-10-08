@@ -17,11 +17,11 @@ from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+import httpx
 
 from neuro_twin.runtime.adapter import RuntimeEngineAdapter, RuntimePublicationError
 from neuro_twin.runtime.contracts import RuntimeResult
 from neuro_twin.runtime.runner import RuntimeRunRequest, execute_runtime
-from neuro_twin.autonomous import autonomous_enabled, autonomous_interval_seconds, run_autonomous_cycle
 
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE_DIR = ROOT / "evidence"
