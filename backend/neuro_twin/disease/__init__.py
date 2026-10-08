@@ -12,6 +12,8 @@ from .modules import (
 )
 from .public import PUBLIC_COHORTS, PublicCohortSpec, fetch_public_cohort
 from .readiness import DatasetReadiness, assess_dataset_readiness
+from .exports import ExportRecord, parse_authorized_export
+from .sources import ADNI_PLASMA_V1, CONTROLLED_SOURCES, PPMI_CORE_V1, ControlledSourceSpec, get_controlled_source
 
 __all__ = [
     "ALZHEIMER_V1",
@@ -32,4 +34,7 @@ __all__ = [
     "PUBLIC_COHORTS",
     "PublicCohortSpec",
     "fetch_public_cohort",
+    "ExportRecord", "parse_authorized_export",
+    "ADNI_PLASMA_V1", "PPMI_CORE_V1", "CONTROLLED_SOURCES",
+    "ControlledSourceSpec", "get_controlled_source",
 ]
