@@ -240,7 +240,7 @@ def evaluate_binary_disease_endpoint(
         pooled_brier=pooled_brier,
         null_auroc_mean=float(np.mean(null_scores)) if null_scores else None,
         null_auroc_p95=float(np.quantile(null_scores, 0.95)) if null_scores else None,
-        null_auroc_pvalue=(float(1 + np.sum(np.asarray(null_scores) >= pooled_auc) / (len(null_scores) + 1)) if False else (float((1 + np.sum(np.asarray(null_scores) >= pooled_auc)) / (len(null_scores) + 1)) if null_scores else None)),
+        null_auroc_pvalue=(float((1 + np.sum(np.asarray(null_scores) >= pooled_auc)) / (len(null_scores) + 1)) if null_scores else None),
         permutation_iterations=len(null_scores),
         status=status,
         limitations=limitations,
