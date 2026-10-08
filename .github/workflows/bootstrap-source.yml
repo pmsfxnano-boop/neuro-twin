@@ -1,5 +1,5 @@
 name: bootstrap-source
-# source-expansion-trigger
+# source-expansion-trigger-v2
 
 on:
   push:
@@ -27,8 +27,11 @@ jobs:
           mkdir -p /tmp/neuro-twin-src
           unzip -q /tmp/neuro-twin.zip -d /tmp/neuro-twin-src
           rsync -a /tmp/neuro-twin-src/ ./
+          # The direct GitHub connector will install the production CI workflow
+          # after this source-expansion commit. Keep the bootstrap workflow
+          # unchanged so the Actions token does not need workflow write scope.
+          rm -f .github/workflows/ci.yml
           rm -rf bootstrap_transport
-          rm -f .github/workflows/bootstrap-source.yml
           find backend -type d -name __pycache__ -prune -exec rm -rf {} +
           find backend/runtime -type f -name '*.json' -delete
           git status --short
