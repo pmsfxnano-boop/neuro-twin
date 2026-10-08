@@ -1,0 +1,45 @@
+name: bootstrap-source
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  expand:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Reconstruct and verify source bundle
+        env:
+          EXPECTED_SHA256: b6f8173579a9557056a1d05b597adf69a3c98a522aed38a36998d3d0157e29bf
+        run: |
+          set -euo pipefail
+          cat bootstrap_transport/part-*.bin > /tmp/neuro-twin.zip
+          echo "${EXPECTED_SHA256}  /tmp/neuro-twin.zip" | sha256sum -c -
+          rm -rf /tmp/neuro-twin-src
+          mkdir -p /tmp/neuro-twin-src
+          unzip -q /tmp/neuro-twin.zip -d /tmp/neuro-twin-src
+          rsync -a /tmp/neuro-twin-src/ ./
+          rm -rf bootstrap_transport
+          rm -f .github/workflows/bootstrap-source.yml
+          find backend -type d -name __pycache__ -prune -exec rm -rf {} +
+          find backend/runtime -type f -name '*.json' -delete
+          git status --short
+
+      - name: Commit expanded source
+        run: |
+          set -euo pipefail
+          git config user.name "neuro-twin-bootstrap"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "chore: expand NEURO-TWIN source"
+          git push
