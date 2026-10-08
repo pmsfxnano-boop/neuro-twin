@@ -7,6 +7,7 @@ All outputs are persisted as backend evidence.
 """
 from __future__ import annotations
 
+import argparse
 import csv
 import hashlib
 import io
@@ -22,6 +23,7 @@ from typing import Any
 import httpx
 import numpy as np
 
+from neuro_twin.runtime.adapter import RuntimeEngineAdapter
 from neuro_twin.runtime.runner import RuntimeRunRequest, execute_runtime
 
 UCI_ZIP_URL = "https://archive.ics.uci.edu/static/public/189/parkinsons%2Btelemonitoring.zip"
@@ -31,8 +33,11 @@ SOURCE_NAME = "UCI Parkinsons Telemonitoring"
 SOURCE_VERSION_BASE = "UCI-189/DOI-10.24432/C5ZS3N"
 LICENSE = "CC BY 4.0"
 PROCESSING_PIPELINE = "neuro-twin-autonomous-uci-adapter"
-PROCESSING_VERSION = "0.2.0"
+PROCESSING_VERSION = "0.3.0"
 LIVE_SUBJECT_ID = "1"
+RUNTIME_ARTIFACT_NAME = "autonomous_latest_runtime.json"
+STATUS_ARTIFACT_NAME = "autonomous_learning.json"
+HISTORY_ARTIFACT_NAME = "autonomous_learning_history.jsonl"
 FEATURE_NAMES = ("motor_updrs_norm", "total_updrs_norm")
 ANCHOR = datetime(1970, 1, 1, tzinfo=timezone.utc)
 
@@ -247,8 +252,9 @@ def _fit_population_prior(
     failures: list[str] = []
     zero = [0.0] * 11
 
-    for subject_id in subject_ids:
+    for position, subject_id in enumerate(subject_ids, start=1):
         try:
+            print(f"NEURO_TWIN_AUTONOMOUS_FIT subject={subject_id} progress={position}/{len(subject_ids)}", flush=True)
             request = _package_for_subject(rows, subject_id, raw_hash, zero, "prospective_oos")
             result = execute_runtime(request)
             theta = result.evidence.get("run", {}).get("parameter_mean")
@@ -294,6 +300,18 @@ def run_autonomous_cycle(root: str | Path) -> dict[str, Any]:
 
         live_request = _package_for_subject(rows, LIVE_SUBJECT_ID, raw_hash, prior, "prospective_oos")
         result = execute_runtime(live_request)
+        prepared = RuntimeEngineAdapter(root).prepare(result)
+        runtime_payload = json.loads(prepared.model_dump_json())
+        artifact_envelope = {
+            "schema_version": "neuro-twin.autonomous-runtime.v1",
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "code_revision": os.getenv("GITHUB_SHA", "local"),
+            "runtime": runtime_payload,
+        }
+        _runtime_artifact_path(root).write_text(
+            json.dumps(artifact_envelope, sort_keys=True, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
 
         snapshot = {
             "status": "PASS",
@@ -307,6 +325,8 @@ def run_autonomous_cycle(root: str | Path) -> dict[str, Any]:
             "live_subject_id": LIVE_SUBJECT_ID,
             "live_observation_count": len(result.observations),
             "live_runtime_id": result.runtime_id,
+            "runtime_result_hash": prepared.provenance.result_hash,
+            "code_revision": os.getenv("GITHUB_SHA", "local"),
             "live_oos": result.oos.model_dump(mode="json") if result.oos else None,
             "live_parameter_mean": result.evidence.get("run", {}).get("parameter_mean"),
             "learned_parameter_prior": prior,
@@ -337,3 +357,15 @@ def autonomous_interval_seconds() -> int:
 
 def autonomous_enabled() -> bool:
     return os.getenv("NEURO_TWIN_AUTONOMOUS_ENABLED", "0").strip().lower() in {"1", "true", "yes"}
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Run one NEURO-TWIN autonomous scientific learning cycle.")
+    parser.add_argument("--root", type=Path, default=Path.cwd(), help="Backend root used for runtime/evidence artifacts.")
+    args = parser.parse_args()
+    outcome = run_autonomous_cycle(args.root)
+    print(json.dumps(outcome, sort_keys=True, indent=2, ensure_ascii=False))
+
+
+if __name__ == "__main__":
+    main()
