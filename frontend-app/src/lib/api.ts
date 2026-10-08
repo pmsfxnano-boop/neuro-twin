@@ -4,7 +4,11 @@ const rawApiBase = import.meta.env.VITE_NEURO_TWIN_API_URL;
 const DEFAULT_API_BASE = typeof rawApiBase === 'string' ? rawApiBase.replace(/\/$/, '') : '';
 
 export class RuntimeApi {
-  constructor(public readonly base = DEFAULT_API_BASE) {}
+  public readonly base: string;
+
+  constructor(base = '') {
+    this.base = base.trim() || DEFAULT_API_BASE;
+  }
   async status(): Promise<RuntimeSnapshot> { return this.get('/v1/runtime/status'); }
   async capabilities(): Promise<CapabilitySet> { return this.get('/v1/capabilities'); }
   async runRuntime(payload: unknown): Promise<{status:string;runtime_id:string;summary:RuntimeSnapshot}> {
