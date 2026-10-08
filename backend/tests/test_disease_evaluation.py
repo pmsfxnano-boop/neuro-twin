@@ -28,6 +28,8 @@ def test_disease_endpoint_is_patient_level_and_oof():
     assert result.pooled_brier < 0.15
     assert result.permutation_iterations == 20
     assert result.null_auroc_p95 is not None
+    assert result.null_auroc_pvalue is not None
+    assert 0.0 < result.null_auroc_pvalue <= 1.0
 
 
 def test_duplicate_subjects_are_rejected():
