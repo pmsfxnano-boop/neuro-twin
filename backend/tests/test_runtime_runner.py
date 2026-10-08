@@ -42,11 +42,16 @@ def _payload(subject='TEST'):
     }
 
 
-def test_runtime_executes_and_passes_oos():
+def test_runtime_executes_and_persists_identifiability_diagnostics():
     result = execute_runtime(RuntimeRunRequest.model_validate(_payload()))
     assert result.runtime_class.value == 'research_observational'
     assert result.oos is not None and result.oos.status == 'PASS'
     assert len(result.observations) == 8  # train envelope only: 2 visits × 4 channels
+    assert result.oos.metrics['identifiability_rank'] > 0
+    assert result.oos.metrics['identifiability_parameter_count'] == 15.0
+    assert 0.0 < result.oos.metrics['identifiability_rank_fraction'] <= 1.0
+    assert result.evidence['run']['identifiability']['effective_rank'] > 0
+    assert result.evidence['run']['identifiability']['status'] in {'FULL_RANK', 'RANK_DEFICIENT'}
 
 
 def test_http_run_publishes_live_result():

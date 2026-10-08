@@ -109,6 +109,10 @@ class Fitted:
     jacobian: np.ndarray
     objective: float
     covariance: np.ndarray | None
+    laplace_rank: int
+    laplace_condition_number: float
+    laplace_residual_scale: float
+    laplace_degrees_of_freedom: int
     times: np.ndarray
     states: np.ndarray
 
@@ -212,7 +216,12 @@ def _fit_irregular(
     jac = lambda z: evaluate(z)[1]
     result = least_squares(fun, z0, jac=jac, bounds=(lb, ub), method="trf", x_scale="jac", loss="linear")
     residual, J, states, theta = evaluate(result.x)
-    cov = laplace_covariance(J, objective=float(0.5 * residual @ residual), n_residuals=J.shape[0]).covariance
+    laplace = laplace_covariance(
+        J,
+        objective=float(0.5 * residual @ residual),
+        n_residuals=J.shape[0],
+    )
+    cov = laplace.covariance
     # model prediction on all rows, preserving missingness as NaN
     pred_all = np.full((len(rows), len(feature_names)), np.nan, dtype=float)
     for ti, row in enumerate(rows):
@@ -220,7 +229,20 @@ def _fit_irregular(
         for i, name in enumerate(feature_names):
             if row[name] is not None:
                 pred_all[ti, i] = vals[i]
-    return Fitted(result.x[:4], result.x[4:], pred_all, J, float(0.5 * residual @ residual), cov, t, states)
+    return Fitted(
+        result.x[:4],
+        result.x[4:],
+        pred_all,
+        J,
+        float(0.5 * residual @ residual),
+        cov,
+        laplace.rank,
+        laplace.condition_number,
+        laplace.residual_scale,
+        laplace.degrees_of_freedom,
+        t,
+        states,
+    )
 
 
 def _rmse_oos(
@@ -312,7 +334,20 @@ def execute_runtime(req: RuntimeRunRequest) -> RuntimeResult:
         full_states_for_oos = np.vstack([train_fit.states, pred_states])
     else:
         full_states_for_oos = train_fit.states
-    oos_fit = Fitted(train_fit.x0, train_fit.theta, train_fit.pred, train_fit.jacobian, train_fit.objective, train_fit.covariance, (times_abs - times_abs[0]) / (30.4375 * 86400.0), full_states_for_oos)
+    oos_fit = Fitted(
+        train_fit.x0,
+        train_fit.theta,
+        train_fit.pred,
+        train_fit.jacobian,
+        train_fit.objective,
+        train_fit.covariance,
+        train_fit.laplace_rank,
+        train_fit.laplace_condition_number,
+        train_fit.laplace_residual_scale,
+        train_fit.laplace_degrees_of_freedom,
+        (times_abs - times_abs[0]) / (30.4375 * 86400.0),
+        full_states_for_oos,
+    )
     metrics = _rmse_oos(oos_fit, rows, feature_names, operator, np.arange(split_index, unique_n))
 
     # Final state posterior. Retrospective mode uses all available observations;
@@ -394,7 +429,24 @@ def execute_runtime(req: RuntimeRunRequest) -> RuntimeResult:
         access_tier=req.access_tier,
     )
 
-    oos = OOSResult(status="PASS" if metrics else "INCONCLUSIVE", temporal_leakage=False, metrics=metrics)
+    identifiability = {
+        "status": "FULL_RANK" if train_fit.laplace_rank >= len(train_fit.jacobian[0]) else "RANK_DEFICIENT",
+        "effective_rank": float(train_fit.laplace_rank),
+        "parameter_count": float(len(train_fit.jacobian[0])),
+        "rank_fraction": float(train_fit.laplace_rank / max(len(train_fit.jacobian[0]), 1)),
+        "condition_number": float(train_fit.laplace_condition_number),
+        "residual_scale": float(train_fit.laplace_residual_scale),
+        "degrees_of_freedom": float(train_fit.laplace_degrees_of_freedom),
+    }
+    metrics = dict(metrics)
+    metrics.update({
+        "identifiability_rank": float(train_fit.laplace_rank),
+        "identifiability_parameter_count": float(len(train_fit.jacobian[0])),
+        "identifiability_rank_fraction": float(identifiability["rank_fraction"]),
+        "identifiability_condition_number": float(train_fit.laplace_condition_number),
+        "identifiability_dof": float(train_fit.laplace_degrees_of_freedom),
+    })
+    oos = OOSResult(status="PASS" if metrics.get("RMSE") is not None else "INCONCLUSIVE", temporal_leakage=False, metrics=metrics)
     trajectory_states = final_fit.states if req.analysis_mode == "retrospective" else full_states_for_oos
     trajectory = {
         "times": [float(x) for x in final_fit.times if x <= state_time_months + 1e-12],
@@ -421,6 +473,7 @@ def execute_runtime(req: RuntimeRunRequest) -> RuntimeResult:
         trajectory=trajectory,
         prediction={"mode": req.analysis_mode, "oos_split_index": split_index, "operator_config_hash": config.config_hash, "missing_operator_features": missing_features,
                     "disease_interpretation": disease_gate,
+                    "identifiability": identifiability,
                 },
         evidence={
             "run": {
@@ -431,6 +484,7 @@ def execute_runtime(req: RuntimeRunRequest) -> RuntimeResult:
                 "parameter_names": list(PARAMETER_NAMES),
                 "parameter_mean": [float(x) for x in final_fit.theta],
                 "parameter_covariance_available": final_fit.covariance is not None,
+                "identifiability": identifiability,
                 "publication_observation_count": len(published_observations),
             },
             "disease_module": disease_gate,
