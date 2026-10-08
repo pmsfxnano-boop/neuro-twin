@@ -126,6 +126,7 @@ def create_app() -> FastAPI:
             current = runtime_adapter.load_current()
             snapshot = runtime_adapter.ui_snapshot(current) if current is not None else _waiting_snapshot()
             await bus.publish_payload(snapshot)
+            print(f"NEURO_TWIN_AUTOLOAD_PUBLIC_RUNTIME published runtime={result.runtime_id} observations={len(result.observations)}")
         except Exception as exc:
             # Startup must remain available even if the public-data adapter fails.
             print(f"NEURO_TWIN_AUTOLOAD_PUBLIC_RUNTIME failed: {exc}")
