@@ -107,67 +107,53 @@ def create_app() -> FastAPI:
     )
     bus = RuntimeBus()
     app.state.runtime_bus = bus
-    app.state.autonomous_task: asyncio.Task | None = None
+    app.state.evidence_sync_lock = asyncio.Lock()
+    app.state.evidence_next_sync = 0.0
+    app.state.autonomous_remote_status = {"status": "NEVER_RUN", "scheduler": "github_actions"}
+
+    async def sync_remote_evidence(*, force: bool = False) -> None:
+        now = time.monotonic()
+        if not force and now < app.state.evidence_next_sync:
+            return
+        async with app.state.evidence_sync_lock:
+            now = time.monotonic()
+            if not force and now < app.state.evidence_next_sync:
+                return
+            app.state.evidence_next_sync = now + REMOTE_SYNC_TTL_SECONDS
+            cache_buster = int(time.time() // 60)
+            try:
+                async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
+                    status_response = await client.get(f"{REMOTE_STATUS_URL}?v={cache_buster}")
+                    if status_response.status_code == 200:
+                        app.state.autonomous_remote_status = status_response.json()
+                        app.state.autonomous_remote_status["scheduler"] = "github_actions"
+
+                    runtime_response = await client.get(f"{REMOTE_RUNTIME_URL}?v={cache_buster}")
+                    if runtime_response.status_code != 200:
+                        return
+                    envelope = runtime_response.json()
+                    runtime_payload = envelope.get("runtime", envelope)
+                    result = RuntimeResult.model_validate(runtime_payload)
+                    current = runtime_adapter.load_current()
+                    current_hash = current.provenance.result_hash if current is not None else None
+                    if current is not None and current.runtime_id == result.runtime_id and current_hash == result.provenance.result_hash:
+                        return
+                    runtime_adapter.publish(result)
+                    current = runtime_adapter.load_current()
+                    snapshot = runtime_adapter.ui_snapshot(current) if current is not None else _waiting_snapshot()
+                    await bus.publish_payload(snapshot)
+                    print(
+                        "NEURO_TWIN_REMOTE_EVIDENCE_SYNC "
+                        f"runtime={result.runtime_id} source={result.provenance.source_name}"
+                    )
+            except Exception as exc:
+                print(f"NEURO_TWIN_REMOTE_EVIDENCE_SYNC failed: {exc}")
+
+    app.state.sync_remote_evidence = sync_remote_evidence
 
     @app.on_event("startup")
     async def start_runtime_services() -> None:
-        """Optionally materialize a real public-data runtime on service startup.
-
-        The packaged source is a small derived excerpt of the UCI Parkinsons
-        Telemonitoring dataset. It is real public data, not synthetic data.
-        The loader is disabled unless explicitly enabled by environment.
-        """
-        if autonomous_enabled():
-            async def autonomous_loop() -> None:
-                while True:
-                    try:
-                        outcome = await asyncio.to_thread(run_autonomous_cycle, ROOT)
-                        current = runtime_adapter.load_current()
-                        snapshot = runtime_adapter.ui_snapshot(current) if current is not None else _waiting_snapshot()
-                        await bus.publish_payload(snapshot)
-                        print(
-                            "NEURO_TWIN_AUTONOMOUS_CYCLE completed "
-                            f"status={outcome.get('status')} runtime={outcome.get('runtime_id')}"
-                        )
-                    except Exception as exc:
-                        print(f"NEURO_TWIN_AUTONOMOUS_CYCLE failed: {exc}")
-                    await asyncio.sleep(autonomous_interval_seconds())
-
-            app.state.autonomous_task = asyncio.create_task(
-                autonomous_loop(),
-                name="neuro-twin-autonomous-loop",
-            )
-            print(
-                "NEURO_TWIN_AUTONOMOUS_ENABLED=1 "
-                f"interval_seconds={autonomous_interval_seconds()}"
-            )
-            return
-
-        enabled = os.getenv("NEURO_TWIN_AUTOLOAD_PUBLIC_RUNTIME", "0").strip().lower() in {"1", "true", "yes"}
-        if not enabled or bus.snapshot is not None or not PUBLIC_RUNTIME_PACKAGE.exists():
-            return
-        try:
-            payload = json.loads(PUBLIC_RUNTIME_PACKAGE.read_text(encoding="utf-8"))
-            request = RuntimeRunRequest.model_validate(payload)
-            result = execute_runtime(request)
-            runtime_adapter.publish(result)
-            current = runtime_adapter.load_current()
-            snapshot = runtime_adapter.ui_snapshot(current) if current is not None else _waiting_snapshot()
-            await bus.publish_payload(snapshot)
-            print(f"NEURO_TWIN_AUTOLOAD_PUBLIC_RUNTIME published runtime={result.runtime_id} observations={len(result.observations)}")
-        except Exception as exc:
-            print(f"NEURO_TWIN_AUTOLOAD_PUBLIC_RUNTIME failed: {exc}")
-
-    @app.on_event("shutdown")
-    async def stop_runtime_services() -> None:
-        task = app.state.autonomous_task
-        if task is not None:
-            task.cancel()
-            try:
-                await task
-            except asyncio.CancelledError:
-                pass
-            app.state.autonomous_task = None
+        await sync_remote_evidence(force=True)
 
     @app.get("/health")
     async def health() -> dict[str, Any]:
