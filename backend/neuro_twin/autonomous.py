@@ -289,6 +289,64 @@ def _fit_population_prior(
     return prior.tolist(), summary
 
 
+
+def _persistence_baseline(rows: list[dict[str, str]], split_index: int) -> dict[str, Any]:
+    ordered = sorted(rows, key=lambda r: float(r["test_time"]))
+    if split_index < 1 or split_index >= len(ordered):
+        return {"name": "persistence_last_observation", "metrics": {}, "n": 0}
+    last = ordered[split_index - 1]
+    last_values = np.asarray(
+        [float(last["motor_UPDRS"]) / 100.0, float(last["total_UPDRS"]) / 100.0],
+        dtype=float,
+    )
+    errors: list[float] = []
+    feature_errors: dict[str, list[float]] = {FEATURE_NAMES[0]: [], FEATURE_NAMES[1]: []}
+    for row in ordered[split_index:]:
+        actual = {
+            FEATURE_NAMES[0]: float(row["motor_UPDRS"]) / 100.0,
+            FEATURE_NAMES[1]: float(row["total_UPDRS"]) / 100.0,
+        }
+        for j, feature in enumerate(FEATURE_NAMES):
+            err = float(last_values[j] - actual[feature])
+            errors.append(err * err)
+            feature_errors[feature].append(err)
+    if not errors:
+        return {"name": "persistence_last_observation", "metrics": {}, "n": 0}
+    rmse = float(np.sqrt(np.mean(errors)))
+    per_feature = {
+        feature: float(np.sqrt(np.mean(np.square(values))))
+        for feature, values in feature_errors.items()
+        if values
+    }
+    return {
+        "name": "persistence_last_observation",
+        "metrics": {"RMSE": rmse, "n": float(len(errors)), "per_feature_RMSE": per_feature},
+    }
+
+
+def _latent_identifiability(result: Any, operator_specs: list[dict[str, Any]]) -> dict[str, Any]:
+    axes = ("P", "I", "N", "Q")
+    observed = {
+        axes[j]
+        for j in range(4)
+        if any(abs(float(spec["weights"][j])) > 1e-12 for spec in operator_specs)
+    }
+    unobserved = [axis for axis in axes if axis not in observed]
+    covariance = np.asarray(result.state_posterior.covariance, dtype=float)
+    posterior_sd = np.sqrt(np.maximum(np.diag(covariance), 0.0))
+    return {
+        "status": "LIMITED_UNOBSERVED_AXES" if unobserved else "OBSERVED_AXES",
+        "observed_axes": [axis for axis in axes if axis in observed],
+        "unobserved_axes": unobserved,
+        "posterior_sd": {axis: float(posterior_sd[i]) for i, axis in enumerate(axes)},
+        "warning": (
+            "Latent axes I/N are not directly constrained by the current UCI observation operator."
+            if "I" in unobserved or "N" in unobserved
+            else None
+        ),
+    }
+
+
 def run_autonomous_cycle(root: str | Path) -> dict[str, Any]:
     root = Path(root)
     started = time.time()
@@ -304,6 +362,25 @@ def run_autonomous_cycle(root: str | Path) -> dict[str, Any]:
 
         live_request = _package_for_subject(rows, LIVE_SUBJECT_ID, raw_hash, prior, "prospective_oos")
         result = execute_runtime(live_request)
+        split_index = int(result.prediction["oos_split_index"])
+        baseline = _persistence_baseline(rows, split_index)
+        model_rmse = float(result.oos.metrics["RMSE"]) if result.oos and result.oos.metrics.get("RMSE") is not None else None
+        baseline_rmse = float(baseline["metrics"]["RMSE"]) if baseline["metrics"].get("RMSE") is not None else None
+        relative_improvement = (
+            float(1.0 - model_rmse / baseline_rmse)
+            if model_rmse is not None and baseline_rmse is not None and baseline_rmse > 0.0
+            else None
+        )
+        identifiability = _latent_identifiability(result, live_request.operator.specs)
+        if model_rmse is not None and baseline_rmse is not None:
+            predictive_assessment = "MODEL_BEATS_PERSISTENCE" if model_rmse < baseline_rmse else "MODEL_NOT_BETTER_THAN_PERSISTENCE"
+        else:
+            predictive_assessment = "INCONCLUSIVE"
+        scientific_status = (
+            "PASS_WITH_LIMITATIONS"
+            if predictive_assessment == "MODEL_BEATS_PERSISTENCE" and result.oos and result.oos.temporal_leakage is False
+            else "INCONCLUSIVE"
+        )
         prepared = RuntimeEngineAdapter(root).prepare(result)
         runtime_payload = json.loads(prepared.model_dump_json())
         artifact_envelope = {
@@ -332,6 +409,15 @@ def run_autonomous_cycle(root: str | Path) -> dict[str, Any]:
             "runtime_result_hash": prepared.provenance.result_hash,
             "code_revision": os.getenv("GITHUB_SHA", "local"),
             "live_oos": result.oos.model_dump(mode="json") if result.oos else None,
+            "baseline": baseline,
+            "predictive_assessment": {
+                "model_rmse": model_rmse,
+                "baseline_rmse": baseline_rmse,
+                "relative_improvement": relative_improvement,
+                "assessment": predictive_assessment,
+            },
+            "latent_identifiability": identifiability,
+            "scientific_status": scientific_status,
             "live_parameter_mean": result.evidence.get("run", {}).get("parameter_mean"),
             "learned_parameter_prior": prior,
             "population_learning": prior_summary or current.get("population_learning"),
