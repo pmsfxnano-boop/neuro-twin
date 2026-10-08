@@ -21,6 +21,8 @@ from neuro_twin.core.parameters import PARAMETER_NAMES, PINQParameters
 from neuro_twin.data.schema import Observation
 from neuro_twin.model.observation_registry import ObservationModelConfig, ObservationSpec
 from neuro_twin.uncertainty.laplace import laplace_covariance
+from neuro_twin.disease.coverage import evaluate_module_coverage
+from neuro_twin.disease.modules import get_disease_module
 from neuro_twin.runtime.contracts import (
     OOSResult,
     PITEnvelope,
@@ -73,6 +75,8 @@ class RuntimeRunRequest(BaseModel):
     model_input_raw_hash: str | None = None
     pet_kinetic_posterior: dict[str, Any] | None = None
     pet_neuro_binding: dict[str, Any] | None = None
+    disease: str | None = None
+    disease_module_version: str | None = None
 
     @field_validator("initial_state_covariance")
     @classmethod
@@ -249,6 +253,24 @@ def execute_runtime(req: RuntimeRunRequest) -> RuntimeResult:
     feature_names = operator.feature_names
     observed_features = {o.feature for o in req.observations if not o.missing}
     missing_features = [name for name in feature_names if name not in observed_features]
+    disease_gate: dict[str, Any] | None = None
+    if req.disease is not None or req.disease_module_version is not None:
+        if req.disease is None or req.disease_module_version is None:
+            raise ValueError("disease and disease_module_version must be provided together")
+        module = get_disease_module(req.disease)
+        if module.version != req.disease_module_version:
+            raise ValueError(
+                f"requested disease module version {req.disease_module_version!r} "
+                f"does not match registered {module.disease.value}@{module.version}"
+            )
+        coverage = evaluate_module_coverage(module, feature_names)
+        disease_gate = {
+            "disease": module.disease.value,
+            "module_version": module.version,
+            "coverage": coverage.__dict__,
+            "latent_interpretation": "ALLOWED" if coverage.status == "READY_FOR_FULL_OBSERVABILITY" else "BLOCKED",
+            "diagnosis_target_external": True,
+        }
     if len(observed_features) == 0:
         raise ValueError("no non-missing observations match the observation operator")
 
@@ -397,7 +419,9 @@ def execute_runtime(req: RuntimeRunRequest) -> RuntimeResult:
         pet_neuro_binding=binding,
         oos=oos,
         trajectory=trajectory,
-        prediction={"mode": req.analysis_mode, "oos_split_index": split_index, "operator_config_hash": config.config_hash, "missing_operator_features": missing_features},
+        prediction={"mode": req.analysis_mode, "oos_split_index": split_index, "operator_config_hash": config.config_hash, "missing_operator_features": missing_features,
+                    "disease_interpretation": disease_gate,
+                },
         evidence={
             "run": {
                 "fit_mode": req.analysis_mode,
@@ -409,6 +433,7 @@ def execute_runtime(req: RuntimeRunRequest) -> RuntimeResult:
                 "parameter_covariance_available": final_fit.covariance is not None,
                 "publication_observation_count": len(published_observations),
             },
+            "disease_module": disease_gate,
             "oos": {
                 "test_event_ids": sorted({o.event_id for o in req.observations if o not in published_observations}),
                 "future_data_not_published_to_live_state": req.analysis_mode == "prospective_oos",
