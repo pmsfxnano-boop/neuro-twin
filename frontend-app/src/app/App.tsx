@@ -73,7 +73,7 @@ export default function App(){
       <footer><div>Runtime <b>{runtime.runtime_id?runtime.runtime_id.slice(0,12):'—'}</b></div><div>PIT <b>{runtime.pit?'VALIDATED':'—'}</b></div><div>Synthetic path <b className="red">BLOCKED</b></div></footer>
     </aside>
     <main className="main">
-      <header className="top"><div><span>SCIENTIFIC RUNTIME</span><b>{src}</b></div><div className="actions"><input value={origin} onChange={(e:React.ChangeEvent<HTMLInputElement>)=>setOrigin(e.target.value)} placeholder="same-origin bridge"/><StatusPill label={connected?'BRIDGE ONLINE':'BRIDGE OFFLINE'} active={connected} danger={!!error}/><button onClick={()=>void manualRefresh()}>Refresh runtime</button></div></header>
+      <header className="top"><div><span>SCIENTIFIC RUNTIME</span><b>{src}</b></div><div className="actions"><input value={origin} onChange={(e:React.ChangeEvent<HTMLInputElement>)=>setOrigin(e.target.value)} placeholder="API override (optional)"/><StatusPill label={connected?'API ONLINE':'API OFFLINE'} active={connected} danger={!!error}/><button onClick={()=>void manualRefresh()}>Refresh runtime</button></div></header>
       {error&&<div className="error">{error}</div>}
       <div className="integrity"><div><span>PIT AS-OF</span><b>{fmt(runtime.pit?.as_of)}</b></div><div><span>MODEL</span><b>{runtime.provenance?.model_version??'—'}</b></div><div><span>PROCESSING</span><b>{runtime.provenance?.processing_version??'—'}</b></div><div><span>OOS</span><b className={runtime.oos?.status==='PASS'?'green':''}>{runtime.oos?.status??'NOT REPORTED'}</b></div><div><span>LEAKAGE</span><b className={!runtime.oos||!runtime.oos.temporal_leakage?'green':'red'}>{runtime.oos?String(runtime.oos.temporal_leakage).toUpperCase():'—'}</b></div></div>
 
