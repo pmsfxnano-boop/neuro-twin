@@ -164,8 +164,10 @@ def create_app() -> FastAPI:
             "bridge": "fastapi-websocket",
             "state_source": (bus.snapshot or _waiting_snapshot())["state_status"],
             "synthetic_reference": False,
-            "autonomous_learning": autonomous_enabled(),
-            "autonomous_interval_seconds": autonomous_interval_seconds(),
+            "autonomous_learning": True,
+            "autonomous_scheduler": "github_actions",
+            "autonomous_interval_seconds": 21600,
+            "evidence_source": EVIDENCE_BASE_URL,
         }
 
     @app.get("/")
@@ -198,20 +200,16 @@ def create_app() -> FastAPI:
 
     @app.get("/v1/autonomous/status")
     async def autonomous_status() -> JSONResponse:
-        path = ROOT / "runtime" / "autonomous_learning.json"
-        if not path.exists():
-            return JSONResponse({
-                "status": "NEVER_RUN",
-                "enabled": autonomous_enabled(),
-                "interval_seconds": autonomous_interval_seconds(),
-            })
-        payload = json.loads(path.read_text(encoding="utf-8"))
-        payload["enabled"] = autonomous_enabled()
-        payload["interval_seconds"] = autonomous_interval_seconds()
+        await sync_remote_evidence()
+        payload = dict(app.state.autonomous_remote_status)
+        payload["scheduler"] = "github_actions"
+        payload["interval_seconds"] = 21600
+        payload["evidence_source"] = EVIDENCE_BASE_URL
         return JSONResponse(payload)
 
     @app.get("/v1/runtime/status")
     async def runtime_status() -> JSONResponse:
+        await sync_remote_evidence()
         return JSONResponse(bus.snapshot or _waiting_snapshot())
 
     @app.post("/v1/runtime/publish")
@@ -249,6 +247,7 @@ def create_app() -> FastAPI:
 
     @app.post("/v1/runtime/refresh")
     async def runtime_refresh() -> JSONResponse:
+        await sync_remote_evidence(force=True)
         current = runtime_adapter.load_current()
         if current is None:
             await bus.publish_payload(_waiting_snapshot())
