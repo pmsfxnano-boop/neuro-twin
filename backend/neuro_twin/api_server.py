@@ -117,6 +117,16 @@ def create_app() -> FastAPI:
             "synthetic_reference": False,
         }
 
+    @app.get("/")
+    async def api_root() -> dict[str, Any]:
+        return {
+            "service": "neuro-twin-api",
+            "status": "ok",
+            "health": "/health",
+            "runtime_status": "/v1/runtime/status",
+            "capabilities": "/v1/capabilities",
+        }
+
     @app.get("/v1/runtime/status")
     async def runtime_status() -> JSONResponse:
         return JSONResponse(bus.snapshot or _waiting_snapshot())
