@@ -43,7 +43,7 @@ observation operator is registered.
 
 ## Gate semantics
 
-READY_FOR_MODULE_INFERENCE = all required observations are present.
+READY_FOR_FULL_OBSERVABILITY = all required observations are present; this is necessary but not sufficient for inference.
 
 PARTIAL_OBSERVABILITY = at least one required observation is present, but some pathways
 remain unobserved.
