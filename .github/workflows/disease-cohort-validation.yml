@@ -2,6 +2,12 @@ name: Disease cohort validation
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "backend/neuro_twin/disease/**"
+      - "backend/tests/test_disease_*.py"
+      - ".github/workflows/disease-cohort-validation.yml"
   pull_request:
     paths:
       - "backend/neuro_twin/disease/**"
@@ -11,7 +17,7 @@ on:
     - cron: "30 2 * * 1"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   disease-cohorts:
@@ -30,7 +36,7 @@ jobs:
         run: python -m pip install --upgrade pip && python -m pip install -e './backend'
 
       - name: Run unit tests
-        run: python -m pytest -q backend/tests/test_disease_cohorts.py
+        run: python -m pytest -q backend/tests/test_disease_cohorts.py backend/tests/test_disease_modules.py backend/tests/test_disease_exports.py backend/tests/test_disease_evaluation.py
 
       - name: Fetch real public disease cohorts
         run: |
@@ -43,3 +49,29 @@ jobs:
           name: neuro-twin-disease-cohort-${{ github.run_id }}
           path: backend/runtime/disease_cohort_evidence.json
           retention-days: 30
+
+      - name: Persist public disease evidence
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin evidence || true
+          rm -rf /tmp/neuro-twin-evidence
+          if git show-ref --verify --quiet refs/remotes/origin/evidence; then
+            git worktree add /tmp/neuro-twin-evidence origin/evidence
+          else
+            git worktree add --detach /tmp/neuro-twin-evidence HEAD
+            git -C /tmp/neuro-twin-evidence switch --orphan evidence
+            git -C /tmp/neuro-twin-evidence rm -rf . || true
+          fi
+          cp backend/runtime/disease_cohort_evidence.json /tmp/neuro-twin-evidence/disease_cohort_evidence.json
+          git -C /tmp/neuro-twin-evidence config user.name "github-actions[bot]"
+          git -C /tmp/neuro-twin-evidence config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C /tmp/neuro-twin-evidence add disease_cohort_evidence.json
+          if git -C /tmp/neuro-twin-evidence diff --cached --quiet; then
+            echo "No disease evidence changes."
+          else
+            git -C /tmp/neuro-twin-evidence commit -m "chore(evidence): public disease cohort validation ${{ github.run_id }}"
+            git -C /tmp/neuro-twin-evidence push origin HEAD:evidence
+          fi
+          git worktree remove --force /tmp/neuro-twin-evidence
