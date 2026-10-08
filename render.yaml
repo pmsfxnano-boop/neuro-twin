@@ -21,6 +21,8 @@ services:
         sync: false
       - key: NEURO_TWIN_ENV
         value: production
+      - key: NEURO_TWIN_EVIDENCE_BASE_URL
+        value: https://raw.githubusercontent.com/pmsfxnano-boop/neuro-twin/evidence
 
   - type: web
     name: neuro-twin-frontend
