@@ -35,8 +35,8 @@ def evaluate_module_coverage(module: DiseaseModule, available_features: Iterable
     unobserved_states = sorted(all_states - set(observed_states))
 
     if not missing:
-        status = 'READY_FOR_MODULE_INFERENCE'
-        reasons = ('all required module observations are present',)
+        status = 'READY_FOR_FULL_OBSERVABILITY'
+        reasons = ('all required module observations are present; this is necessary but not sufficient for inference',)
     elif covered:
         status = 'PARTIAL_OBSERVABILITY'
         reasons = ('one or more required module observations are missing', 'latent interpretation must be restricted to observed state axes')
