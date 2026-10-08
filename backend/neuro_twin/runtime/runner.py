@@ -405,6 +405,7 @@ def execute_runtime(req: RuntimeRunRequest) -> RuntimeResult:
                 "train_time_count": split_index,
                 "test_time_count": unique_n - split_index,
                 "parameter_names": list(PARAMETER_NAMES),
+                "parameter_mean": [float(x) for x in final_fit.theta],
                 "parameter_covariance_available": final_fit.covariance is not None,
                 "publication_observation_count": len(published_observations),
             },
