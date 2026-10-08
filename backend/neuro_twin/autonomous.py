@@ -56,6 +56,10 @@ def _history_path(root: Path) -> Path:
     return _runtime_dir(root) / "autonomous_learning_history.jsonl"
 
 
+def _runtime_artifact_path(root: Path) -> Path:
+    return _runtime_dir(root) / RUNTIME_ARTIFACT_NAME
+
+
 def _load_status(root: Path) -> dict[str, Any]:
     path = _status_path(root)
     if not path.exists():
