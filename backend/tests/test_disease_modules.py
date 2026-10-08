@@ -9,7 +9,7 @@ def test_ad_requires_pathology_inflammation_neurodegeneration_and_cognition():
         module,
         {"pTau217", "Abeta42_40", "GFAP", "NfL", "cognition"},
     )
-    assert result.status == "READY_FOR_MODULE_INFERENCE"
+    assert result.status == "READY_FOR_FULL_OBSERVABILITY"
     assert result.observed_states == ("I", "N", "P", "Q")
 
 
