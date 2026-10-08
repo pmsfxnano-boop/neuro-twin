@@ -30,7 +30,7 @@ jobs:
         run: python -m pip install --upgrade pip && python -m pip install -e './backend[dev]'
 
       - name: Run unit tests
-        run: python -m pytest -q backend/tests/test_disease_cohorts.py backend/tests/test_disease_modules.py
+        run: python -m pytest -q backend/tests/test_disease_cohorts.py backend/tests/test_disease_modules.py backend/tests/test_disease_exports.py
 
       - name: Fetch real public disease cohorts
         run: |
