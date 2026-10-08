@@ -21,6 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from neuro_twin.runtime.adapter import RuntimeEngineAdapter, RuntimePublicationError
 from neuro_twin.runtime.contracts import RuntimeResult
 from neuro_twin.runtime.runner import RuntimeRunRequest, execute_runtime
+from neuro_twin.autonomous import autonomous_enabled, autonomous_interval_seconds, run_autonomous_cycle
 
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE_DIR = ROOT / "evidence"
@@ -106,15 +107,42 @@ def create_app() -> FastAPI:
     )
     bus = RuntimeBus()
     app.state.runtime_bus = bus
+    app.state.autonomous_task: asyncio.Task | None = None
 
     @app.on_event("startup")
-    async def autoload_public_runtime() -> None:
+    async def start_runtime_services() -> None:
         """Optionally materialize a real public-data runtime on service startup.
 
         The packaged source is a small derived excerpt of the UCI Parkinsons
         Telemonitoring dataset. It is real public data, not synthetic data.
         The loader is disabled unless explicitly enabled by environment.
         """
+        if autonomous_enabled():
+            async def autonomous_loop() -> None:
+                while True:
+                    try:
+                        outcome = await asyncio.to_thread(run_autonomous_cycle, ROOT)
+                        current = runtime_adapter.load_current()
+                        snapshot = runtime_adapter.ui_snapshot(current) if current is not None else _waiting_snapshot()
+                        await bus.publish_payload(snapshot)
+                        print(
+                            "NEURO_TWIN_AUTONOMOUS_CYCLE completed "
+                            f"status={outcome.get('status')} runtime={outcome.get('runtime_id')}"
+                        )
+                    except Exception as exc:
+                        print(f"NEURO_TWIN_AUTONOMOUS_CYCLE failed: {exc}")
+                    await asyncio.sleep(autonomous_interval_seconds())
+
+            app.state.autonomous_task = asyncio.create_task(
+                autonomous_loop(),
+                name="neuro-twin-autonomous-loop",
+            )
+            print(
+                "NEURO_TWIN_AUTONOMOUS_ENABLED=1 "
+                f"interval_seconds={autonomous_interval_seconds()}"
+            )
+            return
+
         enabled = os.getenv("NEURO_TWIN_AUTOLOAD_PUBLIC_RUNTIME", "0").strip().lower() in {"1", "true", "yes"}
         if not enabled or bus.snapshot is not None or not PUBLIC_RUNTIME_PACKAGE.exists():
             return
@@ -128,8 +156,18 @@ def create_app() -> FastAPI:
             await bus.publish_payload(snapshot)
             print(f"NEURO_TWIN_AUTOLOAD_PUBLIC_RUNTIME published runtime={result.runtime_id} observations={len(result.observations)}")
         except Exception as exc:
-            # Startup must remain available even if the public-data adapter fails.
             print(f"NEURO_TWIN_AUTOLOAD_PUBLIC_RUNTIME failed: {exc}")
+
+    @app.on_event("shutdown")
+    async def stop_runtime_services() -> None:
+        task = app.state.autonomous_task
+        if task is not None:
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
+            app.state.autonomous_task = None
 
     @app.get("/health")
     async def health() -> dict[str, Any]:
@@ -140,6 +178,8 @@ def create_app() -> FastAPI:
             "bridge": "fastapi-websocket",
             "state_source": (bus.snapshot or _waiting_snapshot())["state_status"],
             "synthetic_reference": False,
+            "autonomous_learning": autonomous_enabled(),
+            "autonomous_interval_seconds": autonomous_interval_seconds(),
         }
 
     @app.get("/")
@@ -169,6 +209,20 @@ def create_app() -> FastAPI:
             "real_public_data": True,
             "synthetic_reference": False,
         })
+
+    @app.get("/v1/autonomous/status")
+    async def autonomous_status() -> JSONResponse:
+        path = ROOT / "runtime" / "autonomous_learning.json"
+        if not path.exists():
+            return JSONResponse({
+                "status": "NEVER_RUN",
+                "enabled": autonomous_enabled(),
+                "interval_seconds": autonomous_interval_seconds(),
+            })
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload["enabled"] = autonomous_enabled()
+        payload["interval_seconds"] = autonomous_interval_seconds()
+        return JSONResponse(payload)
 
     @app.get("/v1/runtime/status")
     async def runtime_status() -> JSONResponse:
