@@ -26,6 +26,7 @@ ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE_DIR = ROOT / "evidence"
 FRONTEND_DIR = ROOT.parent / "frontend"
 REACT_DIST_DIR = ROOT.parent.parent / "frontend-app" / "dist"
+PUBLIC_RUNTIME_PACKAGE = ROOT / "public_runtime" / "uci_parkinsons_subject1_v1.json"
 runtime_adapter = RuntimeEngineAdapter(ROOT)
 
 
@@ -106,6 +107,29 @@ def create_app() -> FastAPI:
     bus = RuntimeBus()
     app.state.runtime_bus = bus
 
+    @app.on_event("startup")
+    async def autoload_public_runtime() -> None:
+        """Optionally materialize a real public-data runtime on service startup.
+
+        The packaged source is a small derived excerpt of the UCI Parkinsons
+        Telemonitoring dataset. It is real public data, not synthetic data.
+        The loader is disabled unless explicitly enabled by environment.
+        """
+        enabled = os.getenv("NEURO_TWIN_AUTOLOAD_PUBLIC_RUNTIME", "0").strip().lower() in {"1", "true", "yes"}
+        if not enabled or bus.snapshot is not None or not PUBLIC_RUNTIME_PACKAGE.exists():
+            return
+        try:
+            payload = json.loads(PUBLIC_RUNTIME_PACKAGE.read_text(encoding="utf-8"))
+            request = RuntimeRunRequest.model_validate(payload)
+            result = execute_runtime(request)
+            runtime_adapter.publish(result)
+            current = runtime_adapter.load_current()
+            snapshot = runtime_adapter.ui_snapshot(current) if current is not None else _waiting_snapshot()
+            await bus.publish_payload(snapshot)
+        except Exception as exc:
+            # Startup must remain available even if the public-data adapter fails.
+            print(f"NEURO_TWIN_AUTOLOAD_PUBLIC_RUNTIME failed: {exc}")
+
     @app.get("/health")
     async def health() -> dict[str, Any]:
         return {
@@ -126,6 +150,24 @@ def create_app() -> FastAPI:
             "runtime_status": "/v1/runtime/status",
             "capabilities": "/v1/capabilities",
         }
+
+    @app.get("/v1/public/source")
+    async def public_source() -> JSONResponse:
+        if not PUBLIC_RUNTIME_PACKAGE.exists():
+            raise HTTPException(status_code=404, detail="Public runtime package not installed")
+        payload = json.loads(PUBLIC_RUNTIME_PACKAGE.read_text(encoding="utf-8"))
+        return JSONResponse({
+            "dataset_id": payload["dataset_id"],
+            "dataset_version": payload["dataset_version"],
+            "source_name": payload["source_name"],
+            "source_version": payload["source_version"],
+            "retrieval_uri": payload["retrieval_uri"],
+            "subject_id": payload["subject_id"],
+            "observation_count": len(payload["observations"]),
+            "operator": payload["operator"],
+            "real_public_data": True,
+            "synthetic_reference": False,
+        })
 
     @app.get("/v1/runtime/status")
     async def runtime_status() -> JSONResponse:
