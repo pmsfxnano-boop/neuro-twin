@@ -29,7 +29,7 @@ def test_authorized_export_rejects_duplicate_subject_visit():
             payload,
             subject_field=PPMI_CORE_V1.subject_field,
             visit_field=PPMI_CORE_V1.visit_field,
-            field_map={name: name for name in PPMI_CORE_V1.canonical_fields},
+            field_map={name: name for name in PPMI_CORE_V1.canonical_fields if name in {"alphaSyn_SAA", "NfL", "MDS_UPDRS"}},
             required_fields=PPMI_CORE_V1.canonical_fields,
         )
     except ValueError as exc:
