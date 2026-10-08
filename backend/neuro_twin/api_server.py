@@ -30,6 +30,17 @@ REACT_DIST_DIR = ROOT.parent.parent / "frontend-app" / "dist"
 PUBLIC_RUNTIME_PACKAGE = ROOT / "public_runtime" / "uci_parkinsons_subject1_v1.json"
 runtime_adapter = RuntimeEngineAdapter(ROOT)
 
+EVIDENCE_BASE_URL = os.getenv(
+    "NEURO_TWIN_EVIDENCE_BASE_URL",
+    "https://raw.githubusercontent.com/pmsfxnano-boop/neuro-twin/evidence",
+).rstrip("/")
+REMOTE_RUNTIME_URL = f"{EVIDENCE_BASE_URL}/latest_runtime.json"
+REMOTE_STATUS_URL = f"{EVIDENCE_BASE_URL}/autonomous_learning.json"
+REMOTE_SYNC_TTL_SECONDS = max(
+    10.0,
+    float(os.getenv("NEURO_TWIN_EVIDENCE_SYNC_TTL_SECONDS", "30")),
+)
+
 
 class RuntimeBus:
     def __init__(self) -> None:
