@@ -1,0 +1,105 @@
+name: Autonomous scientific learning
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: neuro-twin-autonomous-cycle
+  cancel-in-progress: false
+
+jobs:
+  cycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    env:
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      NUMEXPR_NUM_THREADS: "1"
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Restore previous autonomous state
+        shell: bash
+        run: |
+          set -u
+          mkdir -p backend/runtime
+          for file in autonomous_learning.json autonomous_learning_history.jsonl; do
+            curl -fsSL "https://raw.githubusercontent.com/pmsfxnano-boop/neuro-twin/evidence/$file"               -o "backend/runtime/$file" || true
+          done
+          rm -f backend/runtime/autonomous_latest_runtime.json
+
+      - name: Install backend runtime
+        run: python -m pip install --upgrade pip && python -m pip install -e './backend[api]'
+
+      - name: Run one autonomous scientific cycle
+        id: cycle
+        continue-on-error: true
+        run: |
+          cd backend
+          python -m neuro_twin.autonomous --root .
+
+      - name: Upload cycle artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: neuro-twin-autonomous-${{ github.run_id }}
+          path: |
+            backend/runtime/autonomous_learning.json
+            backend/runtime/autonomous_learning_history.jsonl
+            backend/runtime/autonomous_latest_runtime.json
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Persist evidence branch
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin evidence || true
+
+          rm -rf /tmp/neuro-twin-evidence
+          if git show-ref --verify --quiet refs/remotes/origin/evidence; then
+            git worktree add /tmp/neuro-twin-evidence origin/evidence
+          else
+            git worktree add --detach /tmp/neuro-twin-evidence HEAD
+            git -C /tmp/neuro-twin-evidence switch --orphan evidence
+            git -C /tmp/neuro-twin-evidence rm -rf . || true
+          fi
+
+          cp backend/runtime/autonomous_learning.json /tmp/neuro-twin-evidence/ 2>/dev/null || true
+          cp backend/runtime/autonomous_learning_history.jsonl /tmp/neuro-twin-evidence/ 2>/dev/null || true
+          if test -f backend/runtime/autonomous_latest_runtime.json; then
+            cp backend/runtime/autonomous_latest_runtime.json /tmp/neuro-twin-evidence/latest_runtime.json
+          fi
+
+          git -C /tmp/neuro-twin-evidence config user.name "github-actions[bot]"
+          git -C /tmp/neuro-twin-evidence config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C /tmp/neuro-twin-evidence add autonomous_learning.json autonomous_learning_history.jsonl latest_runtime.json 2>/dev/null || true
+
+          if git -C /tmp/neuro-twin-evidence diff --cached --quiet; then
+            echo "No evidence changes to persist."
+          else
+            git -C /tmp/neuro-twin-evidence commit -m "chore(evidence): autonomous cycle ${{ github.run_id }}"
+            git -C /tmp/neuro-twin-evidence push origin HEAD:evidence
+          fi
+
+          git worktree remove --force /tmp/neuro-twin-evidence
+
+      - name: Fail when the scientific cycle failed
+        if: steps.cycle.outcome != 'success'
+        run: exit 1
