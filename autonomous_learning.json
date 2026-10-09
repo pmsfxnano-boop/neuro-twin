@@ -11,8 +11,8 @@
     "name": "persistence_last_observation"
   },
   "code_revision": "9ca87ad16b8e06a9373486f23ef857f38c7db3ab",
-  "cycle_completed_at": "2026-10-09T00:22:52.871421+00:00",
-  "cycle_seconds": 4.382,
+  "cycle_completed_at": "2026-10-09T06:19:02.340594+00:00",
+  "cycle_seconds": 2.702,
   "dataset_id": "uci-parkinsons-telemonitoring-189",
   "dataset_version": "DOI-10.24432/C5ZS3N",
   "latent_identifiability": {
@@ -21,10 +21,10 @@
       "Q"
     ],
     "posterior_sd": {
-      "I": 7.098571810473174,
-      "N": 8.408475995093548,
-      "P": 0.0171564662096339,
-      "Q": 0.019347434464221352
+      "I": 7.252812083701826,
+      "N": 8.371088323421251,
+      "P": 0.017156345535621897,
+      "Q": 0.019347481409129775
     },
     "status": "LIMITED_UNOBSERVED_AXES",
     "unobserved_axes": [
@@ -50,27 +50,27 @@
   "live_observation_count": 192,
   "live_oos": {
     "metrics": {
-      "MAE": 0.005235852901899391,
-      "RMSE": 0.007133776230240671,
+      "MAE": 0.005235892434176093,
+      "RMSE": 0.007133821925219771,
       "n": 26.0
     },
     "status": "PASS",
     "temporal_leakage": false
   },
   "live_parameter_mean": [
-    0.007855252936110828,
-    0.11390088490817406,
-    4.861266633278845e-40,
-    0.07543992047514435,
-    1.0843691901583327e-42,
-    4.2323784418289496e-11,
-    0.6936604608088068,
-    0.05607317683310133,
-    0.20292532124150747,
-    1.444614299535461e-07,
-    0.056097744303069824
+    0.007855252968479467,
+    0.10974646970863682,
+    3.161146506983361e-44,
+    0.07829566869090379,
+    1.1359909042508082e-40,
+    3.5246536295953634e-11,
+    0.6701280512410897,
+    0.05612627003765719,
+    0.2023900609996055,
+    1.6093043303939458e-07,
+    0.05604466456392101
   ],
-  "live_runtime_id": "rt_29c50b19d17788f990465ac5",
+  "live_runtime_id": "rt_38f83603d0f759828b5fd506",
   "live_subject_id": "1",
   "population_learning": {
     "excluded_subject": "1",
@@ -150,10 +150,10 @@
   "predictive_assessment": {
     "assessment": "MODEL_BEATS_PERSISTENCE",
     "baseline_rmse": 0.20709074384920761,
-    "model_rmse": 0.007133776230240671,
-    "relative_improvement": 0.9655524138952579
+    "model_rmse": 0.007133821925219771,
+    "relative_improvement": 0.9655521932432951
   },
-  "runtime_result_hash": "0fc4a15bd33b0f469bc371cc55f952256133d9308fe3f156bef1a51d63f11c4a",
+  "runtime_result_hash": "1cc7dea1ca4bb2e24b434e738dc3fd264bc651f29e5d5a83411afe095267af81",
   "scientific_status": "PASS_WITH_LIMITATIONS",
   "source_name": "UCI Parkinsons Telemonitoring",
   "source_raw_sha256": "2f82bb0ef96fa7d8d7edf4d97b89173e07c2cca7723440a64bc38918a83345df",
