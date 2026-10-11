@@ -129,7 +129,7 @@ def _participants(payload: bytes) -> dict[str, dict[str, str]]:
     rows = list(csv.DictReader(io.StringIO(payload.decode("utf-8-sig"), newline=""), delimiter="\t"))
     if not rows:
         raise ValueError("NEMAR participants.tsv is empty")
-    if not {"participant_id", "Group"}.issubset(rows[0]):
+    if not {"participant_id", "Group", "Age", "Gender"}.issubset(rows[0]):
         raise ValueError(f"participants.tsv columns changed: {sorted(rows[0])}")
     result: dict[str, dict[str, str]] = {}
     for row in rows:
@@ -141,7 +141,20 @@ def _participants(payload: bytes) -> dict[str, dict[str, str]]:
             raise ValueError(f"unknown pinned cohort group code {group_code!r} for {subject}")
         if subject in result:
             raise ValueError(f"duplicate participant record: {subject}")
-        result[subject] = {"label": GROUP_MAP[group_code]}
+        try:
+            age_years = float((row.get("Age") or "").strip())
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"invalid age value for participant {subject}") from exc
+        if not np.isfinite(age_years):
+            raise ValueError(f"non-finite age value for participant {subject}")
+        gender = (row.get("Gender") or "").strip().upper()
+        if gender not in {"F", "M"}:
+            raise ValueError(f"unexpected public Gender value {gender!r} for participant {subject}")
+        result[subject] = {
+            "label": GROUP_MAP[group_code],
+            "age_years": age_years,
+            "gender": gender,
+        }
     if len(result) != 88:
         raise ValueError(f"pinned NEMAR cohort expected 88 subjects, found {len(result)}")
     counts = {g: sum(1 for row in result.values() if row["label"] == g) for g in ("AD", "FTD", "CONTROL")}
