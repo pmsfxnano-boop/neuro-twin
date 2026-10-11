@@ -332,8 +332,8 @@ def _endpoint(name: str, positive: str, negative: str,
     )
     scores = np.asarray(result.oof_probabilities, dtype=float)
     ci = _bootstrap_auc_ci(labels, scores, seed=seed + 100)
-    prevalence = float(np.mean(labels))
-    baseline_brier = float(np.mean((labels - prevalence) ** 2))
+    baseline_probabilities = np.asarray(result.oof_prevalence_probabilities, dtype=float)
+    baseline_brier = float(np.mean((labels - baseline_probabilities) ** 2))
     metrics = {
         "endpoint": name,
         "positive_label": positive,
@@ -344,12 +344,30 @@ def _endpoint(name: str, positive: str, negative: str,
         "n_features": result.n_features,
         "evaluation": "5-fold stratified subject-level out-of-fold",
         "pooled_auroc": result.pooled_auroc,
-        "pooled_auroc_bootstrap_ci95": ci,
+        "conditional_oof_score_bootstrap_ci95": ci,
+        "bootstrap_ci_interpretation": (
+            "Conditional bootstrap of held-out OOF score/label pairs; it does not "
+            "refit the model and does not capture all split/training uncertainty."
+        ),
         "pooled_auprc": result.pooled_auprc,
         "pooled_balanced_accuracy": result.pooled_balanced_accuracy,
         "pooled_brier": result.pooled_brier,
-        "prevalence_only_baseline_brier": baseline_brier,
-        "brier_improvement_vs_prevalence_baseline": baseline_brier - result.pooled_brier,
+        "fold_local_prevalence_baseline_brier": baseline_brier,
+        "brier_improvement_vs_fold_local_prevalence_baseline": baseline_brier - result.pooled_brier,
+        "fold_metrics": [
+            {
+                "fold": fold.fold,
+                "n_train": fold.n_train,
+                "n_test": fold.n_test,
+                "positives_test": fold.positives_test,
+                "negatives_test": fold.negatives_test,
+                "auroc": fold.auroc,
+                "auprc": fold.auprc,
+                "balanced_accuracy": fold.balanced_accuracy,
+                "brier": fold.brier,
+            }
+            for fold in result.folds
+        ],
         "permutation_null_auroc_mean": result.null_auroc_mean,
         "permutation_null_auroc_p95": result.null_auroc_p95,
         "permutation_pvalue_unadjusted": result.null_auroc_pvalue,
@@ -481,6 +499,20 @@ def run(output: Path) -> dict[str, Any]:
             "successful_subjects": len(feature_rows),
             "failed_subjects": len(failures),
             "failure_examples": failures[:10],
+            "subject_feature_provenance": [
+                {
+                    "subject_id": row["subject"],
+                    "diagnosis_target": row["label"],
+                    "signal_feature_sha256": row["feature_hash"],
+                    "source_recording_group": row["source_group"],
+                    "processed_derivative": row["used_processed_derivative"],
+                    "segment_seconds": row["segment_seconds"],
+                    "channel_count_after_orientation": row["channel_count"],
+                    "sampling_rate_hz": row["sampling_rate_hz"],
+                    "features": row["features"],
+                }
+                for row in sorted(feature_rows, key=lambda item: item["subject"])
+            ],
             "subjects_have_single_record_per_endpoint": True,
             "split_unit": "subject",
             "folds": 5,
@@ -492,6 +524,7 @@ def run(output: Path) -> dict[str, Any]:
         "limitations": [
             "A single public cohort is insufficient for external validation or a clinical claim.",
             "Fixed 60-second prefixes may not represent full-recording variability.",
+            "The bootstrap interval resamples already-generated OOF score/label pairs without refitting, so it does not capture all model-training and split variability.",
             "EEG artifacts and acquisition/site effects can remain despite preprocessing; pipeline-level signal QC does not replace expert review.",
             "No participant overlap or independent external replication study has been used to establish generalization.",
             "This endpoint is not a diagnostic device and must not guide care.",
@@ -511,7 +544,7 @@ def run(output: Path) -> dict[str, Any]:
         "endpoints": {name: {
             "n": value["n_subjects"],
             "auroc": value["pooled_auroc"],
-            "ci95": value["pooled_auroc_bootstrap_ci95"],
+            "ci95": value["conditional_oof_score_bootstrap_ci95"],
             "p_holm": value["permutation_pvalue_holm_adjusted"],
         } for name, value in endpoints.items()},
         "pinq_status": coverage.status,
