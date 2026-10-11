@@ -1,0 +1,201 @@
+{
+  "clinical_validation": false,
+  "endpoints": {
+    "alzheimer_vs_control_eeg": {
+      "brier_improvement_vs_prevalence_baseline": 0.00879299601125208,
+      "clinical_validation": false,
+      "endpoint": "alzheimer_vs_control_eeg",
+      "evaluation": "5-fold stratified subject-level out-of-fold",
+      "n_features": 12,
+      "n_subjects": 65,
+      "negative_label": "CONTROL",
+      "negative_subjects": 29,
+      "permutation_iterations": 250,
+      "permutation_null_auroc_mean": 0.4505134099616859,
+      "permutation_null_auroc_p95": 0.626963601532567,
+      "permutation_pvalue_holm_adjusted": 0.03585657370517928,
+      "permutation_pvalue_unadjusted": 0.01195219123505976,
+      "pooled_auprc": 0.7300952750370443,
+      "pooled_auroc": 0.6772030651340997,
+      "pooled_auroc_bootstrap_ci95": [
+        0.5463726467331118,
+        0.7953900328900328
+      ],
+      "pooled_balanced_accuracy": 0.5747126436781609,
+      "pooled_brier": 0.23830759570472423,
+      "positive_label": "AD",
+      "positive_subjects": 36,
+      "prevalence_only_baseline_brier": 0.24710059171597631,
+      "random_seed": 17,
+      "within_cohort_signal_supported_after_holm": true
+    },
+    "alzheimer_vs_ftd_eeg": {
+      "brier_improvement_vs_prevalence_baseline": -0.031581783871119595,
+      "clinical_validation": false,
+      "endpoint": "alzheimer_vs_ftd_eeg",
+      "evaluation": "5-fold stratified subject-level out-of-fold",
+      "n_features": 12,
+      "n_subjects": 59,
+      "negative_label": "FTD",
+      "negative_subjects": 23,
+      "permutation_iterations": 250,
+      "permutation_null_auroc_mean": 0.4592028985507246,
+      "permutation_null_auroc_p95": 0.6408816425120772,
+      "permutation_pvalue_holm_adjusted": 0.545816733067729,
+      "permutation_pvalue_unadjusted": 0.545816733067729,
+      "pooled_auprc": 0.6026757585882606,
+      "pooled_auroc": 0.44565217391304346,
+      "pooled_auroc_bootstrap_ci95": [
+        0.292536855036855,
+        0.6008086622807016
+      ],
+      "pooled_balanced_accuracy": 0.4957729468599034,
+      "pooled_brier": 0.2694444670081492,
+      "positive_label": "AD",
+      "positive_subjects": 36,
+      "prevalence_only_baseline_brier": 0.23786268313702963,
+      "random_seed": 43,
+      "within_cohort_signal_supported_after_holm": false
+    },
+    "ftd_vs_control_eeg": {
+      "brier_improvement_vs_prevalence_baseline": -0.009789679956473785,
+      "clinical_validation": false,
+      "endpoint": "ftd_vs_control_eeg",
+      "evaluation": "5-fold stratified subject-level out-of-fold",
+      "n_features": 12,
+      "n_subjects": 52,
+      "negative_label": "CONTROL",
+      "negative_subjects": 29,
+      "permutation_iterations": 250,
+      "permutation_null_auroc_mean": 0.4587886056971514,
+      "permutation_null_auroc_p95": 0.6401799100449775,
+      "permutation_pvalue_holm_adjusted": 0.46215139442231074,
+      "permutation_pvalue_unadjusted": 0.23107569721115537,
+      "pooled_auprc": 0.5218652838764035,
+      "pooled_auroc": 0.553223388305847,
+      "pooled_auroc_bootstrap_ci95": [
+        0.3937210648148148,
+        0.70151850211258
+      ],
+      "pooled_balanced_accuracy": 0.5367316341829085,
+      "pooled_brier": 0.25646127758960985,
+      "positive_label": "FTD",
+      "positive_subjects": 23,
+      "prevalence_only_baseline_brier": 0.24667159763313606,
+      "random_seed": 29,
+      "within_cohort_signal_supported_after_holm": false
+    }
+  },
+  "evidence_hash": "03a9166e643b1fa330d799a3cc756cd8ffb17f649e39bc5e216c080b7a7f00af",
+  "feature_pipeline": {
+    "bands_hz": {
+      "alpha": [
+        8.0,
+        13.0
+      ],
+      "beta": [
+        13.0,
+        30.0
+      ],
+      "delta": [
+        1.0,
+        4.0
+      ],
+      "gamma": [
+        30.0,
+        45.0
+      ],
+      "theta": [
+        4.0,
+        8.0
+      ]
+    },
+    "bootstrap_iterations": 1000,
+    "failed_subjects": 0,
+    "failure_examples": [],
+    "feature_names": [
+      "log10_abs_alpha",
+      "log10_abs_beta",
+      "log10_abs_delta",
+      "log10_abs_gamma",
+      "log10_abs_theta",
+      "log10_slow_fast_ratio",
+      "log10_theta_alpha_ratio",
+      "relative_alpha",
+      "relative_beta",
+      "relative_delta",
+      "relative_gamma",
+      "relative_theta"
+    ],
+    "features_per_subject": 12,
+    "folds": 5,
+    "multiple_testing": "Holm adjustment across the three prespecified pairwise endpoints",
+    "name": "eeg-global-bandpower-v1.0.0",
+    "original_acquisition_sample_rate_hz": 500.0,
+    "permutation_iterations": 250,
+    "preferred_source": "preprocessed/denoised derivative when exposed in the Zarr index; otherwise the listed eyes-closed EEG group",
+    "preprocessing": [
+      "dequantize with per-channel Zarr scale/offset",
+      "channel finite/variance QC",
+      "median centering",
+      "4th order zero-phase Butterworth 0.5–45 Hz",
+      "Welch PSD with median averaging"
+    ],
+    "processed_derivative_subjects": 0,
+    "raw_or_unmarked_source_subjects": 88,
+    "sample_rate_hz": [
+      250.0
+    ],
+    "segment_policy": "first 60 seconds per participant, minimum 20 seconds",
+    "split_unit": "subject",
+    "subjects_have_single_record_per_endpoint": true,
+    "successful_subjects": 88
+  },
+  "generated_at": "2026-10-11T04:30:59.262471+00:00",
+  "limitations": [
+    "A single public cohort is insufficient for external validation or a clinical claim.",
+    "Fixed 60-second prefixes may not represent full-recording variability.",
+    "EEG artifacts and acquisition/site effects can remain despite preprocessing; pipeline-level signal QC does not replace expert review.",
+    "No participant overlap or independent external replication study has been used to establish generalization.",
+    "This endpoint is not a diagnostic device and must not guide care."
+  ],
+  "pinq_disease_reconstruction": {
+    "disease_module": "alzheimer",
+    "interpretation": "EEG spectral classification is an auxiliary endpoint. It does not estimate or clinically validate P/I/N/Q; four core pathology/response/degeneration/cognition bindings are not all available in this public dataset.",
+    "missing_required_features": [
+      "pTau217",
+      "Abeta42_40",
+      "GFAP",
+      "NfL"
+    ],
+    "module_version": "1.0.0",
+    "observed_states": [
+      "Q"
+    ],
+    "status": "PARTIAL_OBSERVABILITY",
+    "unobserved_states": [
+      "I",
+      "N",
+      "P"
+    ]
+  },
+  "schema": "neuro-twin.disease-eeg-evidence.v1",
+  "scientific_status": "EXPLORATORY_SINGLE_COHORT_RESULT",
+  "source": {
+    "dataset_diagnosis_counts": {
+      "AD": 36,
+      "CONTROL": 29,
+      "FTD": 23
+    },
+    "dataset_doi": "10.82901/nemar.on004504",
+    "dataset_key": "nemar_on004504_v1.0.0",
+    "dataset_version": "NEMAR v1.0.0 (derived from OpenNeuro ds004504 v1.0.9)",
+    "label_handling": "source diagnosis labels are targets only; no diagnosis, MMSE, age or sex field enters the EEG feature vector",
+    "license": "CC0",
+    "participants_tsv_sha256": "bd17cf02ec9733c9029d4a6d977b2918309b3c667ff9ceb1b5dce6e3cebccbc1",
+    "participants_uri": "https://data.nemar.org/on004504/v1.0.0/participants.tsv",
+    "zarr_index_sha256": "eb238f14a921f05bad5cad3bd357284963ce027e9a63cdd04f065f4afceb9852",
+    "zarr_index_uri": "https://zarr.nemar.org/on004504/zarr/index.json"
+  },
+  "status": "PASS"
+}
