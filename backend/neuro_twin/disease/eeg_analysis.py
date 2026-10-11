@@ -29,6 +29,11 @@ DATASET_KEY = "nemar_on004504_v1.0.0"
 DATASET_DOI = "10.82901/nemar.on004504"
 DATASET_LICENSE = "CC0"
 PARTICIPANTS_URL = "https://data.nemar.org/on004504/v1.0.0/participants.tsv"
+OPENNEURO_PARTICIPANTS_URL = (
+    "https://raw.githubusercontent.com/OpenNeuroDatasets/"
+    "ds004504/1.0.6/participants.tsv"
+)
+OPENNEURO_SOURCE_VERSION = "1.0.6"
 ZARR_INDEX_URL = "https://zarr.nemar.org/on004504/zarr/index.json"
 SAMPLE_RATE_HZ = 250.0
 SEGMENT_SECONDS = 60
@@ -145,21 +150,91 @@ def _participants(payload: bytes) -> dict[str, dict[str, str]]:
     return result
 
 
-def _store_uri(store_meta: dict[str, Any]) -> str:
+def _validate_nemar_index(index: dict[str, Any]) -> dict[str, Any]:
+    """Fail closed unless the served index declares the expected immutable source identity."""
+    if index.get("format") != "nemar-zarr-index":
+        raise ValueError(f"unexpected NEMAR index format: {index.get('format')!r}")
+    if index.get("format_version") != 3:
+        raise ValueError(f"unsupported NEMAR index version: {index.get('format_version')!r}")
+    if index.get("dataset_id") != "on004504":
+        raise ValueError(f"unexpected NEMAR dataset_id: {index.get('dataset_id')!r}")
+    if index.get("doi") != DATASET_DOI:
+        raise ValueError(f"unexpected NEMAR dataset DOI: {index.get('doi')!r}")
+    if index.get("license") != DATASET_LICENSE:
+        raise ValueError(f"unexpected NEMAR dataset license: {index.get('license')!r}")
+    source_commit = index.get("source_commit")
+    if not isinstance(source_commit, str) or re.fullmatch(r"[0-9a-f]{40}", source_commit) is None:
+        raise ValueError("NEMAR index has no valid 40-character source_commit")
+    s3_uri = index.get("s3_uri")
+    if not isinstance(s3_uri, str) or not s3_uri.startswith("s3://") or not s3_uri.endswith("/"):
+        raise ValueError("NEMAR index has no valid dataset-level s3_uri")
+    if "on004504" not in s3_uri:
+        raise ValueError(f"NEMAR s3_uri points at a different dataset: {s3_uri!r}")
+    if index.get("s3_anonymous") is not True:
+        raise ValueError("expected this public NEMAR dataset to advertise anonymous read access")
+    return {
+        "dataset_id": index["dataset_id"],
+        "format_version": int(index["format_version"]),
+        "doi": index["doi"],
+        "license": index["license"],
+        "source_commit": source_commit,
+        "updated_utc": index.get("updated_utc"),
+        "s3_uri": s3_uri,
+        "s3_region": index.get("s3_region"),
+    }
+
+
+def _validate_nemar_store_provenance(
+    provenance: Any,
+    *,
+    expected_source_commit: str,
+) -> dict[str, Any]:
+    if not isinstance(provenance, dict):
+        raise ValueError("NEMAR Zarr root is missing its structured 'nemar' provenance")
+    required = {
+        "dataset_id": "on004504",
+        "doi": DATASET_DOI,
+        "license": DATASET_LICENSE,
+        "source_commit": expected_source_commit,
+    }
+    for field, expected in required.items():
+        if provenance.get(field) != expected:
+            raise ValueError(
+                f"NEMAR store provenance mismatch for {field}: "
+                f"expected {expected!r}, got {provenance.get(field)!r}"
+            )
+    if provenance.get("provenance_fetch_failed") is True:
+        raise ValueError("NEMAR store reports failed provenance lookup")
+    if provenance.get("source_tree") not in (None, "raw"):
+        raise ValueError(f"unexpected NEMAR source_tree: {provenance.get('source_tree')!r}")
+    return {
+        "dataset_id": provenance["dataset_id"],
+        "doi": provenance["doi"],
+        "license": provenance["license"],
+        "source_commit": provenance["source_commit"],
+        "source_tree": provenance.get("source_tree"),
+        "derived": provenance.get("derived"),
+        "contract_url": provenance.get("contract_url"),
+    }
+
+
+def _store_uri(store_meta: dict[str, Any], index: dict[str, Any]) -> str:
+    """Resolve a store relative to the dataset base declared by NEMAR."""
     direct = store_meta.get("s3_uri") or store_meta.get("uri")
     value = direct or store_meta.get("zarr")
     if not isinstance(value, str) or not value:
         raise ValueError("NEMAR Zarr index store entry has no Zarr location")
     if value.startswith("s3://"):
         return value
-    if value.startswith("nemar/"):
-        return "s3://" + value.lstrip("/")
-    if value.startswith("on004504/zarr/"):
-        return "s3://nemar/" + value.lstrip("/")
-    return "s3://nemar/on004504/zarr/" + value.lstrip("/")
+    if value.startswith("https://"):
+        raise ValueError("HTTP store URLs must be resolved through the declared NEMAR contract, not hard-coded")
+    if not isinstance(index.get("s3_uri"), str):
+        raise ValueError("cannot resolve store without dataset-level index.s3_uri")
+    return index["s3_uri"].rstrip("/") + "/" + value.lstrip("/")
 
 
 def _recording_candidates(index: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+    _validate_nemar_index(index)
     stores = index.get("stores")
     if not isinstance(stores, list) or not stores:
         raise ValueError("NEMAR Zarr index does not contain stores[]")
@@ -171,7 +246,7 @@ def _recording_candidates(index: dict[str, Any]) -> dict[str, list[dict[str, Any
         if not isinstance(groups, list):
             continue
         try:
-            uri = _store_uri(store_meta)
+            uri = _store_uri(store_meta, index)
         except ValueError:
             continue
         # In NEMAR index v3, stores[].zarr/path identifies the BIDS recording,
@@ -195,9 +270,14 @@ def _recording_candidates(index: dict[str, Any]) -> dict[str, list[dict[str, Any
             group_name = group_meta["name"].strip("/")
             group_text = group_name.lower()
             rate_match = re.search(r"(\d{2,4})hz", group_text)
-            # The pinned NEMAR group name "eeg_250hz" is the streamed, 250-Hz view.
-            # If a group has no rate in its name, use the pinned source's 500-Hz acquisition metadata.
-            sample_rate = float(rate_match.group(1)) if rate_match else 500.0
+            rate_value = group_meta.get("rate")
+            if rate_value is None and rate_match:
+                rate_value = float(rate_match.group(1))
+            if rate_value is None:
+                raise ValueError(f"NEMAR group {group_name!r} does not declare its served sample rate")
+            sample_rate = float(rate_value)
+            if not np.isfinite(sample_rate) or sample_rate <= 90.0:
+                raise ValueError(f"invalid EEG sample rate {sample_rate!r} for {group_name!r}")
             is_eyes_closed = (
                 "eyesclosed" in path_text or "eyes-closed" in path_text or
                 "eyesclosed" in group_text or "eyes-closed" in group_text
