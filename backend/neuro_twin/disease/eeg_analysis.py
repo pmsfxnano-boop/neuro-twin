@@ -205,17 +205,23 @@ def _crosscheck_openneuro_labels(
     }
 
 
-def _validate_nemar_index(index: dict[str, Any]) -> dict[str, Any]:
+def _validate_nemar_index(
+    index: dict[str, Any],
+    *,
+    expected_dataset_id: str = "on004504",
+    expected_doi: str = DATASET_DOI,
+    expected_license: str = DATASET_LICENSE,
+) -> dict[str, Any]:
     """Fail closed unless the served index declares the expected immutable source identity."""
     if index.get("format") != "nemar-zarr-index":
         raise ValueError(f"unexpected NEMAR index format: {index.get('format')!r}")
     if index.get("format_version") != 3:
         raise ValueError(f"unsupported NEMAR index version: {index.get('format_version')!r}")
-    if index.get("dataset_id") != "on004504":
+    if index.get("dataset_id") != expected_dataset_id:
         raise ValueError(f"unexpected NEMAR dataset_id: {index.get('dataset_id')!r}")
-    if index.get("doi") != DATASET_DOI:
+    if index.get("doi") != expected_doi:
         raise ValueError(f"unexpected NEMAR dataset DOI: {index.get('doi')!r}")
-    if index.get("license") != DATASET_LICENSE:
+    if index.get("license") != expected_license:
         raise ValueError(f"unexpected NEMAR dataset license: {index.get('license')!r}")
     source_commit = index.get("source_commit")
     if not isinstance(source_commit, str) or re.fullmatch(r"[0-9a-f]{40}", source_commit) is None:
@@ -223,7 +229,7 @@ def _validate_nemar_index(index: dict[str, Any]) -> dict[str, Any]:
     s3_uri = index.get("s3_uri")
     if not isinstance(s3_uri, str) or not s3_uri.startswith("s3://") or not s3_uri.endswith("/"):
         raise ValueError("NEMAR index has no valid dataset-level s3_uri")
-    if "on004504" not in s3_uri:
+    if expected_dataset_id not in s3_uri:
         raise ValueError(f"NEMAR s3_uri points at a different dataset: {s3_uri!r}")
     if index.get("s3_anonymous") is not True:
         raise ValueError("expected this public NEMAR dataset to advertise anonymous read access")
@@ -243,13 +249,16 @@ def _validate_nemar_store_provenance(
     provenance: Any,
     *,
     expected_source_commit: str,
+    expected_dataset_id: str = "on004504",
+    expected_doi: str = DATASET_DOI,
+    expected_license: str = DATASET_LICENSE,
 ) -> dict[str, Any]:
     if not isinstance(provenance, dict):
         raise ValueError("NEMAR Zarr root is missing its structured 'nemar' provenance")
     required = {
-        "dataset_id": "on004504",
-        "doi": DATASET_DOI,
-        "license": DATASET_LICENSE,
+        "dataset_id": expected_dataset_id,
+        "doi": expected_doi,
+        "license": expected_license,
         "source_commit": expected_source_commit,
     }
     for field, expected in required.items():
@@ -288,8 +297,19 @@ def _store_uri(store_meta: dict[str, Any], index: dict[str, Any]) -> str:
     return index["s3_uri"].rstrip("/") + "/" + value.lstrip("/")
 
 
-def _recording_candidates(index: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
-    _validate_nemar_index(index)
+def _recording_candidates(
+    index: dict[str, Any],
+    *,
+    expected_dataset_id: str = "on004504",
+    expected_doi: str = DATASET_DOI,
+    expected_license: str = DATASET_LICENSE,
+) -> dict[str, list[dict[str, Any]]]:
+    _validate_nemar_index(
+        index,
+        expected_dataset_id=expected_dataset_id,
+        expected_doi=expected_doi,
+        expected_license=expected_license,
+    )
     stores = index.get("stores")
     if not isinstance(stores, list) or not stores:
         raise ValueError("NEMAR Zarr index does not contain stores[]")
@@ -307,7 +327,7 @@ def _recording_candidates(index: dict[str, Any]) -> dict[str, list[dict[str, Any
         # In NEMAR index v3, stores[].zarr/path identifies the BIDS recording,
         # while groups[].name is an internal Zarr group such as "eeg_250hz".
         record_path = str(store_meta.get("path") or store_meta.get("zarr") or "")
-        match = re.search(r"(sub-\d{3})", record_path, flags=re.IGNORECASE)
+        match = re.search(r"(sub-[A-Za-z0-9]+)", record_path, flags=re.IGNORECASE)
         if not match:
             continue
         path_text = f"{record_path} {uri}".lower()
@@ -371,9 +391,13 @@ def _canonical_eeg_unit(value: Any) -> str:
         return "uV"
     if text in {"mv", "millivolt", "millivolts"}:
         return "mV"
+    if text in {"v", "volt", "volts"}:
+        return "V"
+    if text in {"nv", "nanovolt", "nanovolts"}:
+        return "nV"
     if not text:
         raise ValueError("EEG channel metadata does not declare physical units")
-    return text
+    raise ValueError(f"unsupported EEG physical unit: {value!r}")
 
 
 def _load_segment(
@@ -381,6 +405,10 @@ def _load_segment(
     root_cache: dict[str, Any],
     *,
     index_source_commit: str,
+    expected_dataset_id: str = "on004504",
+    expected_doi: str = DATASET_DOI,
+    expected_license: str = DATASET_LICENSE,
+    target_sampling_rate_hz: float | None = None,
 ) -> tuple[np.ndarray, float, str, int, float, str]:
     # Optional analysis dependencies are imported lazily so the core backend remains lightweight.
     import zarr
@@ -398,6 +426,9 @@ def _load_segment(
     _validate_nemar_store_provenance(
         dict(root.attrs).get("nemar"),
         expected_source_commit=index_source_commit,
+        expected_dataset_id=expected_dataset_id,
+        expected_doi=expected_doi,
+        expected_license=expected_license,
     )
     group = root[candidate["group_name"]]
     group_attrs = dict(group.attrs)
@@ -450,7 +481,9 @@ def _load_segment(
     units = {_canonical_eeg_unit(meta.get("unit")) for _, meta in selected}
     if len(units) != 1:
         raise ValueError(f"selected EEG channels use inconsistent physical units: {sorted(units)}")
-    channel_unit = next(iter(units))
+    source_unit = next(iter(units))
+    unit_to_microvolts = {"uV": 1.0, "mV": 1000.0, "V": 1_000_000.0, "nV": 0.001}
+    physical_unit_factor = unit_to_microvolts[source_unit]
 
     digital_all = np.asarray(array[:, :sample_count] if channels_first else array[:sample_count, :].T)
     array_attrs = dict(array.attrs)
@@ -464,19 +497,45 @@ def _load_segment(
     digital = digital_all[selected_indices]
     scale = scale_all[selected_indices]
     offset = offset_all[selected_indices]
-    physical = digital.astype(float, copy=False) * scale[:, None] + offset[:, None]
+    physical = (
+        digital.astype(float, copy=False) * scale[:, None] + offset[:, None]
+    ) * physical_unit_factor
     if not np.isfinite(physical).all():
         raise ValueError("non-finite values in selected EEG signal segment")
     channel_labels = [
         str(meta.get("label") or meta.get("name") or row)
         for row, meta in sorted(selected)
     ]
+    native_seconds = sample_count / sampling_rate
+    effective_rate = sampling_rate
+    if target_sampling_rate_hz is not None:
+        if not np.isfinite(target_sampling_rate_hz) or target_sampling_rate_hz <= 90.0:
+            raise ValueError("target sampling rate must exceed 90 Hz for the 45 Hz band")
+        if sampling_rate + 1e-9 < target_sampling_rate_hz:
+            raise ValueError(
+                f"native sample rate {sampling_rate} is below requested common rate {target_sampling_rate_hz}"
+            )
+        if not np.isclose(sampling_rate, target_sampling_rate_hz, rtol=0.0, atol=1e-9):
+            from fractions import Fraction
+            from scipy.signal import resample_poly
+
+            ratio = Fraction(target_sampling_rate_hz / sampling_rate).limit_denominator(10000)
+            if not np.isclose(float(ratio) * sampling_rate, target_sampling_rate_hz, rtol=1e-8, atol=1e-8):
+                raise ValueError(
+                    f"cannot exactly reconcile native sample rate {sampling_rate} with {target_sampling_rate_hz}"
+                )
+            physical = resample_poly(physical, up=ratio.numerator, down=ratio.denominator, axis=1)
+            effective_rate = float(target_sampling_rate_hz)
     signal_hash = sha256_bytes(
-        (candidate["group_name"] + "|" + uri + "|" + json.dumps(channel_labels) + "|" + channel_unit + "|").encode("utf-8") +
-        np.ascontiguousarray(digital).tobytes() +
-        np.ascontiguousarray(scale).tobytes() + np.ascontiguousarray(offset).tobytes()
+        (
+            candidate["group_name"] + "|" + uri + "|" + json.dumps(channel_labels)
+            + "|" + source_unit + "->uV|" + str(sampling_rate) + "->" + str(effective_rate) + "|"
+        ).encode("utf-8")
+        + np.ascontiguousarray(digital).tobytes()
+        + np.ascontiguousarray(scale).tobytes()
+        + np.ascontiguousarray(offset).tobytes()
     )
-    return physical, sample_count / sampling_rate, signal_hash, len(selected_indices), sampling_rate, channel_unit
+    return physical, native_seconds, signal_hash, len(selected_indices), effective_rate, "uV"
 
 
 def _bootstrap_auc_ci(labels: np.ndarray, scores: np.ndarray, iterations: int = BOOTSTRAPS, seed: int = 73) -> list[float] | None:
