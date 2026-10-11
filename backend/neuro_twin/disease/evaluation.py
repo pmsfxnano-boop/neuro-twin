@@ -54,6 +54,7 @@ class DiseaseEvaluationResult:
     status: str
     limitations: tuple[str, ...]
     oof_probabilities: tuple[float, ...] = ()
+    oof_prevalence_probabilities: tuple[float, ...] = ()
 
 
 def _sigmoid(z: np.ndarray) -> np.ndarray:
@@ -183,6 +184,7 @@ def evaluate_binary_disease_endpoint(
 
     folds = _stratified_subject_folds(y, n_splits, random_seed=random_seed)
     oof = np.full(len(y), np.nan, dtype=float)
+    oof_prevalence = np.full(len(y), np.nan, dtype=float)
     fold_metrics: list[FoldMetrics] = []
     for fold_id, (train, test) in enumerate(folds, start=1):
         mu = np.mean(X[train], axis=0)
@@ -193,6 +195,9 @@ def evaluate_binary_disease_endpoint(
         w = _fit_logistic(Xtr, y[train], l2=l2)
         p = _sigmoid(np.column_stack([np.ones(len(Xte)), Xte]) @ w)
         oof[test] = p
+        # Leakage-free prevalence baseline: estimate class prevalence on the
+        # training fold only, then score the held-out subjects.
+        oof_prevalence[test] = float(np.mean(y[train]))
         fold_metrics.append(
             FoldMetrics(
                 fold=fold_id,
@@ -262,4 +267,5 @@ def evaluate_binary_disease_endpoint(
         status=status,
         limitations=limitations,
         oof_probabilities=tuple(float(x) for x in oof),
+        oof_prevalence_probabilities=tuple(float(x) for x in oof_prevalence),
     )
