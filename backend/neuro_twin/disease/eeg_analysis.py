@@ -469,7 +469,6 @@ def _load_segment(
     if "0" not in group:
         raise ValueError(f"Zarr group {candidate['group_name']} lacks level-0 array '0'")
     array = group["0"]
-array = group["0"]
     shape = tuple(int(n) for n in array.shape)
     channels = group_attrs.get("channels")
     channel_count = len(channels) if isinstance(channels, list) else None
