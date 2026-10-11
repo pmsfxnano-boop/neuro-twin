@@ -5,6 +5,7 @@ from neuro_twin.disease.eeg_analysis import (
     DATASET_DOI,
     DATASET_LICENSE,
     _crosscheck_openneuro_labels,
+    _infer_signal_axes,
     _recording_candidates,
     _validate_nemar_index,
     _validate_nemar_store_provenance,
@@ -119,3 +120,18 @@ def test_openneuro_labels_are_crosschecked_against_nemar_mirror():
     incorrect = payload.replace(b"sub-002\tM\t70\tF", b"sub-002\tM\t70\tA")
     with pytest.raises(ValueError, match="diagnosis labels differ"):
         _crosscheck_openneuro_labels(nemar, incorrect)
+
+
+
+def test_eeg_axis_inference_supports_65_channel_recordings_in_both_orientations():
+    channels_first = _infer_signal_axes((65, 7500), 65)
+    samples_first = _infer_signal_axes((7500, 65), 65)
+    assert channels_first == (True, 65, 7500)
+    assert samples_first == (False, 65, 7500)
+
+
+def test_eeg_axis_inference_refuses_ambiguous_or_invalid_shapes():
+    with pytest.raises(ValueError, match="could not identify"):
+        _infer_signal_axes((128, 256), None)
+    with pytest.raises(ValueError, match="positive 2D"):
+        _infer_signal_axes((0, 1000), 65)
