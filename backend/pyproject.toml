@@ -20,7 +20,7 @@ science = [
   "diffrax>=0.6,<1",
   "numpyro>=0.15,<1",
   "polars>=1.0,<2",
-  "pyarrow>=17,<20",
+  "pyarrow>=17,<26",
 ]
 api = [
   "fastapi>=0.115,<1",
