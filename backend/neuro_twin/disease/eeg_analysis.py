@@ -577,6 +577,145 @@ def _endpoint(name: str, positive: str, negative: str,
     return metrics, float(result.null_auroc_pvalue if result.null_auroc_pvalue is not None else 1.0)
 
 
+def _records_for_endpoint(
+    feature_rows: list[dict[str, Any]],
+    positive: str,
+    negative: str,
+    feature_getter,
+) -> list[SubjectDiseaseRecord]:
+    subset = [row for row in feature_rows if row["label"] in {positive, negative}]
+    return [
+        SubjectDiseaseRecord(
+            subject_id=row["subject"],
+            label=1 if row["label"] == positive else 0,
+            features=tuple(float(value) for value in feature_getter(row)),
+        )
+        for row in sorted(subset, key=lambda row: row["subject"])
+    ]
+
+
+def _metrics_without_permutation(
+    records: list[SubjectDiseaseRecord],
+    *,
+    endpoint: str,
+    seed: int,
+) -> dict[str, Any]:
+    result = evaluate_binary_disease_endpoint(
+        records,
+        endpoint=endpoint,
+        n_splits=5,
+        l2=1.0,
+        permutation_iterations=0,
+        random_seed=seed,
+    )
+    return {
+        "n_subjects": result.n_subjects,
+        "positive_subjects": result.positive_subjects,
+        "negative_subjects": result.negative_subjects,
+        "n_features": result.n_features,
+        "pooled_auroc": result.pooled_auroc,
+        "pooled_auprc": result.pooled_auprc,
+        "pooled_balanced_accuracy": result.pooled_balanced_accuracy,
+        "pooled_brier": result.pooled_brier,
+        "fold_metrics": [
+            {
+                "fold": fold.fold,
+                "n_train": fold.n_train,
+                "n_test": fold.n_test,
+                "auroc": fold.auroc,
+                "balanced_accuracy": fold.balanced_accuracy,
+                "brier": fold.brier,
+            }
+            for fold in result.folds
+        ],
+        "random_seed": seed,
+        "permutation_test_performed": False,
+    }
+
+
+def _split_sensitivity(
+    name: str,
+    positive: str,
+    negative: str,
+    feature_rows: list[dict[str, Any]],
+    *,
+    base_seed: int,
+    repeats: int = 20,
+) -> dict[str, Any]:
+    records = _records_for_endpoint(
+        feature_rows,
+        positive,
+        negative,
+        lambda row: (row["features"][key] for key in row["feature_names"]),
+    )
+    auc_by_seed: list[dict[str, Any]] = []
+    auc_values: list[float] = []
+    for repeat in range(repeats):
+        seed = base_seed + 1000 + repeat
+        result = evaluate_binary_disease_endpoint(
+            records,
+            endpoint=f"{name}_split_sensitivity",
+            n_splits=5,
+            l2=1.0,
+            permutation_iterations=0,
+            random_seed=seed,
+        )
+        value = float(result.pooled_auroc)
+        auc_values.append(value)
+        auc_by_seed.append({"seed": seed, "pooled_auroc": value})
+    values = np.asarray(auc_values, dtype=float)
+    return {
+        "method": "repeated 5-fold stratified subject-level CV with fixed model and varied fold seeds",
+        "repeats": repeats,
+        "pooled_auroc_median": float(np.median(values)),
+        "pooled_auroc_mean": float(np.mean(values)),
+        "pooled_auroc_sd_across_splits": float(np.std(values, ddof=1)),
+        "pooled_auroc_q10_across_splits": float(np.quantile(values, 0.10)),
+        "pooled_auroc_q90_across_splits": float(np.quantile(values, 0.90)),
+        "pooled_auroc_min": float(np.min(values)),
+        "pooled_auroc_max": float(np.max(values)),
+        "per_repeat": auc_by_seed,
+        "interpretation": (
+            "This distribution measures sensitivity to the random CV partition, not a population "
+            "confidence interval and not independent external validation."
+        ),
+    }
+
+
+def _demographic_confounding_audit(
+    feature_rows: list[dict[str, Any]],
+    *,
+    seed: int,
+) -> dict[str, Any]:
+    positive, negative = "AD", "CONTROL"
+    eeg_getter = lambda row: (row["features"][key] for key in row["feature_names"])
+    demographic_getter = lambda row: (
+        float(row["age_years"]),
+        1.0 if row["gender"] == "F" else 0.0,
+    )
+    combined_getter = lambda row: tuple(eeg_getter(row)) + tuple(demographic_getter(row))
+    records_eeg = _records_for_endpoint(feature_rows, positive, negative, eeg_getter)
+    records_demographic = _records_for_endpoint(feature_rows, positive, negative, demographic_getter)
+    records_combined = _records_for_endpoint(feature_rows, positive, negative, combined_getter)
+    return {
+        "target": "Alzheimer versus healthy control",
+        "n_subjects": len(records_eeg),
+        "fold_design": "same deterministic stratified 5-fold subject partitions for each model",
+        "eeg_only": _metrics_without_permutation(records_eeg, endpoint="ad_vs_control_eeg_only", seed=seed),
+        "age_gender_only": _metrics_without_permutation(records_demographic, endpoint="ad_vs_control_demographics_only", seed=seed),
+        "eeg_plus_age_gender": _metrics_without_permutation(records_combined, endpoint="ad_vs_control_eeg_plus_demographics", seed=seed),
+        "feature_contract": {
+            "eeg_only": "12 prespecified spectral features only; diagnosis, age, gender and MMSE excluded",
+            "age_gender_only": ["Age", "Gender"],
+            "eeg_plus_age_gender": "same EEG features plus age and binary gender indicator; standardized within each training fold",
+        },
+        "interpretation": (
+            "This is a confounding sensitivity comparison on the same held-out subjects. It is descriptive; "
+            "differences in AUROC are not treated as independent significance tests."
+        ),
+    }
+
+
 def run(output: Path) -> dict[str, Any]:
     participants_bytes = _fetch(PARTICIPANTS_URL)
     openneuro_participants_bytes = _fetch(OPENNEURO_PARTICIPANTS_URL)
@@ -609,6 +748,8 @@ def run(output: Path) -> dict[str, Any]:
             feature_rows.append({
                 "subject": subject,
                 "label": label_by_subject[subject_key],
+                "age_years": participants[subject]["age_years"],
+                "gender": participants[subject]["gender"],
                 "features": features,
                 "feature_names": tuple(sorted(features)),
                 "feature_hash": signal_hash,
@@ -658,6 +799,9 @@ def run(output: Path) -> dict[str, Any]:
     p_values: dict[str, float] = {}
     for name, positive, negative, seed in endpoint_specs:
         metrics, p_value = _endpoint(name, positive, negative, feature_rows, seed=seed)
+        metrics["split_sensitivity"] = _split_sensitivity(
+            name, positive, negative, feature_rows, base_seed=seed
+        )
         endpoints[name] = metrics
         p_values[name] = p_value
     adjusted = _holm_adjust(p_values)
@@ -668,6 +812,7 @@ def run(output: Path) -> dict[str, Any]:
     module = get_disease_module(Disease.ALZHEIMER)
     coverage = evaluate_module_coverage(module, {"EEG", "MMSE", "cognition", "diagnosis_group"})
     processed_count = sum(1 for row in feature_rows if row["used_processed_derivative"])
+    demographic_confounding_audit = _demographic_confounding_audit(feature_rows, seed=17)
     output_data: dict[str, Any] = {
         "schema": "neuro-twin.disease-eeg-evidence.v1",
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -698,7 +843,10 @@ def run(output: Path) -> dict[str, Any]:
                 label: sum(1 for row in participants.values() if row["label"] == label)
                 for label in ("AD", "FTD", "CONTROL")
             },
-            "label_handling": "source diagnosis labels are targets only; no diagnosis, MMSE, age or sex field enters the EEG feature vector",
+            "label_handling": (
+                "Diagnosis is an evaluation target only. Age/Gender are excluded from the EEG-only feature vector "
+                "and used only in the separate, same-fold confounding sensitivity audit. MMSE is not a model input."
+            ),
         },
         "feature_pipeline": {
             "name": FEATURE_VERSION,
@@ -707,7 +855,11 @@ def run(output: Path) -> dict[str, Any]:
             "channel_selection": "only channels whose channel_type=EEG and usable_for_inference is not false, using NEMAR row_index metadata",
             "original_acquisition_sample_rate_hz": 500.0,
             "segment_policy": f"first {SEGMENT_SECONDS} seconds per participant, minimum {MIN_SEGMENT_SECONDS} seconds",
-            "preferred_source": "preprocessed/denoised derivative when exposed in the Zarr index; otherwise the listed eyes-closed EEG group",
+            "source_policy": (
+                "The NEMAR index/root provenance was validated and the selected signals came from the listed "
+                "EEG stores. The generated report records whether any store is explicitly marked derived; "
+                "this run selected raw/unmarked recordings only."
+            ),
             "preprocessing": ["dequantize with per-channel Zarr scale/offset", "channel finite/variance QC", "median centering", "4th order zero-phase Butterworth 0.5–45 Hz", "Welch PSD with median averaging"],
             "bands_hz": {name: list(bounds) for name, bounds in FEATURE_BANDS.items()},
             "feature_names": sorted(feature_rows[0]["features"]),
@@ -721,6 +873,8 @@ def run(output: Path) -> dict[str, Any]:
                 {
                     "subject_id": row["subject"],
                     "diagnosis_target": row["label"],
+                    "age_years_for_confounding_audit": row["age_years"],
+                    "gender_for_confounding_audit": row["gender"],
                     "signal_feature_sha256": row["feature_hash"],
                     "source_recording_group": row["source_group"],
                     "processed_derivative": row["used_processed_derivative"],
@@ -735,16 +889,21 @@ def run(output: Path) -> dict[str, Any]:
             "subjects_have_single_record_per_endpoint": True,
             "split_unit": "subject",
             "folds": 5,
+            "split_sensitivity_repeats": 20,
+            "split_sensitivity_method": "fixed regularization and features; repeated stratified subject-level 5-fold CV with different deterministic seeds",
             "permutation_iterations": PERMUTATIONS,
             "bootstrap_iterations": BOOTSTRAPS,
             "multiple_testing": "Holm adjustment across the three prespecified pairwise endpoints",
         },
         "endpoints": endpoints,
+        "confounding_sensitivity": demographic_confounding_audit,
         "limitations": [
-            "A single public cohort is insufficient for external validation or a clinical claim.",
+            "A single public cohort from one clinical acquisition site is insufficient for external validation or a clinical claim.",
+            "This NEMAR run used raw/unmarked EEG stores; the current pipeline does not reproduce the dataset authors' full ASR/ICA denoising workflow.",
+            "Age and gender may confound the diagnosis groups; a same-fold age/gender-only and EEG-plus-demographics sensitivity audit is reported separately.",
             "Fixed 60-second prefixes may not represent full-recording variability.",
             "The bootstrap interval resamples already-generated OOF score/label pairs without refitting, so it does not capture all model-training and split variability.",
-            "EEG artifacts and acquisition/site effects can remain despite preprocessing; pipeline-level signal QC does not replace expert review.",
+            "EEG artifacts can remain despite filtering and channel QC; pipeline-level signal QC does not replace expert review.",
             "No participant overlap or independent external replication study has been used to establish generalization.",
             "This endpoint is not a diagnostic device and must not guide care.",
         ],
