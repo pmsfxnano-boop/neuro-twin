@@ -8,6 +8,11 @@ on:
       - "backend/neuro_twin/disease/**"
       - "backend/tests/test_disease_*.py"
       - ".github/workflows/disease-cohort-validation.yml"
+  pull_request:
+    paths:
+      - "backend/neuro_twin/disease/**"
+      - "backend/tests/test_disease_*.py"
+      - ".github/workflows/disease-cohort-validation.yml"
   schedule:
     - cron: "30 2 * * 1"
 
@@ -17,7 +22,7 @@ permissions:
 jobs:
   disease-cohorts:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 120
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -38,6 +43,7 @@ jobs:
           cd backend
           python -m neuro_twin.disease.report --output runtime/disease_cohort_evidence.json
           python -m neuro_twin.disease.eeg_analysis --output runtime/disease_eeg_evidence.json
+          python -m neuro_twin.disease.parkinson_eeg_analysis --output runtime/parkinson_eeg_evidence.json
 
       - name: Upload disease evidence
         uses: actions/upload-artifact@v4
@@ -46,6 +52,7 @@ jobs:
           path: |
             backend/runtime/disease_cohort_evidence.json
             backend/runtime/disease_eeg_evidence.json
+            backend/runtime/parkinson_eeg_evidence.json
           retention-days: 30
 
       - name: Persist public disease evidence
@@ -64,9 +71,10 @@ jobs:
           fi
           cp backend/runtime/disease_cohort_evidence.json /tmp/neuro-twin-evidence/disease_cohort_evidence.json
           cp backend/runtime/disease_eeg_evidence.json /tmp/neuro-twin-evidence/disease_eeg_evidence.json
+          cp backend/runtime/parkinson_eeg_evidence.json /tmp/neuro-twin-evidence/parkinson_eeg_evidence.json
           git -C /tmp/neuro-twin-evidence config user.name "github-actions[bot]"
           git -C /tmp/neuro-twin-evidence config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git -C /tmp/neuro-twin-evidence add disease_cohort_evidence.json disease_eeg_evidence.json
+          git -C /tmp/neuro-twin-evidence add disease_cohort_evidence.json disease_eeg_evidence.json parkinson_eeg_evidence.json
           if git -C /tmp/neuro-twin-evidence diff --cached --quiet; then
             echo "No disease evidence changes."
           else
