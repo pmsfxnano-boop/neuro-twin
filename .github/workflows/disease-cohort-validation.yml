@@ -11,7 +11,7 @@ on:
   pull_request:
     paths:
       - "backend/neuro_twin/disease/**"
-      - "backend/tests/test_disease_cohorts.py"
+      - "backend/tests/test_disease_*.py"
       - ".github/workflows/disease-cohort-validation.yml"
   schedule:
     - cron: "30 2 * * 1"
@@ -35,8 +35,8 @@ jobs:
       - name: Install backend
         run: python -m pip install --upgrade pip && python -m pip install -e './backend[dev,eeg]'
 
-      - name: Run unit tests
-        run: python -m pytest -q backend/tests/test_disease_cohorts.py backend/tests/test_disease_modules.py backend/tests/test_disease_exports.py backend/tests/test_disease_evaluation.py backend/tests/test_disease_eeg_features.py
+      - name: Run disease regression tests
+        run: python -m pytest -q backend/tests/test_disease_*.py
 
       - name: Fetch real public disease cohorts
         run: |
@@ -48,7 +48,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: neuro-twin-disease-cohort-${{ github.run_id }}
-          path: backend/runtime/disease_cohort_evidence.json
+          path: |
+            backend/runtime/disease_cohort_evidence.json
+            backend/runtime/disease_eeg_evidence.json
           retention-days: 30
 
       - name: Persist public disease evidence
