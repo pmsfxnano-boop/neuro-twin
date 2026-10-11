@@ -93,9 +93,11 @@ def test_permutation_null_rebuilds_folds_for_permuted_labels(monkeypatch):
     ]
     original = evaluation._stratified_subject_folds
     observed_labels = []
+    observed_seeds = []
 
     def recording_folds(y, n_splits, *, random_seed=0):
         observed_labels.append(tuple(np.asarray(y, dtype=int).tolist()))
+        observed_seeds.append(random_seed)
         return original(y, n_splits, random_seed=random_seed)
 
     monkeypatch.setattr(evaluation, "_stratified_subject_folds", recording_folds)
@@ -111,3 +113,6 @@ def test_permutation_null_rebuilds_folds_for_permuted_labels(monkeypatch):
     assert observed_labels[0] == expected_labels
     assert len(observed_labels) == 1 + result.permutation_iterations
     assert any(labels != expected_labels for labels in observed_labels[1:])
+    # All null replicates use the same random seed: the null should vary due
+    # to permuted labels, not due to extra Monte Carlo randomness in fold creation.
+    assert observed_seeds == [101] * (1 + result.permutation_iterations)
