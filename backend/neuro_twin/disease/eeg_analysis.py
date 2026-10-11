@@ -377,7 +377,24 @@ def run(output: Path) -> dict[str, Any]:
         except Exception as exc:
             failures.append({"subject": subject, "reason": f"{type(exc).__name__}: {str(exc)[:240]}"})
     if len(feature_rows) < 60:
-        raise RuntimeError(f"only {len(feature_rows)}/88 EEG participants produced features; refusing an underpowered report")
+        store_entries = index.get("stores", []) if isinstance(index, dict) else []
+        group_count = sum(len(s.get("groups", [])) for s in store_entries if isinstance(s, dict) and isinstance(s.get("groups", []), list))
+        diagnostic = {
+            "index_keys": sorted(index.keys()) if isinstance(index, dict) else str(type(index)),
+            "index_format_version": index.get("format_version") if isinstance(index, dict) else None,
+            "store_count": len(store_entries),
+            "group_count": group_count,
+            "first_store_keys": sorted(store_entries[0].keys()) if store_entries and isinstance(store_entries[0], dict) else [],
+            "first_store_zarr": str(store_entries[0].get("zarr"))[:160] if store_entries and isinstance(store_entries[0], dict) else None,
+            "first_store_group_examples": [g.get("name") for g in store_entries[0].get("groups", [])[:5] if isinstance(g, dict)] if store_entries and isinstance(store_entries[0], dict) else [],
+            "candidate_subject_count": len(candidates),
+            "candidate_subject_examples": {k: [{"uri": c["uri"], "group_name": c["group_name"], "processed": c["is_processed"]} for c in v[:2]] for k, v in list(sorted(candidates.items()))[:5]},
+            "successful_subjects": len(feature_rows),
+            "failed_subjects": len(failures),
+            "failure_examples": failures[:12],
+        }
+        print("NEURO_TWIN_EEG_DISCOVERY_DIAGNOSTICS " + json.dumps(diagnostic, sort_keys=True), flush=True)
+        raise RuntimeError(f"only {len(feature_rows)}/88 EEG participants produced features; refusing an underpowered report; diagnostics={json.dumps(diagnostic, sort_keys=True)[:7000]}")
 
     # Three pairwise endpoints are prespecified; FTD is never collapsed into the AD-negative class.
     endpoint_specs = (
