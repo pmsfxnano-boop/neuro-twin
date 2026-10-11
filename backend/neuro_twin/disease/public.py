@@ -1,8 +1,8 @@
-"""Public disease cohorts backed by OpenNeuro dataset metadata.
+"""Public disease cohorts backed by version-pinned OpenNeuro metadata.
 
-Large imaging and EEG files are not committed to NEURO-TWIN. The adapter loads
-the small BIDS participants.tsv metadata from the OpenNeuroDatasets mirrors.
-The byte-level SHA-256 is persisted so later runs can detect source drift.
+This adapter fetches the small BIDS participants.tsv file only. It does not
+fetch or analyze EEG/MRI signals. Exact snapshot-tag URLs and raw-byte hashes
+provide basic source reproducibility.
 """
 from __future__ import annotations
 
@@ -29,6 +29,16 @@ class PublicCohortSpec:
     sex_field: str
     expected_n: int
 
+    def __post_init__(self) -> None:
+        if not self.dataset_version.strip():
+            raise ValueError("dataset_version must be explicit")
+        expected_suffix = f"/{self.dataset_version}/participants.tsv"
+        if not self.participants_url.endswith(expected_suffix):
+            raise ValueError(
+                "participants_url must address the exact dataset_version tag; "
+                f"expected URL suffix {expected_suffix!r}"
+            )
+
 
 PUBLIC_COHORTS: dict[str, PublicCohortSpec] = {
     "alzheimer_ds004504_v1.0.6": PublicCohortSpec(
@@ -39,7 +49,7 @@ PUBLIC_COHORTS: dict[str, PublicCohortSpec] = {
         source_name="OpenNeuro ds004504",
         participants_url=(
             "https://raw.githubusercontent.com/OpenNeuroDatasets/"
-            "ds004504/main/participants.tsv"
+            "ds004504/1.0.6/participants.tsv"
         ),
         diagnosis_field="Group",
         diagnosis_map={"A": "AD", "F": "FTD", "C": "CONTROL"},
@@ -56,7 +66,7 @@ PUBLIC_COHORTS: dict[str, PublicCohortSpec] = {
         source_name="OpenNeuro ds005892",
         participants_url=(
             "https://raw.githubusercontent.com/OpenNeuroDatasets/"
-            "ds005892/main/participants.tsv"
+            "ds005892/1.0.0/participants.tsv"
         ),
         diagnosis_field="group",
         diagnosis_map={
@@ -82,7 +92,7 @@ def fetch_public_cohort(
     client = client or httpx.Client(
         timeout=timeout_seconds,
         follow_redirects=True,
-        headers={"User-Agent": "NEURO-TWIN-disease-cohort/0.1"},
+        headers={"User-Agent": "NEURO-TWIN-disease-cohort/0.2"},
     )
     try:
         response = client.get(spec.participants_url)
@@ -115,10 +125,12 @@ def fetch_public_cohort(
     provenance = {
         "dataset_id": spec.dataset_id,
         "dataset_version": spec.dataset_version,
+        "source_ref": spec.dataset_version,
         "source_name": spec.source_name,
         "retrieval_uri": spec.participants_url,
         "raw_sha256": raw_sha,
         "participant_count": len(records),
         "disease": spec.disease,
+        "data_scope": "participants_metadata_only",
     }
     return records, summary, provenance

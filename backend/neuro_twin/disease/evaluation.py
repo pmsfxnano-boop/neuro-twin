@@ -54,6 +54,7 @@ class DiseaseEvaluationResult:
     status: str
     limitations: tuple[str, ...]
     oof_probabilities: tuple[float, ...] = ()
+    oof_prevalence_probabilities: tuple[float, ...] = ()
 
 
 def _sigmoid(z: np.ndarray) -> np.ndarray:
@@ -129,9 +130,19 @@ def _balanced_accuracy(y: np.ndarray, score: np.ndarray) -> float:
     return 0.5 * (tpr + tnr)
 
 
-def _stratified_subject_folds(y: np.ndarray, n_splits: int) -> tuple[tuple[np.ndarray, np.ndarray], ...]:
-    pos = np.flatnonzero(y == 1)
-    neg = np.flatnonzero(y == 0)
+def _stratified_subject_folds(
+    y: np.ndarray,
+    n_splits: int,
+    *,
+    random_seed: int = 0,
+) -> tuple[tuple[np.ndarray, np.ndarray], ...]:
+    """Create deterministic, class-stratified subject folds without row-order bias."""
+    y = np.asarray(y, dtype=int)
+    if y.ndim != 1 or not np.isin(y, [0, 1]).all():
+        raise ValueError("fold labels must be a one-dimensional binary vector")
+    rng = np.random.default_rng(random_seed)
+    pos = rng.permutation(np.flatnonzero(y == 1))
+    neg = rng.permutation(np.flatnonzero(y == 0))
     n_splits = min(n_splits, len(pos), len(neg))
     if n_splits < 2:
         raise ValueError("need at least two subjects in each class for stratified evaluation")
@@ -142,8 +153,8 @@ def _stratified_subject_folds(y: np.ndarray, n_splits: int) -> tuple[tuple[np.nd
         buckets[i % n_splits].append(int(idx))
     all_idx = set(range(len(y)))
     return tuple(
-        (np.asarray(sorted(all_idx - set(b)), dtype=int), np.asarray(sorted(b), dtype=int))
-        for b in buckets
+        (np.asarray(sorted(all_idx - set(bucket)), dtype=int), np.asarray(sorted(bucket), dtype=int))
+        for bucket in buckets
     )
 
 
@@ -171,8 +182,9 @@ def evaluate_binary_disease_endpoint(
     if not np.all(np.isfinite(X)):
         raise ValueError("features must be finite")
 
-    folds = _stratified_subject_folds(y, n_splits)
+    folds = _stratified_subject_folds(y, n_splits, random_seed=random_seed)
     oof = np.full(len(y), np.nan, dtype=float)
+    oof_prevalence = np.full(len(y), np.nan, dtype=float)
     fold_metrics: list[FoldMetrics] = []
     for fold_id, (train, test) in enumerate(folds, start=1):
         mu = np.mean(X[train], axis=0)
@@ -183,6 +195,9 @@ def evaluate_binary_disease_endpoint(
         w = _fit_logistic(Xtr, y[train], l2=l2)
         p = _sigmoid(np.column_stack([np.ones(len(Xte)), Xte]) @ w)
         oof[test] = p
+        # Leakage-free prevalence baseline: estimate class prevalence on the
+        # training fold only, then score the held-out subjects.
+        oof_prevalence[test] = float(np.mean(y[train]))
         fold_metrics.append(
             FoldMetrics(
                 fold=fold_id,
@@ -199,11 +214,17 @@ def evaluate_binary_disease_endpoint(
 
     rng = np.random.default_rng(random_seed)
     null_scores: list[float] = []
-    for _ in range(permutation_iterations):
+    for permutation_index in range(permutation_iterations):
         yp = rng.permutation(y)
+        # Re-run the complete label-dependent stratification procedure inside
+        # each permutation. Reusing folds stratified on the original labels
+        # would leak the observed class assignment into the null distribution.
+        permutation_folds = _stratified_subject_folds(
+            yp, n_splits, random_seed=random_seed
+        )
         perm_oof = np.full(len(y), np.nan, dtype=float)
         valid = True
-        for train, test in folds:
+        for train, test in permutation_folds:
             if len(np.unique(yp[train])) < 2:
                 valid = False
                 break
@@ -246,4 +267,5 @@ def evaluate_binary_disease_endpoint(
         status=status,
         limitations=limitations,
         oof_probabilities=tuple(float(x) for x in oof),
+        oof_prevalence_probabilities=tuple(float(x) for x in oof_prevalence),
     )

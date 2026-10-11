@@ -29,6 +29,11 @@ DATASET_KEY = "nemar_on004504_v1.0.0"
 DATASET_DOI = "10.82901/nemar.on004504"
 DATASET_LICENSE = "CC0"
 PARTICIPANTS_URL = "https://data.nemar.org/on004504/v1.0.0/participants.tsv"
+OPENNEURO_PARTICIPANTS_URL = (
+    "https://raw.githubusercontent.com/OpenNeuroDatasets/"
+    "ds004504/1.0.6/participants.tsv"
+)
+OPENNEURO_SOURCE_VERSION = "1.0.6"
 ZARR_INDEX_URL = "https://zarr.nemar.org/on004504/zarr/index.json"
 SAMPLE_RATE_HZ = 250.0
 SEGMENT_SECONDS = 60
@@ -124,7 +129,7 @@ def _participants(payload: bytes) -> dict[str, dict[str, str]]:
     rows = list(csv.DictReader(io.StringIO(payload.decode("utf-8-sig"), newline=""), delimiter="\t"))
     if not rows:
         raise ValueError("NEMAR participants.tsv is empty")
-    if not {"participant_id", "Group"}.issubset(rows[0]):
+    if not {"participant_id", "Group", "Age", "Gender"}.issubset(rows[0]):
         raise ValueError(f"participants.tsv columns changed: {sorted(rows[0])}")
     result: dict[str, dict[str, str]] = {}
     for row in rows:
@@ -136,7 +141,20 @@ def _participants(payload: bytes) -> dict[str, dict[str, str]]:
             raise ValueError(f"unknown pinned cohort group code {group_code!r} for {subject}")
         if subject in result:
             raise ValueError(f"duplicate participant record: {subject}")
-        result[subject] = {"label": GROUP_MAP[group_code]}
+        try:
+            age_years = float((row.get("Age") or "").strip())
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"invalid age value for participant {subject}") from exc
+        if not np.isfinite(age_years):
+            raise ValueError(f"non-finite age value for participant {subject}")
+        gender = (row.get("Gender") or "").strip().upper()
+        if gender not in {"F", "M"}:
+            raise ValueError(f"unexpected public Gender value {gender!r} for participant {subject}")
+        result[subject] = {
+            "label": GROUP_MAP[group_code],
+            "age_years": age_years,
+            "gender": gender,
+        }
     if len(result) != 88:
         raise ValueError(f"pinned NEMAR cohort expected 88 subjects, found {len(result)}")
     counts = {g: sum(1 for row in result.values() if row["label"] == g) for g in ("AD", "FTD", "CONTROL")}
@@ -145,21 +163,153 @@ def _participants(payload: bytes) -> dict[str, dict[str, str]]:
     return result
 
 
-def _store_uri(store_meta: dict[str, Any]) -> str:
+def _crosscheck_openneuro_labels(
+    nemar_participants: dict[str, dict[str, str]],
+    payload: bytes,
+) -> dict[str, Any]:
+    """Check that the metadata snapshot and the NEMAR signal mirror have identical labels."""
+    rows = list(csv.DictReader(io.StringIO(payload.decode("utf-8-sig"), newline=""), delimiter="\t"))
+    if not rows or not {"participant_id", "Group"}.issubset(rows[0]):
+        raise ValueError("OpenNeuro snapshot participants.tsv has an unexpected schema")
+    mapping = {"A": "AD", "F": "FTD", "C": "CONTROL"}
+    observed: dict[str, str] = {}
+    for row in rows:
+        subject = (row.get("participant_id") or "").strip()
+        group_code = (row.get("Group") or "").strip().upper()
+        if not subject or subject in observed:
+            raise ValueError(f"empty or duplicate OpenNeuro participant ID: {subject!r}")
+        if group_code not in mapping:
+            raise ValueError(f"unknown OpenNeuro snapshot diagnosis code {group_code!r}")
+        observed[subject] = mapping[group_code]
+    expected = {subject: item["label"] for subject, item in nemar_participants.items()}
+    if set(observed) != set(expected):
+        missing = sorted(set(expected) - set(observed))
+        extra = sorted(set(observed) - set(expected))
+        raise ValueError(f"OpenNeuro/NEMAR subject set mismatch; missing={missing[:5]}, extra={extra[:5]}")
+    differences = sorted(subject for subject in expected if expected[subject] != observed[subject])
+    if differences:
+        raise ValueError(f"OpenNeuro/NEMAR diagnosis labels differ for participants: {differences[:10]}")
+    return {
+        "dataset_id": "openneuro-ds004504",
+        "dataset_version": OPENNEURO_SOURCE_VERSION,
+        "retrieval_uri": OPENNEURO_PARTICIPANTS_URL,
+        "participants_tsv_sha256": sha256_bytes(payload),
+        "participant_count": len(observed),
+        "subject_ids_match": True,
+        "diagnosis_labels_match": True,
+        "relationship": (
+            "NEMAR on004504 v1.0.0 declares OpenNeuro ds004504 v1.0.9 as its source; "
+            "this independently fetched v1.0.6 participant snapshot was cross-checked "
+            "for identical subject IDs and diagnosis labels."
+        ),
+    }
+
+
+def _validate_nemar_index(
+    index: dict[str, Any],
+    *,
+    expected_dataset_id: str = "on004504",
+    expected_doi: str = DATASET_DOI,
+    expected_license: str = DATASET_LICENSE,
+) -> dict[str, Any]:
+    """Fail closed unless the served index declares the expected immutable source identity."""
+    if index.get("format") != "nemar-zarr-index":
+        raise ValueError(f"unexpected NEMAR index format: {index.get('format')!r}")
+    if index.get("format_version") != 3:
+        raise ValueError(f"unsupported NEMAR index version: {index.get('format_version')!r}")
+    if index.get("dataset_id") != expected_dataset_id:
+        raise ValueError(f"unexpected NEMAR dataset_id: {index.get('dataset_id')!r}")
+    if index.get("doi") != expected_doi:
+        raise ValueError(f"unexpected NEMAR dataset DOI: {index.get('doi')!r}")
+    if index.get("license") != expected_license:
+        raise ValueError(f"unexpected NEMAR dataset license: {index.get('license')!r}")
+    source_commit = index.get("source_commit")
+    if not isinstance(source_commit, str) or re.fullmatch(r"[0-9a-f]{40}", source_commit) is None:
+        raise ValueError("NEMAR index has no valid 40-character source_commit")
+    s3_uri = index.get("s3_uri")
+    if not isinstance(s3_uri, str) or not s3_uri.startswith("s3://") or not s3_uri.endswith("/"):
+        raise ValueError("NEMAR index has no valid dataset-level s3_uri")
+    if expected_dataset_id not in s3_uri:
+        raise ValueError(f"NEMAR s3_uri points at a different dataset: {s3_uri!r}")
+    if index.get("s3_anonymous") is not True:
+        raise ValueError("expected this public NEMAR dataset to advertise anonymous read access")
+    return {
+        "dataset_id": index["dataset_id"],
+        "format_version": int(index["format_version"]),
+        "doi": index["doi"],
+        "license": index["license"],
+        "source_commit": source_commit,
+        "updated_utc": index.get("updated_utc"),
+        "s3_uri": s3_uri,
+        "s3_region": index.get("s3_region"),
+    }
+
+
+def _validate_nemar_store_provenance(
+    provenance: Any,
+    *,
+    expected_source_commit: str,
+    expected_dataset_id: str = "on004504",
+    expected_doi: str = DATASET_DOI,
+    expected_license: str = DATASET_LICENSE,
+) -> dict[str, Any]:
+    if not isinstance(provenance, dict):
+        raise ValueError("NEMAR Zarr root is missing its structured 'nemar' provenance")
+    required = {
+        "dataset_id": expected_dataset_id,
+        "doi": expected_doi,
+        "license": expected_license,
+        "source_commit": expected_source_commit,
+    }
+    for field, expected in required.items():
+        if provenance.get(field) != expected:
+            raise ValueError(
+                f"NEMAR store provenance mismatch for {field}: "
+                f"expected {expected!r}, got {provenance.get(field)!r}"
+            )
+    if provenance.get("provenance_fetch_failed") is True:
+        raise ValueError("NEMAR store reports failed provenance lookup")
+    if provenance.get("source_tree") not in (None, "raw"):
+        raise ValueError(f"unexpected NEMAR source_tree: {provenance.get('source_tree')!r}")
+    return {
+        "dataset_id": provenance["dataset_id"],
+        "doi": provenance["doi"],
+        "license": provenance["license"],
+        "source_commit": provenance["source_commit"],
+        "source_tree": provenance.get("source_tree"),
+        "derived": provenance.get("derived"),
+        "contract_url": provenance.get("contract_url"),
+    }
+
+
+def _store_uri(store_meta: dict[str, Any], index: dict[str, Any]) -> str:
+    """Resolve a store relative to the dataset base declared by NEMAR."""
     direct = store_meta.get("s3_uri") or store_meta.get("uri")
     value = direct or store_meta.get("zarr")
     if not isinstance(value, str) or not value:
         raise ValueError("NEMAR Zarr index store entry has no Zarr location")
     if value.startswith("s3://"):
         return value
-    if value.startswith("nemar/"):
-        return "s3://" + value.lstrip("/")
-    if value.startswith("on004504/zarr/"):
-        return "s3://nemar/" + value.lstrip("/")
-    return "s3://nemar/on004504/zarr/" + value.lstrip("/")
+    if value.startswith("https://"):
+        raise ValueError("HTTP store URLs must be resolved through the declared NEMAR contract, not hard-coded")
+    if not isinstance(index.get("s3_uri"), str):
+        raise ValueError("cannot resolve store without dataset-level index.s3_uri")
+    return index["s3_uri"].rstrip("/") + "/" + value.lstrip("/")
 
 
-def _recording_candidates(index: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+def _recording_candidates(
+    index: dict[str, Any],
+    *,
+    expected_dataset_id: str = "on004504",
+    expected_doi: str = DATASET_DOI,
+    expected_license: str = DATASET_LICENSE,
+) -> dict[str, list[dict[str, Any]]]:
+    _validate_nemar_index(
+        index,
+        expected_dataset_id=expected_dataset_id,
+        expected_doi=expected_doi,
+        expected_license=expected_license,
+    )
     stores = index.get("stores")
     if not isinstance(stores, list) or not stores:
         raise ValueError("NEMAR Zarr index does not contain stores[]")
@@ -171,13 +321,13 @@ def _recording_candidates(index: dict[str, Any]) -> dict[str, list[dict[str, Any
         if not isinstance(groups, list):
             continue
         try:
-            uri = _store_uri(store_meta)
+            uri = _store_uri(store_meta, index)
         except ValueError:
             continue
         # In NEMAR index v3, stores[].zarr/path identifies the BIDS recording,
         # while groups[].name is an internal Zarr group such as "eeg_250hz".
         record_path = str(store_meta.get("path") or store_meta.get("zarr") or "")
-        match = re.search(r"(sub-\d{3})", record_path, flags=re.IGNORECASE)
+        match = re.search(r"(sub-[A-Za-z0-9]+)", record_path, flags=re.IGNORECASE)
         if not match:
             continue
         path_text = f"{record_path} {uri}".lower()
@@ -195,9 +345,14 @@ def _recording_candidates(index: dict[str, Any]) -> dict[str, list[dict[str, Any
             group_name = group_meta["name"].strip("/")
             group_text = group_name.lower()
             rate_match = re.search(r"(\d{2,4})hz", group_text)
-            # The pinned NEMAR group name "eeg_250hz" is the streamed, 250-Hz view.
-            # If a group has no rate in its name, use the pinned source's 500-Hz acquisition metadata.
-            sample_rate = float(rate_match.group(1)) if rate_match else 500.0
+            rate_value = group_meta.get("rate")
+            if rate_value is None and rate_match:
+                rate_value = float(rate_match.group(1))
+            if rate_value is None:
+                raise ValueError(f"NEMAR group {group_name!r} does not declare its served sample rate")
+            sample_rate = float(rate_value)
+            if not np.isfinite(sample_rate) or sample_rate <= 90.0:
+                raise ValueError(f"invalid EEG sample rate {sample_rate!r} for {group_name!r}")
             is_eyes_closed = (
                 "eyesclosed" in path_text or "eyes-closed" in path_text or
                 "eyesclosed" in group_text or "eyes-closed" in group_text
@@ -230,7 +385,65 @@ def _scale_offset(values: Any, n_channels: int, fallback: float) -> np.ndarray:
     return array
 
 
-def _load_segment(candidate: dict[str, Any], root_cache: dict[str, Any]) -> tuple[np.ndarray, float, str, int, float]:
+def _canonical_eeg_unit(value: Any) -> str:
+    text = str(value or "").strip().replace("μ", "µ").lower()
+    if text in {"uv", "µv", "microvolt", "microvolts"}:
+        return "uV"
+    if text in {"mv", "millivolt", "millivolts"}:
+        return "mV"
+    if text in {"v", "volt", "volts"}:
+        return "V"
+    if text in {"nv", "nanovolt", "nanovolts"}:
+        return "nV"
+    if not text:
+        raise ValueError("EEG channel metadata does not declare physical units")
+    raise ValueError(f"unsupported EEG physical unit: {value!r}")
+
+
+def _infer_signal_axes(
+    shape: tuple[int, ...],
+    channel_metadata_count: int | None,
+) -> tuple[bool, int, int]:
+    """Return (channels_first, n_channels, n_samples) from shape and BIDS metadata."""
+    if len(shape) != 2 or any(int(n) <= 0 for n in shape):
+        raise ValueError(f"expected a positive 2D EEG shape, got {shape}")
+    shape = (int(shape[0]), int(shape[1]))
+    if channel_metadata_count is not None and channel_metadata_count >= 2:
+        possible_axes = [axis for axis, length in enumerate(shape) if length == channel_metadata_count]
+    else:
+        possible_axes = []
+    if len(possible_axes) == 1:
+        channels_first = possible_axes[0] == 0
+        n_channels = int(channel_metadata_count)
+        n_samples = shape[1] if channels_first else shape[0]
+    elif shape[0] <= 128 and shape[1] > 128:
+        channels_first = True
+        n_channels, n_samples = shape
+    elif shape[1] <= 128 and shape[0] > 128:
+        channels_first = False
+        n_channels, n_samples = shape[1], shape[0]
+    else:
+        raise ValueError(
+            f"could not identify EEG channel/time axes from shape={shape} and "
+            f"channel metadata count={channel_metadata_count}"
+        )
+    if n_channels < 2 or n_samples <= n_channels:
+        raise ValueError(f"invalid EEG channel/time dimensions: channels={n_channels}, samples={n_samples}")
+    return bool(channels_first), int(n_channels), int(n_samples)
+
+
+def _load_segment(
+    candidate: dict[str, Any],
+    root_cache: dict[str, Any],
+    *,
+    index_source_commit: str,
+    expected_dataset_id: str = "on004504",
+    expected_doi: str = DATASET_DOI,
+    expected_license: str = DATASET_LICENSE,
+    target_sampling_rate_hz: float | None = None,
+    segment_seconds: float | None = None,
+    min_segment_seconds: float | None = None,
+) -> tuple[np.ndarray, float, str, int, float, str]:
     # Optional analysis dependencies are imported lazily so the core backend remains lightweight.
     import zarr
     from zarr.storage import FsspecStore
@@ -243,41 +456,118 @@ def _load_segment(candidate: dict[str, Any], root_cache: dict[str, Any]) -> tupl
             read_only=True,
         )
         root_cache[uri] = zarr.open_group(store=remote_store, mode="r", zarr_format=3)
-    group = root_cache[uri][candidate["group_name"]]
+    root = root_cache[uri]
+    _validate_nemar_store_provenance(
+        dict(root.attrs).get("nemar"),
+        expected_source_commit=index_source_commit,
+        expected_dataset_id=expected_dataset_id,
+        expected_doi=expected_doi,
+        expected_license=expected_license,
+    )
+    group = root[candidate["group_name"]]
+    group_attrs = dict(group.attrs)
     if "0" not in group:
         raise ValueError(f"Zarr group {candidate['group_name']} lacks level-0 array '0'")
     array = group["0"]
     shape = tuple(int(n) for n in array.shape)
-    if len(shape) != 2:
-        raise ValueError(f"expected 2D EEG signal array, got shape {shape}")
-    if shape[0] <= 64 and shape[1] > 64:
-        channels_first = True
-        n_channels, n_samples = shape
-    elif shape[1] <= 64 and shape[0] > 64:
-        channels_first = False
-        n_channels, n_samples = shape[1], shape[0]
-    else:
-        raise ValueError(f"could not identify channels/time axes in shape {shape}")
-    sampling_rate = float(candidate.get("sampling_rate_hz", SAMPLE_RATE_HZ))
-    sample_count = min(n_samples, int(SEGMENT_SECONDS * sampling_rate))
-    if sample_count < int(MIN_SEGMENT_SECONDS * sampling_rate):
-        raise ValueError(f"recording shorter than {MIN_SEGMENT_SECONDS} seconds")
-    digital = np.asarray(array[:, :sample_count] if channels_first else array[:sample_count, :].T)
+    channels = group_attrs.get("channels")
+    channel_count = len(channels) if isinstance(channels, list) else None
+    channels_first, n_channels, n_samples = _infer_signal_axes(shape, channel_count)
+
+    sampling_rate = float(group_attrs.get("rate", candidate.get("sampling_rate_hz", float("nan"))))
+    expected_rate = float(candidate["sampling_rate_hz"])
+    if not np.isfinite(sampling_rate) or sampling_rate <= 90:
+        raise ValueError(f"invalid Zarr group sample rate: {sampling_rate!r}")
+    if not np.isclose(sampling_rate, expected_rate, rtol=0.0, atol=1e-6):
+        raise ValueError(
+            f"Zarr group sample rate {sampling_rate} does not match index rate {expected_rate}"
+        )
+    requested_seconds = SEGMENT_SECONDS if segment_seconds is None else float(segment_seconds)
+    minimum_seconds = MIN_SEGMENT_SECONDS if min_segment_seconds is None else float(min_segment_seconds)
+    if not np.isfinite(requested_seconds) or requested_seconds <= 0:
+        raise ValueError("segment_seconds must be positive and finite")
+    if not np.isfinite(minimum_seconds) or minimum_seconds <= 0 or minimum_seconds > requested_seconds:
+        raise ValueError("min_segment_seconds must be positive and no greater than segment_seconds")
+    sample_count = min(n_samples, int(requested_seconds * sampling_rate))
+    if sample_count < int(minimum_seconds * sampling_rate):
+        raise ValueError(f"recording shorter than {minimum_seconds} seconds")
+
+    if not isinstance(channels, list) or len(channels) != n_channels:
+        raise ValueError("Zarr group must declare metadata for every signal channel")
+    normalized_channels: list[tuple[int, dict[str, Any]]] = []
+    for fallback_index, channel in enumerate(channels):
+        if not isinstance(channel, dict):
+            raise ValueError("invalid channel metadata entry")
+        row_index = int(channel.get("row_index", fallback_index))
+        normalized_channels.append((row_index, channel))
+    if sorted(row for row, _ in normalized_channels) != list(range(n_channels)):
+        raise ValueError("Zarr channel row_index values are missing, duplicated, or non-contiguous")
+    selected = [
+        (row, meta) for row, meta in normalized_channels
+        if str(meta.get("channel_type", "")).upper() == "EEG"
+        and meta.get("usable_for_inference", True) is not False
+    ]
+    if len(selected) < 2:
+        raise ValueError("fewer than two channels are marked as usable EEG")
+    selected_indices = np.asarray([row for row, _ in sorted(selected)], dtype=int)
+    units = {_canonical_eeg_unit(meta.get("unit")) for _, meta in selected}
+    if len(units) != 1:
+        raise ValueError(f"selected EEG channels use inconsistent physical units: {sorted(units)}")
+    source_unit = next(iter(units))
+    unit_to_microvolts = {"uV": 1.0, "mV": 1000.0, "V": 1_000_000.0, "nV": 0.001}
+    physical_unit_factor = unit_to_microvolts[source_unit]
+
+    digital_all = np.asarray(array[:, :sample_count] if channels_first else array[:sample_count, :].T)
     array_attrs = dict(array.attrs)
-    scale = _scale_offset(array_attrs.get("scale"), n_channels, 1.0)
-    offset = _scale_offset(array_attrs.get("offset"), n_channels, 0.0)
-    if not np.issubdtype(digital.dtype, np.floating) and "scale" not in array_attrs:
+    if array_attrs.get("usable_for_inference") is False:
+        raise ValueError("NEMAR marks this signal array as unusable for inference")
+    has_scale = "scale" in array_attrs and array_attrs.get("scale") is not None
+    if not np.issubdtype(digital_all.dtype, np.floating) and not has_scale:
         raise ValueError("integer digital EEG lacks required physical-unit scale metadata")
-    physical = digital.astype(float, copy=False) * scale[:, None] + offset[:, None]
+    scale_all = _scale_offset(array_attrs.get("scale"), n_channels, 1.0)
+    offset_all = _scale_offset(array_attrs.get("offset"), n_channels, 0.0)
+    digital = digital_all[selected_indices]
+    scale = scale_all[selected_indices]
+    offset = offset_all[selected_indices]
+    physical = (
+        digital.astype(float, copy=False) * scale[:, None] + offset[:, None]
+    ) * physical_unit_factor
     if not np.isfinite(physical).all():
-        # Keep QC strict rather than silently imputing EEG data.
-        raise ValueError("non-finite values in sampled EEG segment")
+        raise ValueError("non-finite values in selected EEG signal segment")
+    channel_labels = [
+        str(meta.get("label") or meta.get("name") or row)
+        for row, meta in sorted(selected)
+    ]
+    native_seconds = sample_count / sampling_rate
+    effective_rate = sampling_rate
+    if target_sampling_rate_hz is not None:
+        if not np.isfinite(target_sampling_rate_hz) or target_sampling_rate_hz <= 90.0:
+            raise ValueError("target sampling rate must exceed 90 Hz for the 45 Hz band")
+        if sampling_rate + 1e-9 < target_sampling_rate_hz:
+            raise ValueError(
+                f"native sample rate {sampling_rate} is below requested common rate {target_sampling_rate_hz}"
+            )
+        if not np.isclose(sampling_rate, target_sampling_rate_hz, rtol=0.0, atol=1e-9):
+            from fractions import Fraction
+            from scipy.signal import resample_poly
+
+            ratio = Fraction(target_sampling_rate_hz / sampling_rate).limit_denominator(10000)
+            if not np.isclose(float(ratio) * sampling_rate, target_sampling_rate_hz, rtol=1e-8, atol=1e-8):
+                raise ValueError(
+                    f"cannot exactly reconcile native sample rate {sampling_rate} with {target_sampling_rate_hz}"
+                )
+            physical = resample_poly(physical, up=ratio.numerator, down=ratio.denominator, axis=1)
+            effective_rate = float(target_sampling_rate_hz)
     signal_hash = sha256_bytes(
-        (candidate["group_name"] + "|" + uri + "|").encode("utf-8") +
-        np.ascontiguousarray(digital).tobytes() +
-        np.ascontiguousarray(scale).tobytes() + np.ascontiguousarray(offset).tobytes()
+        (
+            candidate["group_name"] + "|" + uri + "|" + json.dumps(channel_labels)
+            + "|" + source_unit + "->uV|" + str(sampling_rate) + "->" + str(effective_rate) + "|"
+        ).encode("utf-8")
+        + np.ascontiguousarray(digital).tobytes()
+        + np.ascontiguousarray(scale).tobytes()
+        + np.ascontiguousarray(offset).tobytes()
     )
-    return physical, sample_count / sampling_rate, signal_hash, n_channels, sampling_rate
+    return physical, native_seconds, signal_hash, len(selected_indices), effective_rate, "uV"
 
 
 def _bootstrap_auc_ci(labels: np.ndarray, scores: np.ndarray, iterations: int = BOOTSTRAPS, seed: int = 73) -> list[float] | None:
@@ -332,8 +622,8 @@ def _endpoint(name: str, positive: str, negative: str,
     )
     scores = np.asarray(result.oof_probabilities, dtype=float)
     ci = _bootstrap_auc_ci(labels, scores, seed=seed + 100)
-    prevalence = float(np.mean(labels))
-    baseline_brier = float(np.mean((labels - prevalence) ** 2))
+    baseline_probabilities = np.asarray(result.oof_prevalence_probabilities, dtype=float)
+    baseline_brier = float(np.mean((labels - baseline_probabilities) ** 2))
     metrics = {
         "endpoint": name,
         "positive_label": positive,
@@ -344,12 +634,30 @@ def _endpoint(name: str, positive: str, negative: str,
         "n_features": result.n_features,
         "evaluation": "5-fold stratified subject-level out-of-fold",
         "pooled_auroc": result.pooled_auroc,
-        "pooled_auroc_bootstrap_ci95": ci,
+        "conditional_oof_score_bootstrap_ci95": ci,
+        "bootstrap_ci_interpretation": (
+            "Conditional bootstrap of held-out OOF score/label pairs; it does not "
+            "refit the model and does not capture all split/training uncertainty."
+        ),
         "pooled_auprc": result.pooled_auprc,
         "pooled_balanced_accuracy": result.pooled_balanced_accuracy,
         "pooled_brier": result.pooled_brier,
-        "prevalence_only_baseline_brier": baseline_brier,
-        "brier_improvement_vs_prevalence_baseline": baseline_brier - result.pooled_brier,
+        "fold_local_prevalence_baseline_brier": baseline_brier,
+        "brier_improvement_vs_fold_local_prevalence_baseline": baseline_brier - result.pooled_brier,
+        "fold_metrics": [
+            {
+                "fold": fold.fold,
+                "n_train": fold.n_train,
+                "n_test": fold.n_test,
+                "positives_test": fold.positives_test,
+                "negatives_test": fold.negatives_test,
+                "auroc": fold.auroc,
+                "auprc": fold.auprc,
+                "balanced_accuracy": fold.balanced_accuracy,
+                "brier": fold.brier,
+            }
+            for fold in result.folds
+        ],
         "permutation_null_auroc_mean": result.null_auroc_mean,
         "permutation_null_auroc_p95": result.null_auroc_p95,
         "permutation_pvalue_unadjusted": result.null_auroc_pvalue,
@@ -360,11 +668,153 @@ def _endpoint(name: str, positive: str, negative: str,
     return metrics, float(result.null_auroc_pvalue if result.null_auroc_pvalue is not None else 1.0)
 
 
+def _records_for_endpoint(
+    feature_rows: list[dict[str, Any]],
+    positive: str,
+    negative: str,
+    feature_getter,
+) -> list[SubjectDiseaseRecord]:
+    subset = [row for row in feature_rows if row["label"] in {positive, negative}]
+    return [
+        SubjectDiseaseRecord(
+            subject_id=row["subject"],
+            label=1 if row["label"] == positive else 0,
+            features=tuple(float(value) for value in feature_getter(row)),
+        )
+        for row in sorted(subset, key=lambda row: row["subject"])
+    ]
+
+
+def _metrics_without_permutation(
+    records: list[SubjectDiseaseRecord],
+    *,
+    endpoint: str,
+    seed: int,
+) -> dict[str, Any]:
+    result = evaluate_binary_disease_endpoint(
+        records,
+        endpoint=endpoint,
+        n_splits=5,
+        l2=1.0,
+        permutation_iterations=0,
+        random_seed=seed,
+    )
+    return {
+        "n_subjects": result.n_subjects,
+        "positive_subjects": result.positive_subjects,
+        "negative_subjects": result.negative_subjects,
+        "n_features": result.n_features,
+        "pooled_auroc": result.pooled_auroc,
+        "pooled_auprc": result.pooled_auprc,
+        "pooled_balanced_accuracy": result.pooled_balanced_accuracy,
+        "pooled_brier": result.pooled_brier,
+        "fold_metrics": [
+            {
+                "fold": fold.fold,
+                "n_train": fold.n_train,
+                "n_test": fold.n_test,
+                "auroc": fold.auroc,
+                "balanced_accuracy": fold.balanced_accuracy,
+                "brier": fold.brier,
+            }
+            for fold in result.folds
+        ],
+        "random_seed": seed,
+        "permutation_test_performed": False,
+    }
+
+
+def _split_sensitivity(
+    name: str,
+    positive: str,
+    negative: str,
+    feature_rows: list[dict[str, Any]],
+    *,
+    base_seed: int,
+    repeats: int = 20,
+) -> dict[str, Any]:
+    records = _records_for_endpoint(
+        feature_rows,
+        positive,
+        negative,
+        lambda row: (row["features"][key] for key in row["feature_names"]),
+    )
+    auc_by_seed: list[dict[str, Any]] = []
+    auc_values: list[float] = []
+    for repeat in range(repeats):
+        seed = base_seed + 1000 + repeat
+        result = evaluate_binary_disease_endpoint(
+            records,
+            endpoint=f"{name}_split_sensitivity",
+            n_splits=5,
+            l2=1.0,
+            permutation_iterations=0,
+            random_seed=seed,
+        )
+        value = float(result.pooled_auroc)
+        auc_values.append(value)
+        auc_by_seed.append({"seed": seed, "pooled_auroc": value})
+    values = np.asarray(auc_values, dtype=float)
+    return {
+        "method": "repeated 5-fold stratified subject-level CV with fixed model and varied fold seeds",
+        "repeats": repeats,
+        "pooled_auroc_median": float(np.median(values)),
+        "pooled_auroc_mean": float(np.mean(values)),
+        "pooled_auroc_sd_across_splits": float(np.std(values, ddof=1)),
+        "pooled_auroc_q10_across_splits": float(np.quantile(values, 0.10)),
+        "pooled_auroc_q90_across_splits": float(np.quantile(values, 0.90)),
+        "pooled_auroc_min": float(np.min(values)),
+        "pooled_auroc_max": float(np.max(values)),
+        "per_repeat": auc_by_seed,
+        "interpretation": (
+            "This distribution measures sensitivity to the random CV partition, not a population "
+            "confidence interval and not independent external validation."
+        ),
+    }
+
+
+def _demographic_confounding_audit(
+    feature_rows: list[dict[str, Any]],
+    *,
+    seed: int,
+) -> dict[str, Any]:
+    positive, negative = "AD", "CONTROL"
+    eeg_getter = lambda row: (row["features"][key] for key in row["feature_names"])
+    demographic_getter = lambda row: (
+        float(row["age_years"]),
+        1.0 if row["gender"] == "F" else 0.0,
+    )
+    combined_getter = lambda row: tuple(eeg_getter(row)) + tuple(demographic_getter(row))
+    records_eeg = _records_for_endpoint(feature_rows, positive, negative, eeg_getter)
+    records_demographic = _records_for_endpoint(feature_rows, positive, negative, demographic_getter)
+    records_combined = _records_for_endpoint(feature_rows, positive, negative, combined_getter)
+    return {
+        "target": "Alzheimer versus healthy control",
+        "n_subjects": len(records_eeg),
+        "fold_design": "same deterministic stratified 5-fold subject partitions for each model",
+        "eeg_only": _metrics_without_permutation(records_eeg, endpoint="ad_vs_control_eeg_only", seed=seed),
+        "age_gender_only": _metrics_without_permutation(records_demographic, endpoint="ad_vs_control_demographics_only", seed=seed),
+        "eeg_plus_age_gender": _metrics_without_permutation(records_combined, endpoint="ad_vs_control_eeg_plus_demographics", seed=seed),
+        "feature_contract": {
+            "eeg_only": "12 prespecified spectral features only; diagnosis, age, gender and MMSE excluded",
+            "age_gender_only": ["Age", "Gender"],
+            "eeg_plus_age_gender": "same EEG features plus age and binary gender indicator; standardized within each training fold",
+        },
+        "interpretation": (
+            "This is a confounding sensitivity comparison on the same held-out subjects. It is descriptive; "
+            "differences in AUROC are not treated as independent significance tests."
+        ),
+    }
+
+
 def run(output: Path) -> dict[str, Any]:
     participants_bytes = _fetch(PARTICIPANTS_URL)
+    openneuro_participants_bytes = _fetch(OPENNEURO_PARTICIPANTS_URL)
     index_bytes = _fetch(ZARR_INDEX_URL)
     participants = _participants(participants_bytes)
+    openneuro_label_check = _crosscheck_openneuro_labels(participants, openneuro_participants_bytes)
     index = json.loads(index_bytes.decode("utf-8"))
+    index_provenance = _validate_nemar_index(index)
     candidates = _recording_candidates(index)
     label_by_subject = {subject.lower(): row["label"] for subject, row in participants.items()}
 
@@ -380,11 +830,17 @@ def run(output: Path) -> dict[str, Any]:
             continue
         candidate = available[0]
         try:
-            signal_data, seconds, signal_hash, channel_count, sampling_rate = _load_segment(candidate, root_cache)
+            signal_data, seconds, signal_hash, channel_count, sampling_rate, channel_unit = _load_segment(
+                candidate,
+                root_cache,
+                index_source_commit=index_provenance["source_commit"],
+            )
             features = extract_eeg_band_features(signal_data, sampling_rate)
             feature_rows.append({
                 "subject": subject,
                 "label": label_by_subject[subject_key],
+                "age_years": participants[subject]["age_years"],
+                "gender": participants[subject]["gender"],
                 "features": features,
                 "feature_names": tuple(sorted(features)),
                 "feature_hash": signal_hash,
@@ -393,6 +849,7 @@ def run(output: Path) -> dict[str, Any]:
                 "segment_seconds": seconds,
                 "channel_count": channel_count,
                 "sampling_rate_hz": sampling_rate,
+                "channel_unit": channel_unit,
             })
         except Exception as exc:
             failures.append({"subject": subject, "reason": f"{type(exc).__name__}: {str(exc)[:240]}"})
@@ -416,6 +873,13 @@ def run(output: Path) -> dict[str, Any]:
         print("NEURO_TWIN_EEG_DISCOVERY_DIAGNOSTICS " + json.dumps(diagnostic, sort_keys=True), flush=True)
         raise RuntimeError(f"only {len(feature_rows)}/88 EEG participants produced features; refusing an underpowered report; diagnostics={json.dumps(diagnostic, sort_keys=True)[:7000]}")
 
+    channel_units = sorted({row["channel_unit"] for row in feature_rows})
+    if len(channel_units) != 1:
+        raise RuntimeError(
+            "EEG physical units differ across participants; refusing pooled model: "
+            f"{channel_units}"
+        )
+
     # Three pairwise endpoints are prespecified; FTD is never collapsed into the AD-negative class.
     endpoint_specs = (
         ("alzheimer_vs_control_eeg", "AD", "CONTROL", 17),
@@ -426,6 +890,9 @@ def run(output: Path) -> dict[str, Any]:
     p_values: dict[str, float] = {}
     for name, positive, negative, seed in endpoint_specs:
         metrics, p_value = _endpoint(name, positive, negative, feature_rows, seed=seed)
+        metrics["split_sensitivity"] = _split_sensitivity(
+            name, positive, negative, feature_rows, base_seed=seed
+        )
         endpoints[name] = metrics
         p_values[name] = p_value
     adjusted = _holm_adjust(p_values)
@@ -436,6 +903,7 @@ def run(output: Path) -> dict[str, Any]:
     module = get_disease_module(Disease.ALZHEIMER)
     coverage = evaluate_module_coverage(module, {"EEG", "MMSE", "cognition", "diagnosis_group"})
     processed_count = sum(1 for row in feature_rows if row["used_processed_derivative"])
+    demographic_confounding_audit = _demographic_confounding_audit(feature_rows, seed=17)
     output_data: dict[str, Any] = {
         "schema": "neuro-twin.disease-eeg-evidence.v1",
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -460,18 +928,29 @@ def run(output: Path) -> dict[str, Any]:
             "zarr_index_uri": ZARR_INDEX_URL,
             "participants_tsv_sha256": sha256_bytes(participants_bytes),
             "zarr_index_sha256": sha256_bytes(index_bytes),
+            "nemar_index_provenance": index_provenance,
+            "openneuro_label_crosscheck": openneuro_label_check,
             "dataset_diagnosis_counts": {
                 label: sum(1 for row in participants.values() if row["label"] == label)
                 for label in ("AD", "FTD", "CONTROL")
             },
-            "label_handling": "source diagnosis labels are targets only; no diagnosis, MMSE, age or sex field enters the EEG feature vector",
+            "label_handling": (
+                "Diagnosis is an evaluation target only. Age/Gender are excluded from the EEG-only feature vector "
+                "and used only in the separate, same-fold confounding sensitivity audit. MMSE is not a model input."
+            ),
         },
         "feature_pipeline": {
             "name": FEATURE_VERSION,
             "sample_rate_hz": sorted({float(row["sampling_rate_hz"]) for row in feature_rows}),
+            "physical_unit": channel_units[0],
+            "channel_selection": "only channels whose channel_type=EEG and usable_for_inference is not false, using NEMAR row_index metadata",
             "original_acquisition_sample_rate_hz": 500.0,
             "segment_policy": f"first {SEGMENT_SECONDS} seconds per participant, minimum {MIN_SEGMENT_SECONDS} seconds",
-            "preferred_source": "preprocessed/denoised derivative when exposed in the Zarr index; otherwise the listed eyes-closed EEG group",
+            "source_policy": (
+                "The NEMAR index/root provenance was validated and the selected signals came from the listed "
+                "EEG stores. The generated report records whether any store is explicitly marked derived; "
+                "this run selected raw/unmarked recordings only."
+            ),
             "preprocessing": ["dequantize with per-channel Zarr scale/offset", "channel finite/variance QC", "median centering", "4th order zero-phase Butterworth 0.5–45 Hz", "Welch PSD with median averaging"],
             "bands_hz": {name: list(bounds) for name, bounds in FEATURE_BANDS.items()},
             "feature_names": sorted(feature_rows[0]["features"]),
@@ -481,18 +960,41 @@ def run(output: Path) -> dict[str, Any]:
             "successful_subjects": len(feature_rows),
             "failed_subjects": len(failures),
             "failure_examples": failures[:10],
+            "subject_feature_provenance": [
+                {
+                    "subject_id": row["subject"],
+                    "diagnosis_target": row["label"],
+                    "age_years_for_confounding_audit": row["age_years"],
+                    "gender_for_confounding_audit": row["gender"],
+                    "signal_feature_sha256": row["feature_hash"],
+                    "source_recording_group": row["source_group"],
+                    "processed_derivative": row["used_processed_derivative"],
+                    "segment_seconds": row["segment_seconds"],
+                    "channel_count_after_orientation": row["channel_count"],
+                    "sampling_rate_hz": row["sampling_rate_hz"],
+                    "channel_unit": row["channel_unit"],
+                    "features": row["features"],
+                }
+                for row in sorted(feature_rows, key=lambda item: item["subject"])
+            ],
             "subjects_have_single_record_per_endpoint": True,
             "split_unit": "subject",
             "folds": 5,
+            "split_sensitivity_repeats": 20,
+            "split_sensitivity_method": "fixed regularization and features; repeated stratified subject-level 5-fold CV with different deterministic seeds",
             "permutation_iterations": PERMUTATIONS,
             "bootstrap_iterations": BOOTSTRAPS,
             "multiple_testing": "Holm adjustment across the three prespecified pairwise endpoints",
         },
         "endpoints": endpoints,
+        "confounding_sensitivity": demographic_confounding_audit,
         "limitations": [
-            "A single public cohort is insufficient for external validation or a clinical claim.",
+            "A single public cohort from one clinical acquisition site is insufficient for external validation or a clinical claim.",
+            "This NEMAR run used raw/unmarked EEG stores; the current pipeline does not reproduce the dataset authors' full ASR/ICA denoising workflow.",
+            "Age and gender may confound the diagnosis groups; a same-fold age/gender-only and EEG-plus-demographics sensitivity audit is reported separately.",
             "Fixed 60-second prefixes may not represent full-recording variability.",
-            "EEG artifacts and acquisition/site effects can remain despite preprocessing; pipeline-level signal QC does not replace expert review.",
+            "The bootstrap interval resamples already-generated OOF score/label pairs without refitting, so it does not capture all model-training and split variability.",
+            "EEG artifacts can remain despite filtering and channel QC; pipeline-level signal QC does not replace expert review.",
             "No participant overlap or independent external replication study has been used to establish generalization.",
             "This endpoint is not a diagnostic device and must not guide care.",
         ],
@@ -511,7 +1013,7 @@ def run(output: Path) -> dict[str, Any]:
         "endpoints": {name: {
             "n": value["n_subjects"],
             "auroc": value["pooled_auroc"],
-            "ci95": value["pooled_auroc_bootstrap_ci95"],
+            "ci95": value["conditional_oof_score_bootstrap_ci95"],
             "p_holm": value["permutation_pvalue_holm_adjusted"],
         } for name, value in endpoints.items()},
         "pinq_status": coverage.status,
