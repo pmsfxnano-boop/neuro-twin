@@ -150,6 +150,48 @@ def _participants(payload: bytes) -> dict[str, dict[str, str]]:
     return result
 
 
+def _crosscheck_openneuro_labels(
+    nemar_participants: dict[str, dict[str, str]],
+    payload: bytes,
+) -> dict[str, Any]:
+    """Check that the metadata snapshot and the NEMAR signal mirror have identical labels."""
+    rows = list(csv.DictReader(io.StringIO(payload.decode("utf-8-sig"), newline=""), delimiter="\t"))
+    if not rows or not {"participant_id", "Group"}.issubset(rows[0]):
+        raise ValueError("OpenNeuro snapshot participants.tsv has an unexpected schema")
+    mapping = {"A": "AD", "F": "FTD", "C": "CONTROL"}
+    observed: dict[str, str] = {}
+    for row in rows:
+        subject = (row.get("participant_id") or "").strip()
+        group_code = (row.get("Group") or "").strip().upper()
+        if not subject or subject in observed:
+            raise ValueError(f"empty or duplicate OpenNeuro participant ID: {subject!r}")
+        if group_code not in mapping:
+            raise ValueError(f"unknown OpenNeuro snapshot diagnosis code {group_code!r}")
+        observed[subject] = mapping[group_code]
+    expected = {subject: item["label"] for subject, item in nemar_participants.items()}
+    if set(observed) != set(expected):
+        missing = sorted(set(expected) - set(observed))
+        extra = sorted(set(observed) - set(expected))
+        raise ValueError(f"OpenNeuro/NEMAR subject set mismatch; missing={missing[:5]}, extra={extra[:5]}")
+    differences = sorted(subject for subject in expected if expected[subject] != observed[subject])
+    if differences:
+        raise ValueError(f"OpenNeuro/NEMAR diagnosis labels differ for participants: {differences[:10]}")
+    return {
+        "dataset_id": "openneuro-ds004504",
+        "dataset_version": OPENNEURO_SOURCE_VERSION,
+        "retrieval_uri": OPENNEURO_PARTICIPANTS_URL,
+        "participants_tsv_sha256": sha256_bytes(payload),
+        "participant_count": len(observed),
+        "subject_ids_match": True,
+        "diagnosis_labels_match": True,
+        "relationship": (
+            "NEMAR on004504 v1.0.0 declares OpenNeuro ds004504 v1.0.9 as its source; "
+            "this independently fetched v1.0.6 participant snapshot was cross-checked "
+            "for identical subject IDs and diagnosis labels."
+        ),
+    }
+
+
 def _validate_nemar_index(index: dict[str, Any]) -> dict[str, Any]:
     """Fail closed unless the served index declares the expected immutable source identity."""
     if index.get("format") != "nemar-zarr-index":
@@ -310,7 +352,23 @@ def _scale_offset(values: Any, n_channels: int, fallback: float) -> np.ndarray:
     return array
 
 
-def _load_segment(candidate: dict[str, Any], root_cache: dict[str, Any]) -> tuple[np.ndarray, float, str, int, float]:
+def _canonical_eeg_unit(value: Any) -> str:
+    text = str(value or "").strip().replace("μ", "µ").lower()
+    if text in {"uv", "µv", "microvolt", "microvolts"}:
+        return "uV"
+    if text in {"mv", "millivolt", "millivolts"}:
+        return "mV"
+    if not text:
+        raise ValueError("EEG channel metadata does not declare physical units")
+    return text
+
+
+def _load_segment(
+    candidate: dict[str, Any],
+    root_cache: dict[str, Any],
+    *,
+    index_source_commit: str,
+) -> tuple[np.ndarray, float, str, int, float, str]:
     # Optional analysis dependencies are imported lazily so the core backend remains lightweight.
     import zarr
     from zarr.storage import FsspecStore
@@ -323,7 +381,13 @@ def _load_segment(candidate: dict[str, Any], root_cache: dict[str, Any]) -> tupl
             read_only=True,
         )
         root_cache[uri] = zarr.open_group(store=remote_store, mode="r", zarr_format=3)
-    group = root_cache[uri][candidate["group_name"]]
+    root = root_cache[uri]
+    _validate_nemar_store_provenance(
+        dict(root.attrs).get("nemar"),
+        expected_source_commit=index_source_commit,
+    )
+    group = root[candidate["group_name"]]
+    group_attrs = dict(group.attrs)
     if "0" not in group:
         raise ValueError(f"Zarr group {candidate['group_name']} lacks level-0 array '0'")
     array = group["0"]
@@ -338,26 +402,68 @@ def _load_segment(candidate: dict[str, Any], root_cache: dict[str, Any]) -> tupl
         n_channels, n_samples = shape[1], shape[0]
     else:
         raise ValueError(f"could not identify channels/time axes in shape {shape}")
-    sampling_rate = float(candidate.get("sampling_rate_hz", SAMPLE_RATE_HZ))
+
+    sampling_rate = float(group_attrs.get("rate", candidate.get("sampling_rate_hz", float("nan"))))
+    expected_rate = float(candidate["sampling_rate_hz"])
+    if not np.isfinite(sampling_rate) or sampling_rate <= 90:
+        raise ValueError(f"invalid Zarr group sample rate: {sampling_rate!r}")
+    if not np.isclose(sampling_rate, expected_rate, rtol=0.0, atol=1e-6):
+        raise ValueError(
+            f"Zarr group sample rate {sampling_rate} does not match index rate {expected_rate}"
+        )
     sample_count = min(n_samples, int(SEGMENT_SECONDS * sampling_rate))
     if sample_count < int(MIN_SEGMENT_SECONDS * sampling_rate):
         raise ValueError(f"recording shorter than {MIN_SEGMENT_SECONDS} seconds")
-    digital = np.asarray(array[:, :sample_count] if channels_first else array[:sample_count, :].T)
+
+    channels = group_attrs.get("channels")
+    if not isinstance(channels, list) or len(channels) != n_channels:
+        raise ValueError("Zarr group must declare metadata for every signal channel")
+    normalized_channels: list[tuple[int, dict[str, Any]]] = []
+    for fallback_index, channel in enumerate(channels):
+        if not isinstance(channel, dict):
+            raise ValueError("invalid channel metadata entry")
+        row_index = int(channel.get("row_index", fallback_index))
+        normalized_channels.append((row_index, channel))
+    if sorted(row for row, _ in normalized_channels) != list(range(n_channels)):
+        raise ValueError("Zarr channel row_index values are missing, duplicated, or non-contiguous")
+    selected = [
+        (row, meta) for row, meta in normalized_channels
+        if str(meta.get("channel_type", "")).upper() == "EEG"
+        and meta.get("usable_for_inference", True) is not False
+    ]
+    if len(selected) < 2:
+        raise ValueError("fewer than two channels are marked as usable EEG")
+    selected_indices = np.asarray([row for row, _ in sorted(selected)], dtype=int)
+    units = {_canonical_eeg_unit(meta.get("unit")) for _, meta in selected}
+    if len(units) != 1:
+        raise ValueError(f"selected EEG channels use inconsistent physical units: {sorted(units)}")
+    channel_unit = next(iter(units))
+
+    digital_all = np.asarray(array[:, :sample_count] if channels_first else array[:sample_count, :].T)
     array_attrs = dict(array.attrs)
-    scale = _scale_offset(array_attrs.get("scale"), n_channels, 1.0)
-    offset = _scale_offset(array_attrs.get("offset"), n_channels, 0.0)
-    if not np.issubdtype(digital.dtype, np.floating) and "scale" not in array_attrs:
+    if array_attrs.get("usable_for_inference") is False:
+        raise ValueError("NEMAR marks this signal array as unusable for inference")
+    has_scale = "scale" in array_attrs and array_attrs.get("scale") is not None
+    if not np.issubdtype(digital_all.dtype, np.floating) and not has_scale:
         raise ValueError("integer digital EEG lacks required physical-unit scale metadata")
+    scale_all = _scale_offset(array_attrs.get("scale"), n_channels, 1.0)
+    offset_all = _scale_offset(array_attrs.get("offset"), n_channels, 0.0)
+    digital = digital_all[selected_indices]
+    scale = scale_all[selected_indices]
+    offset = offset_all[selected_indices]
     physical = digital.astype(float, copy=False) * scale[:, None] + offset[:, None]
     if not np.isfinite(physical).all():
-        # Keep QC strict rather than silently imputing EEG data.
-        raise ValueError("non-finite values in sampled EEG segment")
+        raise ValueError("non-finite values in selected EEG signal segment")
+    channel_labels = [
+        str(meta.get("label") or meta.get("name") or row)
+        for row, meta in sorted(selected)
+    ]
     signal_hash = sha256_bytes(
-        (candidate["group_name"] + "|" + uri + "|").encode("utf-8") +
+        (candidate["group_name"] + "|" + uri + "|" + json.dumps(channel_labels) + "|" + channel_unit + "|").encode("utf-8") +
         np.ascontiguousarray(digital).tobytes() +
         np.ascontiguousarray(scale).tobytes() + np.ascontiguousarray(offset).tobytes()
     )
-    return physical, sample_count / sampling_rate, signal_hash, n_channels, sampling_rate
+    return physical, sample_count / sampling_rate, signal_hash, len(selected_indices), sampling_rate, channel_unit
 
 
 def _bootstrap_auc_ci(labels: np.ndarray, scores: np.ndarray, iterations: int = BOOTSTRAPS, seed: int = 73) -> list[float] | None:
@@ -460,9 +566,12 @@ def _endpoint(name: str, positive: str, negative: str,
 
 def run(output: Path) -> dict[str, Any]:
     participants_bytes = _fetch(PARTICIPANTS_URL)
+    openneuro_participants_bytes = _fetch(OPENNEURO_PARTICIPANTS_URL)
     index_bytes = _fetch(ZARR_INDEX_URL)
     participants = _participants(participants_bytes)
+    openneuro_label_check = _crosscheck_openneuro_labels(participants, openneuro_participants_bytes)
     index = json.loads(index_bytes.decode("utf-8"))
+    index_provenance = _validate_nemar_index(index)
     candidates = _recording_candidates(index)
     label_by_subject = {subject.lower(): row["label"] for subject, row in participants.items()}
 
@@ -478,7 +587,11 @@ def run(output: Path) -> dict[str, Any]:
             continue
         candidate = available[0]
         try:
-            signal_data, seconds, signal_hash, channel_count, sampling_rate = _load_segment(candidate, root_cache)
+            signal_data, seconds, signal_hash, channel_count, sampling_rate, channel_unit = _load_segment(
+                candidate,
+                root_cache,
+                index_source_commit=index_provenance["source_commit"],
+            )
             features = extract_eeg_band_features(signal_data, sampling_rate)
             feature_rows.append({
                 "subject": subject,
@@ -491,6 +604,7 @@ def run(output: Path) -> dict[str, Any]:
                 "segment_seconds": seconds,
                 "channel_count": channel_count,
                 "sampling_rate_hz": sampling_rate,
+                "channel_unit": channel_unit,
             })
         except Exception as exc:
             failures.append({"subject": subject, "reason": f"{type(exc).__name__}: {str(exc)[:240]}"})
@@ -513,6 +627,13 @@ def run(output: Path) -> dict[str, Any]:
         }
         print("NEURO_TWIN_EEG_DISCOVERY_DIAGNOSTICS " + json.dumps(diagnostic, sort_keys=True), flush=True)
         raise RuntimeError(f"only {len(feature_rows)}/88 EEG participants produced features; refusing an underpowered report; diagnostics={json.dumps(diagnostic, sort_keys=True)[:7000]}")
+
+    channel_units = sorted({row["channel_unit"] for row in feature_rows})
+    if len(channel_units) != 1:
+        raise RuntimeError(
+            "EEG physical units differ across participants; refusing pooled model: "
+            f"{channel_units}"
+        )
 
     # Three pairwise endpoints are prespecified; FTD is never collapsed into the AD-negative class.
     endpoint_specs = (
@@ -558,6 +679,8 @@ def run(output: Path) -> dict[str, Any]:
             "zarr_index_uri": ZARR_INDEX_URL,
             "participants_tsv_sha256": sha256_bytes(participants_bytes),
             "zarr_index_sha256": sha256_bytes(index_bytes),
+            "nemar_index_provenance": index_provenance,
+            "openneuro_label_crosscheck": openneuro_label_check,
             "dataset_diagnosis_counts": {
                 label: sum(1 for row in participants.values() if row["label"] == label)
                 for label in ("AD", "FTD", "CONTROL")
@@ -567,6 +690,8 @@ def run(output: Path) -> dict[str, Any]:
         "feature_pipeline": {
             "name": FEATURE_VERSION,
             "sample_rate_hz": sorted({float(row["sampling_rate_hz"]) for row in feature_rows}),
+            "physical_unit": channel_units[0],
+            "channel_selection": "only channels whose channel_type=EEG and usable_for_inference is not false, using NEMAR row_index metadata",
             "original_acquisition_sample_rate_hz": 500.0,
             "segment_policy": f"first {SEGMENT_SECONDS} seconds per participant, minimum {MIN_SEGMENT_SECONDS} seconds",
             "preferred_source": "preprocessed/denoised derivative when exposed in the Zarr index; otherwise the listed eyes-closed EEG group",
@@ -589,6 +714,7 @@ def run(output: Path) -> dict[str, Any]:
                     "segment_seconds": row["segment_seconds"],
                     "channel_count_after_orientation": row["channel_count"],
                     "sampling_rate_hz": row["sampling_rate_hz"],
+                    "channel_unit": row["channel_unit"],
                     "features": row["features"],
                 }
                 for row in sorted(feature_rows, key=lambda item: item["subject"])
