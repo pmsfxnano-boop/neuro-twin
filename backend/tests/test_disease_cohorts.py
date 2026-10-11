@@ -41,3 +41,9 @@ def test_public_specs_are_explicit_and_expected_sizes_are_pinned():
     assert pd.expected_n == 55
     assert ad.diagnosis_map["A"] == "AD"
     assert pd.diagnosis_map["PD-MCI"] == "PD_MCI"
+
+    # Retrieval must use the declared snapshot, not the mutable main branch.
+    assert ad.participants_url.endswith(f"/{ad.dataset_version}/participants.tsv")
+    assert pd.participants_url.endswith(f"/{pd.dataset_version}/participants.tsv")
+    assert "/main/" not in ad.participants_url
+    assert "/main/" not in pd.participants_url
