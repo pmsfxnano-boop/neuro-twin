@@ -220,7 +220,7 @@ def evaluate_binary_disease_endpoint(
         # each permutation. Reusing folds stratified on the original labels
         # would leak the observed class assignment into the null distribution.
         permutation_folds = _stratified_subject_folds(
-            yp, n_splits, random_seed=random_seed + permutation_index + 1
+            yp, n_splits, random_seed=random_seed
         )
         perm_oof = np.full(len(y), np.nan, dtype=float)
         valid = True
