@@ -400,6 +400,38 @@ def _canonical_eeg_unit(value: Any) -> str:
     raise ValueError(f"unsupported EEG physical unit: {value!r}")
 
 
+def _infer_signal_axes(
+    shape: tuple[int, ...],
+    channel_metadata_count: int | None,
+) -> tuple[bool, int, int]:
+    """Return (channels_first, n_channels, n_samples) from shape and BIDS metadata."""
+    if len(shape) != 2 or any(int(n) <= 0 for n in shape):
+        raise ValueError(f"expected a positive 2D EEG shape, got {shape}")
+    shape = (int(shape[0]), int(shape[1]))
+    if channel_metadata_count is not None and channel_metadata_count >= 2:
+        possible_axes = [axis for axis, length in enumerate(shape) if length == channel_metadata_count]
+    else:
+        possible_axes = []
+    if len(possible_axes) == 1:
+        channels_first = possible_axes[0] == 0
+        n_channels = int(channel_metadata_count)
+        n_samples = shape[1] if channels_first else shape[0]
+    elif shape[0] <= 128 and shape[1] > 128:
+        channels_first = True
+        n_channels, n_samples = shape
+    elif shape[1] <= 128 and shape[0] > 128:
+        channels_first = False
+        n_channels, n_samples = shape[1], shape[0]
+    else:
+        raise ValueError(
+            f"could not identify EEG channel/time axes from shape={shape} and "
+            f"channel metadata count={channel_metadata_count}"
+        )
+    if n_channels < 2 or n_samples <= n_channels:
+        raise ValueError(f"invalid EEG channel/time dimensions: channels={n_channels}, samples={n_samples}")
+    return bool(channels_first), int(n_channels), int(n_samples)
+
+
 def _load_segment(
     candidate: dict[str, Any],
     root_cache: dict[str, Any],
@@ -437,41 +469,8 @@ def _load_segment(
     if "0" not in group:
         raise ValueError(f"Zarr group {candidate['group_name']} lacks level-0 array '0'")
     array = group["0"]
-def _infer_signal_axes(
-    shape: tuple[int, ...],
-    channel_metadata_count: int | None,
-) -> tuple[bool, int, int]:
-    """Return (channels_first, n_channels, n_samples) from shape and BIDS metadata."""
-    if len(shape) != 2 or any(int(n) <= 0 for n in shape):
-        raise ValueError(f"expected a positive 2D EEG shape, got {shape}")
-    shape = (int(shape[0]), int(shape[1]))
-    if channel_metadata_count is not None and channel_metadata_count >= 2:
-        possible_axes = [axis for axis, length in enumerate(shape) if length == channel_metadata_count]
-    else:
-        possible_axes = []
-    if len(possible_axes) == 1:
-        channels_first = possible_axes[0] == 0
-        n_channels = int(channel_metadata_count)
-        n_samples = shape[1] if channels_first else shape[0]
-    elif shape[0] <= 128 and shape[1] > 128:
-        channels_first = True
-        n_channels, n_samples = shape
-    elif shape[1] <= 128 and shape[0] > 128:
-        channels_first = False
-        n_channels, n_samples = shape[1], shape[0]
-    else:
-        raise ValueError(
-            f"could not identify EEG channel/time axes from shape={shape} and "
-            f"channel metadata count={channel_metadata_count}"
-        )
-    if n_channels < 2 or n_samples <= n_channels:
-        raise ValueError(f"invalid EEG channel/time dimensions: channels={n_channels}, samples={n_samples}")
-    return bool(channels_first), int(n_channels), int(n_samples)
-
-
+array = group["0"]
     shape = tuple(int(n) for n in array.shape)
-    if len(shape) != 2:
-        raise ValueError(f"expected 2D EEG signal array, got shape {shape}")
     channels = group_attrs.get("channels")
     channel_count = len(channels) if isinstance(channels, list) else None
     channels_first, n_channels, n_samples = _infer_signal_axes(shape, channel_count)
