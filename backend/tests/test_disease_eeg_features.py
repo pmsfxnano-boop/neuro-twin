@@ -132,6 +132,6 @@ def test_eeg_axis_inference_supports_65_channel_recordings_in_both_orientations(
 
 def test_eeg_axis_inference_refuses_ambiguous_or_invalid_shapes():
     with pytest.raises(ValueError, match="could not identify"):
-        _infer_signal_axes((128, 256), None)
+        _infer_signal_axes((256, 512), None)
     with pytest.raises(ValueError, match="positive 2D"):
         _infer_signal_axes((0, 1000), 65)
