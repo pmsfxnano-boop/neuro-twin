@@ -30,7 +30,7 @@ DATASET_DOI = "10.82901/nemar.on004504"
 DATASET_LICENSE = "CC0"
 PARTICIPANTS_URL = "https://data.nemar.org/on004504/v1.0.0/participants.tsv"
 ZARR_INDEX_URL = "https://zarr.nemar.org/on004504/zarr/index.json"
-SAMPLE_RATE_HZ = 500.0
+SAMPLE_RATE_HZ = 250.0
 SEGMENT_SECONDS = 60
 MIN_SEGMENT_SECONDS = 20
 PERMUTATIONS = 250
@@ -174,30 +174,48 @@ def _recording_candidates(index: dict[str, Any]) -> dict[str, list[dict[str, Any
             uri = _store_uri(store_meta)
         except ValueError:
             continue
+        # In NEMAR index v3, stores[].zarr/path identifies the BIDS recording,
+        # while groups[].name is an internal Zarr group such as "eeg_250hz".
+        record_path = str(store_meta.get("path") or store_meta.get("zarr") or "")
+        match = re.search(r"(sub-\d{3})", record_path, flags=re.IGNORECASE)
+        if not match:
+            continue
+        path_text = f"{record_path} {uri}".lower()
+        if "eeg" not in path_text:
+            continue
+        subject = match.group(1).lower()
+        processed_flag = store_meta.get("derived", False)
+        is_processed = processed_flag is True or str(processed_flag).lower() in {"1", "true", "yes"}
+        is_processed = is_processed or any(
+            token in path_text for token in ("derivatives", "denois", "preprocess", "cleaned")
+        )
         for group_meta in groups:
             if not isinstance(group_meta, dict) or not isinstance(group_meta.get("name"), str):
                 continue
             group_name = group_meta["name"].strip("/")
-            path_text = f"{group_name} {uri}".lower()
-            match = re.search(r"(sub-\d{3})", group_name, flags=re.IGNORECASE)
-            if not match:
-                continue
-            if "eeg" not in path_text and "eyesclosed" not in path_text and "eyes-closed" not in path_text:
-                continue
-            subject = match.group(1).lower()
-            is_processed = any(token in path_text for token in ("derivatives", "denois", "preprocess", "cleaned"))
-            is_eyes_closed = ("eyesclosed" in path_text) or ("eyes-closed" in path_text)
+            group_text = group_name.lower()
+            rate_match = re.search(r"(\d{2,4})hz", group_text)
+            # The pinned NEMAR group name "eeg_250hz" is the streamed, 250-Hz view.
+            # If a group has no rate in its name, use the pinned source's 500-Hz acquisition metadata.
+            sample_rate = float(rate_match.group(1)) if rate_match else 500.0
+            is_eyes_closed = (
+                "eyesclosed" in path_text or "eyes-closed" in path_text or
+                "eyesclosed" in group_text or "eyes-closed" in group_text
+            )
             found.setdefault(subject, []).append({
                 "subject": subject,
                 "uri": uri,
                 "group_name": group_name,
                 "store": store_meta.get("zarr", uri),
+                "record_path": record_path,
+                "sampling_rate_hz": sample_rate,
                 "is_processed": bool(is_processed),
                 "is_eyes_closed": bool(is_eyes_closed),
             })
     for subject, values in found.items():
-        # Prefer known denoised derivatives, then the named eyes-closed task, then stable lexical order.
-        values.sort(key=lambda c: (not c["is_processed"], not c["is_eyes_closed"], c["uri"], c["group_name"]))
+        values.sort(key=lambda c: (
+            not c["is_processed"], not c["is_eyes_closed"], c["uri"], c["group_name"]
+        ))
     return found
 
 
@@ -212,7 +230,7 @@ def _scale_offset(values: Any, n_channels: int, fallback: float) -> np.ndarray:
     return array
 
 
-def _load_segment(candidate: dict[str, Any], root_cache: dict[str, Any]) -> tuple[np.ndarray, float, str, int]:
+def _load_segment(candidate: dict[str, Any], root_cache: dict[str, Any]) -> tuple[np.ndarray, float, str, int, float]:
     # Optional analysis dependencies are imported lazily so the core backend remains lightweight.
     import zarr
     from zarr.storage import FsspecStore
@@ -240,8 +258,9 @@ def _load_segment(candidate: dict[str, Any], root_cache: dict[str, Any]) -> tupl
         n_channels, n_samples = shape[1], shape[0]
     else:
         raise ValueError(f"could not identify channels/time axes in shape {shape}")
-    sample_count = min(n_samples, int(SEGMENT_SECONDS * SAMPLE_RATE_HZ))
-    if sample_count < int(MIN_SEGMENT_SECONDS * SAMPLE_RATE_HZ):
+    sampling_rate = float(candidate.get("sampling_rate_hz", SAMPLE_RATE_HZ))
+    sample_count = min(n_samples, int(SEGMENT_SECONDS * sampling_rate))
+    if sample_count < int(MIN_SEGMENT_SECONDS * sampling_rate):
         raise ValueError(f"recording shorter than {MIN_SEGMENT_SECONDS} seconds")
     digital = np.asarray(array[:, :sample_count] if channels_first else array[:sample_count, :].T)
     array_attrs = dict(array.attrs)
@@ -258,7 +277,7 @@ def _load_segment(candidate: dict[str, Any], root_cache: dict[str, Any]) -> tupl
         np.ascontiguousarray(digital).tobytes() +
         np.ascontiguousarray(scale).tobytes() + np.ascontiguousarray(offset).tobytes()
     )
-    return physical, sample_count / SAMPLE_RATE_HZ, signal_hash, n_channels
+    return physical, sample_count / sampling_rate, signal_hash, n_channels, sampling_rate
 
 
 def _bootstrap_auc_ci(labels: np.ndarray, scores: np.ndarray, iterations: int = BOOTSTRAPS, seed: int = 73) -> list[float] | None:
@@ -361,8 +380,8 @@ def run(output: Path) -> dict[str, Any]:
             continue
         candidate = available[0]
         try:
-            signal_data, seconds, signal_hash, channel_count = _load_segment(candidate, root_cache)
-            features = extract_eeg_band_features(signal_data, SAMPLE_RATE_HZ)
+            signal_data, seconds, signal_hash, channel_count, sampling_rate = _load_segment(candidate, root_cache)
+            features = extract_eeg_band_features(signal_data, sampling_rate)
             feature_rows.append({
                 "subject": subject,
                 "label": label_by_subject[subject_key],
@@ -373,6 +392,7 @@ def run(output: Path) -> dict[str, Any]:
                 "used_processed_derivative": candidate["is_processed"],
                 "segment_seconds": seconds,
                 "channel_count": channel_count,
+                "sampling_rate_hz": sampling_rate,
             })
         except Exception as exc:
             failures.append({"subject": subject, "reason": f"{type(exc).__name__}: {str(exc)[:240]}"})
@@ -448,7 +468,8 @@ def run(output: Path) -> dict[str, Any]:
         },
         "feature_pipeline": {
             "name": FEATURE_VERSION,
-            "sample_rate_hz": SAMPLE_RATE_HZ,
+            "sample_rate_hz": sorted({float(row["sampling_rate_hz"]) for row in feature_rows}),
+            "original_acquisition_sample_rate_hz": 500.0,
             "segment_policy": f"first {SEGMENT_SECONDS} seconds per participant, minimum {MIN_SEGMENT_SECONDS} seconds",
             "preferred_source": "preprocessed/denoised derivative when exposed in the Zarr index; otherwise the listed eyes-closed EEG group",
             "preprocessing": ["dequantize with per-channel Zarr scale/offset", "channel finite/variance QC", "median centering", "4th order zero-phase Butterworth 0.5–45 Hz", "Welch PSD with median averaging"],
