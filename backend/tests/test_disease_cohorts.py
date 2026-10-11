@@ -33,7 +33,7 @@ def test_ad_participants_parser_keeps_diagnosis_outside_observations():
     assert summary.severity_summary["mmse"]["mean"] == 23.0
 
 
-def test_public_specs_are_explicit_and_expected_sizes_are_pinned():
+def test_public_specs_pin_snapshot_tags_and_expected_sizes():
     ad = PUBLIC_COHORTS["alzheimer_ds004504_v1.0.6"]
     pd = PUBLIC_COHORTS["parkinson_ds005892_v1.0.0"]
 
@@ -41,3 +41,9 @@ def test_public_specs_are_explicit_and_expected_sizes_are_pinned():
     assert pd.expected_n == 55
     assert ad.diagnosis_map["A"] == "AD"
     assert pd.diagnosis_map["PD-MCI"] == "PD_MCI"
+
+    # Snapshot tag and declared dataset version must remain aligned.
+    assert ad.participants_url.endswith(f"/{ad.dataset_version}/participants.tsv")
+    assert pd.participants_url.endswith(f"/{pd.dataset_version}/participants.tsv")
+    assert ad.dataset_version in ad.participants_url
+    assert pd.dataset_version in pd.participants_url
