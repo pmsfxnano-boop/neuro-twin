@@ -1,9 +1,7 @@
-"""Fetch and persist public disease-cohort evidence.
+"""Fetch public disease-cohort metadata and emit explicit readiness evidence.
 
-This report is intentionally metadata-level in the first disease integration
-batch. It verifies that real public cohorts are reachable and their declared
-participant counts and schema remain stable before raw neuroimaging features
-are allowed into disease-specific inference.
+This report is a cohort metadata quality-control result. It does not extract
+raw EEG/MRI features and does not train or evaluate a disease model.
 """
 from __future__ import annotations
 
@@ -15,10 +13,34 @@ from pathlib import Path
 from typing import Any
 
 from .public import PUBLIC_COHORTS, fetch_public_cohort
+from .readiness import assess_dataset_readiness
 
 
 def _canonical(payload: dict[str, Any]) -> str:
     return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
+def _readiness_payload(spec) -> dict[str, Any]:
+    disease = "alzheimer" if spec.dataset_id == "openneuro-ds004504" else "parkinson"
+    result = assess_dataset_readiness(
+        dataset_id=spec.dataset_id,
+        dataset_version=spec.dataset_version,
+        disease=disease,
+        cohort_label_available=True,
+    )
+    coverage = result.coverage
+    return {
+        "status": result.status,
+        "cohort_label_available": result.cohort_label_available,
+        "available_features": list(result.available_features),
+        "module_version": coverage.module_version,
+        "covered_required_features": list(coverage.covered_required_features),
+        "missing_required_features": list(coverage.missing_required_features),
+        "observed_states": list(coverage.observed_states),
+        "unobserved_states": list(coverage.unobserved_states),
+        "reasons": list(coverage.reasons),
+        "note": result.note,
+    }
 
 
 def run(output: Path) -> dict[str, Any]:
@@ -39,14 +61,30 @@ def run(output: Path) -> dict[str, Any]:
                 "severity_summary": summary.severity_summary,
                 "assumptions": list(summary.assumptions),
             },
+            "readiness": _readiness_payload(spec),
             "record_ids": [r.source_record_id for r in records],
         }
 
     envelope = {
-        "schema": "neuro-twin.disease-cohort-evidence.v1",
+        "schema": "neuro-twin.disease-cohort-evidence.v2",
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "status": "PASS",
+        "status_scope": "metadata_cohort_quality_control_only",
         "clinical_validation": False,
+        "model_evaluation": {
+            "status": "NOT_RUN",
+            "performed": False,
+            "endpoint_metrics": None,
+            "reason": (
+                "This report reads participants.tsv metadata only. It does not "
+                "extract raw EEG/MRI features or fit/evaluate a disease model."
+            ),
+            "required_next_step": (
+                "Extract quality-controlled, versioned subject-level signal/imaging "
+                "features, preserve subject-level splits, then evaluate an explicit "
+                "endpoint with independent external validation."
+            ),
+        },
         "cohorts": cohorts,
     }
     unsigned = dict(envelope)
