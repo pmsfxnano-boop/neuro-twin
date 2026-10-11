@@ -8,11 +8,6 @@ on:
       - "backend/neuro_twin/disease/**"
       - "backend/tests/test_disease_*.py"
       - ".github/workflows/disease-cohort-validation.yml"
-  pull_request:
-    paths:
-      - "backend/neuro_twin/disease/**"
-      - "backend/tests/test_disease_*.py"
-      - ".github/workflows/disease-cohort-validation.yml"
   schedule:
     - cron: "30 2 * * 1"
 
