@@ -409,6 +409,8 @@ def _load_segment(
     expected_doi: str = DATASET_DOI,
     expected_license: str = DATASET_LICENSE,
     target_sampling_rate_hz: float | None = None,
+    segment_seconds: float | None = None,
+    min_segment_seconds: float | None = None,
 ) -> tuple[np.ndarray, float, str, int, float, str]:
     # Optional analysis dependencies are imported lazily so the core backend remains lightweight.
     import zarr
@@ -455,9 +457,15 @@ def _load_segment(
         raise ValueError(
             f"Zarr group sample rate {sampling_rate} does not match index rate {expected_rate}"
         )
-    sample_count = min(n_samples, int(SEGMENT_SECONDS * sampling_rate))
-    if sample_count < int(MIN_SEGMENT_SECONDS * sampling_rate):
-        raise ValueError(f"recording shorter than {MIN_SEGMENT_SECONDS} seconds")
+    requested_seconds = SEGMENT_SECONDS if segment_seconds is None else float(segment_seconds)
+    minimum_seconds = MIN_SEGMENT_SECONDS if min_segment_seconds is None else float(min_segment_seconds)
+    if not np.isfinite(requested_seconds) or requested_seconds <= 0:
+        raise ValueError("segment_seconds must be positive and finite")
+    if not np.isfinite(minimum_seconds) or minimum_seconds <= 0 or minimum_seconds > requested_seconds:
+        raise ValueError("min_segment_seconds must be positive and no greater than segment_seconds")
+    sample_count = min(n_samples, int(requested_seconds * sampling_rate))
+    if sample_count < int(minimum_seconds * sampling_rate):
+        raise ValueError(f"recording shorter than {minimum_seconds} seconds")
 
     channels = group_attrs.get("channels")
     if not isinstance(channels, list) or len(channels) != n_channels:
