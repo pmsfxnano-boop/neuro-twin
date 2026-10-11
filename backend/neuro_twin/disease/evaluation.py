@@ -53,6 +53,7 @@ class DiseaseEvaluationResult:
     permutation_iterations: int
     status: str
     limitations: tuple[str, ...]
+    oof_probabilities: tuple[float, ...] = ()
 
 
 def _sigmoid(z: np.ndarray) -> np.ndarray:
@@ -244,4 +245,5 @@ def evaluate_binary_disease_endpoint(
         permutation_iterations=len(null_scores),
         status=status,
         limitations=limitations,
+        oof_probabilities=tuple(float(x) for x in oof),
     )

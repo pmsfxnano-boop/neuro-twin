@@ -31,6 +31,10 @@ dev = [
   "ruff>=0.6,<1",
   "mypy>=1.11,<2",
 ]
+eeg = [
+  "zarr>=3.0,<4",
+  "s3fs>=2024.10,<2027",
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
