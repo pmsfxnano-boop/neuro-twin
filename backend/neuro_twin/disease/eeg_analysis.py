@@ -440,14 +440,26 @@ def _load_segment(
     shape = tuple(int(n) for n in array.shape)
     if len(shape) != 2:
         raise ValueError(f"expected 2D EEG signal array, got shape {shape}")
-    if shape[0] <= 64 and shape[1] > 64:
+    channels = group_attrs.get("channels")
+    if isinstance(channels, list) and len(channels) >= 2:
+        possible_axes = [axis for axis, length in enumerate(shape) if length == len(channels)]
+    else:
+        possible_axes = []
+    if len(possible_axes) == 1:
+        channels_first = possible_axes[0] == 0
+        n_channels = len(channels)
+        n_samples = shape[1] if channels_first else shape[0]
+    elif shape[0] <= 128 and shape[1] > 128:
         channels_first = True
         n_channels, n_samples = shape
-    elif shape[1] <= 64 and shape[0] > 64:
+    elif shape[1] <= 128 and shape[0] > 128:
         channels_first = False
         n_channels, n_samples = shape[1], shape[0]
     else:
-        raise ValueError(f"could not identify channels/time axes in shape {shape}")
+        raise ValueError(
+            f"could not identify EEG channel/time axes from shape={shape} and "
+            f"channel metadata count={len(channels) if isinstance(channels, list) else None}"
+        )
 
     sampling_rate = float(group_attrs.get("rate", candidate.get("sampling_rate_hz", float("nan"))))
     expected_rate = float(candidate["sampling_rate_hz"])
@@ -467,7 +479,6 @@ def _load_segment(
     if sample_count < int(minimum_seconds * sampling_rate):
         raise ValueError(f"recording shorter than {minimum_seconds} seconds")
 
-    channels = group_attrs.get("channels")
     if not isinstance(channels, list) or len(channels) != n_channels:
         raise ValueError("Zarr group must declare metadata for every signal channel")
     normalized_channels: list[tuple[int, dict[str, Any]]] = []
