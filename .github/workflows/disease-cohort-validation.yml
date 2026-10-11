@@ -11,7 +11,7 @@ on:
   pull_request:
     paths:
       - "backend/neuro_twin/disease/**"
-      - "backend/tests/test_disease_cohorts.py"
+      - "backend/tests/test_disease_*.py"
       - ".github/workflows/disease-cohort-validation.yml"
   schedule:
     - cron: "30 2 * * 1"
@@ -35,8 +35,8 @@ jobs:
       - name: Install backend
         run: python -m pip install --upgrade pip && python -m pip install -e './backend[dev]'
 
-      - name: Run unit tests
-        run: python -m pytest -q backend/tests/test_disease_cohorts.py backend/tests/test_disease_modules.py backend/tests/test_disease_exports.py backend/tests/test_disease_evaluation.py
+      - name: Run disease cohort regression tests
+        run: python -m pytest -q backend/tests/test_disease_*.py
 
       - name: Fetch real public disease cohorts
         run: |
