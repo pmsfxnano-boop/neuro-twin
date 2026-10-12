@@ -2,7 +2,7 @@
   "clinical_validation": false,
   "endpoints": {
     "alzheimer_vs_control_eeg": {
-      "brier_improvement_vs_prevalence_baseline": 0.00879299601125208,
+      "brier_improvement_vs_prevalence_baseline": 0.008792996011256576,
       "clinical_validation": false,
       "endpoint": "alzheimer_vs_control_eeg",
       "evaluation": "5-fold stratified subject-level out-of-fold",
@@ -22,7 +22,7 @@
         0.7953900328900328
       ],
       "pooled_balanced_accuracy": 0.5747126436781609,
-      "pooled_brier": 0.23830759570472423,
+      "pooled_brier": 0.23830759570471974,
       "positive_label": "AD",
       "positive_subjects": 36,
       "prevalence_only_baseline_brier": 0.24710059171597631,
@@ -30,7 +30,7 @@
       "within_cohort_signal_supported_after_holm": true
     },
     "alzheimer_vs_ftd_eeg": {
-      "brier_improvement_vs_prevalence_baseline": -0.031581783871119595,
+      "brier_improvement_vs_prevalence_baseline": -0.03158178387111965,
       "clinical_validation": false,
       "endpoint": "alzheimer_vs_ftd_eeg",
       "evaluation": "5-fold stratified subject-level out-of-fold",
@@ -50,7 +50,7 @@
         0.6008086622807016
       ],
       "pooled_balanced_accuracy": 0.4957729468599034,
-      "pooled_brier": 0.2694444670081492,
+      "pooled_brier": 0.2694444670081493,
       "positive_label": "AD",
       "positive_subjects": 36,
       "prevalence_only_baseline_brier": 0.23786268313702963,
@@ -58,7 +58,7 @@
       "within_cohort_signal_supported_after_holm": false
     },
     "ftd_vs_control_eeg": {
-      "brier_improvement_vs_prevalence_baseline": -0.009789679956473785,
+      "brier_improvement_vs_prevalence_baseline": -0.009789679956389907,
       "clinical_validation": false,
       "endpoint": "ftd_vs_control_eeg",
       "evaluation": "5-fold stratified subject-level out-of-fold",
@@ -78,7 +78,7 @@
         0.70151850211258
       ],
       "pooled_balanced_accuracy": 0.5367316341829085,
-      "pooled_brier": 0.25646127758960985,
+      "pooled_brier": 0.25646127758952597,
       "positive_label": "FTD",
       "positive_subjects": 23,
       "prevalence_only_baseline_brier": 0.24667159763313606,
@@ -86,7 +86,7 @@
       "within_cohort_signal_supported_after_holm": false
     }
   },
-  "evidence_hash": "03a9166e643b1fa330d799a3cc756cd8ffb17f649e39bc5e216c080b7a7f00af",
+  "evidence_hash": "1d10afe2facb2e19d1f06fe2812694b9f350e0a384e28323e2503e90a4d7b97b",
   "feature_pipeline": {
     "bands_hz": {
       "alpha": [
@@ -151,7 +151,7 @@
     "subjects_have_single_record_per_endpoint": true,
     "successful_subjects": 88
   },
-  "generated_at": "2026-10-11T04:30:59.262471+00:00",
+  "generated_at": "2026-10-12T02:45:42.771621+00:00",
   "limitations": [
     "A single public cohort is insufficient for external validation or a clinical claim.",
     "Fixed 60-second prefixes may not represent full-recording variability.",
