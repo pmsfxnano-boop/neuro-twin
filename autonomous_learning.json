@@ -11,8 +11,8 @@
     "name": "persistence_last_observation"
   },
   "code_revision": "9bffb41cf8f133c54309b5a1904db450edc080ba",
-  "cycle_completed_at": "2026-10-21T16:48:52.395618+00:00",
-  "cycle_seconds": 4.233,
+  "cycle_completed_at": "2026-10-21T21:23:18.823255+00:00",
+  "cycle_seconds": 2.818,
   "dataset_id": "uci-parkinsons-telemonitoring-189",
   "dataset_version": "DOI-10.24432/C5ZS3N",
   "latent_identifiability": {
@@ -70,7 +70,7 @@
     1.6093043303939458e-07,
     0.05604466456392101
   ],
-  "live_runtime_id": "rt_55c1a9245fb00d86b15f8fe0",
+  "live_runtime_id": "rt_e10c540bffdf2e95a569db45",
   "live_subject_id": "1",
   "population_learning": {
     "excluded_subject": "1",
@@ -153,7 +153,7 @@
     "model_rmse": 0.007133821925219771,
     "relative_improvement": 0.9655521932432951
   },
-  "runtime_result_hash": "07317b654c7bd8ad66a58b4128226eb69aa3ed55e44bf39053733e8672969fc5",
+  "runtime_result_hash": "c5f5a75cc9991e17e17e233650fb5cfe3c8c123f4b32523ee9160bfcd9c00ba2",
   "scientific_status": "PASS_WITH_LIMITATIONS",
   "source_name": "UCI Parkinsons Telemonitoring",
   "source_raw_sha256": "2f82bb0ef96fa7d8d7edf4d97b89173e07c2cca7723440a64bc38918a83345df",
