@@ -45,7 +45,7 @@ jobs:
           python -m neuro_twin.disease.eeg_analysis --output runtime/disease_eeg_evidence.json
 
       - name: Upload disease evidence
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: neuro-twin-disease-cohort-${{ github.run_id }}
           path: backend/runtime/disease_cohort_evidence.json
