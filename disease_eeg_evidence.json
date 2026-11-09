@@ -86,7 +86,7 @@
       "within_cohort_signal_supported_after_holm": false
     }
   },
-  "evidence_hash": "a770fa4e4967beb08100b8d5cc24bc621c2b1bbcb369d222e5bba6e67356b236",
+  "evidence_hash": "59ead2768d1ed8cc03582a1cdcc25a5cb90ea11914544280a5f21f7983479907",
   "feature_pipeline": {
     "bands_hz": {
       "alpha": [
@@ -151,7 +151,7 @@
     "subjects_have_single_record_per_endpoint": true,
     "successful_subjects": 88
   },
-  "generated_at": "2026-11-02T09:46:02.375286+00:00",
+  "generated_at": "2026-11-09T10:01:56.432431+00:00",
   "limitations": [
     "A single public cohort is insufficient for external validation or a clinical claim.",
     "Fixed 60-second prefixes may not represent full-recording variability.",
