@@ -5,16 +5,17 @@ on:
     paths:
       - ".github/workflows/metabolic-public-data-pilot.yml"
       - "backend/scripts/inspect_geo_supplementary.py"
+      - "backend/scripts/analyze_geo_gse157783.py"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  inspect-public-geo:
-    name: Download and verify GSE157783 public archives
+  inspect-and-analyze-public-geo:
+    name: GSE157783 donor-level metabolic pathway pilot
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
 
@@ -22,15 +23,29 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Download public GEO archives and inventory TAR contents
+      - name: Install numerical dependency
+        run: python -m pip install --disable-pip-version-check "numpy>=2,<3"
+
+      - name: Download and validate public GEO archives
         run: |
           python backend/scripts/inspect_geo_supplementary.py \
             --output-dir /tmp/neuro-twin-gse157783 \
-            --manifest artifacts/gse157783_archive_manifest.json
+            --manifest artifacts/gse157783_archive_manifest.json \
+            --keep-archives
 
-      - name: Publish source-integrity manifest
+      - name: Run donor-level streaming pseudobulk pathway analysis
+        run: |
+          python backend/scripts/analyze_geo_gse157783.py \
+            --data-dir /tmp/neuro-twin-gse157783 \
+            --manifest artifacts/gse157783_archive_manifest.json \
+            --output artifacts/gse157783_pseudobulk_analysis.json
+
+      - name: Publish source manifest and aggregate analysis
         uses: actions/upload-artifact@v4
         with:
-          name: neuro-twin-gse157783-source-manifest
-          path: artifacts/gse157783_archive_manifest.json
+          name: neuro-twin-gse157783-pseudobulk-evidence
+          path: |
+            artifacts/gse157783_archive_manifest.json
+            artifacts/gse157783_pseudobulk_analysis.json
+          if-no-files-found: error
           retention-days: 14
