@@ -8,6 +8,7 @@ from scipy.linalg import expm
 
 from neuro_twin.network import (
     DOMAIN_NAMES,
+    DOMAIN_POLARITY,
     LinearNetworkObservationModel,
     SixDomainNetwork,
     exact_affine_transition,
@@ -41,9 +42,7 @@ def _observation_model():
 
 def test_domain_order_and_explicit_polarity_contract():
     assert DOMAIN_NAMES == ("P", "I", "M", "N", "Q", "Pr")
-    assert "metabolic dysregulation" in __import__(
-        "neuro_twin.network", fromlist=["DOMAIN_POLARITY"]
-    ).DOMAIN_POLARITY["M"]
+    assert "metabolic dysregulation" in DOMAIN_POLARITY["M"]
 
 
 def test_exact_affine_transition_matches_matrix_exponential():
