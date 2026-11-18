@@ -288,7 +288,7 @@ increments.
 ## Mechanism-level dynamics, intervention and model comparison
 
 The Alzheimer systems-research increment adds
-\`backend/neuro_twin/network/mechanistic_dynamics.py\`. It is a nonlinear
+`backend/neuro_twin/network/mechanistic_dynamics.py`. It is a nonlinear
 mechanism-level simulator, separate from the six-domain affine baseline.
 Each modeled mechanism node has an explicitly supplied normalized activity
 set-point and relaxation rate. Each executable interaction has an explicitly
@@ -308,19 +308,19 @@ kinetic law.
 Scientific gates:
 - Every run must validate its architecture and edge selection against the
   machine-readable Alzheimer mechanism and origin registries.
-- Only edges marked \`directed_candidate\` are executable. Bidirectional or
+- Only edges marked `directed_candidate` are executable. Bidirectional or
   unresolved relationships are blocked until a specific direction is
   justified as a new explicit hypothesis.
 - Edge signs are not inferred from the prose, evidence grade or source paper.
   Activation/inhibition is an explicit context-specific modeling assumption.
 - Every baseline, kinetic rate, coefficient, Hill parameter, initial activity
   and damage mapping is caller-supplied. No biological defaults are created.
-- A model with \`parameter_status=hypothesis\` produces only a hypothesis
+- A model with `parameter_status=hypothesis` produces only a hypothesis
   scenario. Estimated/validated labels require a separate auditable workflow.
 
 Virtual intervention protocols:
-- \`clamp\` performs an explicit time-bounded do-like state clamp;
-- \`additive_drive\` adds a signed rate input to a target mechanism;
+- `clamp` performs an explicit time-bounded do-like state clamp;
+- `additive_drive` adds a signed rate input to a target mechanism;
 - intervention start/end boundaries are inserted into the integration and
   damage-accumulation schedule;
 - baseline and perturbed trajectories use the same initial state and
@@ -330,13 +330,24 @@ Virtual intervention protocols:
 - multiple supplied parameter draws can be summarized with quantiles.
 
 A virtual clamp is not a drug dose or pharmacokinetic model. The result is
-labelled \`model_conditional_counterfactual_not_empirical_causal_effect\`.
+labelled `model_conditional_counterfactual_not_empirical_causal_effect`.
 It says what the supplied equations imply under a specified intervention,
 not what would happen in a person. Parameter uncertainty summaries only
 reflect the supplied parameter ensemble and omit unmodeled structural,
 measurement and cohort uncertainty.
 
-The separate \`network/model_comparison.py\` module scores predictive
+A separate versioned mechanism observation operator is implemented in
+backend/neuro_twin/network/mechanism_observation.py. It requires an explicit
+matrix H, bias, positive-definite observation covariance, mechanism-node
+order, feature names/units, source-catalog hash and transformation identity.
+It produces prediction means from mechanism trajectories and can summarize
+prediction mean/dispersion across caller-supplied parameter draws. It does not
+automatically bind p-tau, A-beta, GFAP, NfL, PET or MRI to mechanisms. A source
+adapter must first identify the actual dataset feature, assay, transform,
+units, timing and provenance; a domain expert must specify the observation
+relationship and its uncertainty.
+
+The separate `network/model_comparison.py` module scores predictive
 distributions on a declared subject holdout, temporal holdout or external
 cohort. It requires the same observed outcomes and availability mask for all
 forecasts and reports Gaussian mean log predictive density, RMSE and 50%/90%
