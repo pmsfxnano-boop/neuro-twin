@@ -256,6 +256,34 @@ mechanisms do not establish causality, patient-level temporal ordering, or
 parameter values. The registry is a source-traceable hypothesis inventory,
 not a validated biological graph.
 
+
+## Cumulative persistent-damage sidecar
+
+The Alzheimer systems decomposition adds a separate damage-accumulation model in
+`backend/neuro_twin/network/damage.py`. It tracks four persistent-damage
+compartments: synaptic/structural, axonal/neuritic, neuronal-somatic, and
+neurovascular. Its rate is the positive excess of explicitly mapped damaging
+exposures over explicitly mapped repair/resilience capacity, integrated across
+irregular time points.
+
+This module is intentionally not a seventh coordinate in the six-state
+`P, I, M, N, Q, Pr` vector. It does not infer mappings from biomarkers or
+from those six latent domains. Its input normalization, coefficients, initial
+damage and time units must be supplied explicitly. It models persistent
+damage as non-decreasing; reversible dysfunction and repairable synaptic
+plasticity require separate states. The implementation is a research
+hypothesis component, not a calibrated or clinically validated damage score.
+
+The Alzheimer mechanism inventory is stored in
+`backend/neuro_twin/network/alzheimer_mechanism_map_v1.json` and validated by
+`network/mechanisms.py`. The v1 catalogue contains 28 multiscale nodes and
+30 candidate edges with evidence maturity, causal-status labels, limitations
+and references. It is not an executable or validated causal graph.
+
+See `docs/ALZHEIMER_SYSTEMS_REVERSE_ENGINEERING_V1.md` for the full systems
+decomposition and the research questions that should guide the next engine
+increments.
+
 ## Validation boundary
 
 The included tests are deterministic numerical/software tests using
