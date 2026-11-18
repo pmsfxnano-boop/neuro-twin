@@ -461,3 +461,120 @@ def harmonize_measurement_envelope(
     )
     report = catalog.validate_envelope(envelope, disease=disease)
     return envelope, report
+
+
+class DomainMeasurementCoverage(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    domain: Domain
+    defined_subconstructs: tuple[str, ...]
+    subconstructs_with_valid_measurement_proxy: tuple[str, ...]
+    subconstructs_without_valid_measurement_proxy: tuple[str, ...]
+    valid_measurement_ids: tuple[str, ...]
+    valid_observation_count: int = Field(ge=0)
+
+
+class MeasurementCoverageReport(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    disease: Disease
+    catalog_hash: str
+    valid_measurement_ids: tuple[str, ...]
+    blocked_measurement_ids: tuple[str, ...]
+    missing_measurement_ids: tuple[str, ...]
+    valid_observation_count: int = Field(ge=0)
+    blocked_observation_count: int = Field(ge=0)
+    domain_coverage: tuple[DomainMeasurementCoverage, ...]
+    status: Literal[
+        "NO_VALID_MEASUREMENT_PROXIES",
+        "PARTIAL_SUBCONSTRUCT_PROXY_COVERAGE",
+        "ALL_DEFINED_SUBCONSTRUCTS_HAVE_PROXIES",
+    ]
+    latent_observability_status: Literal["NOT_EVALUATED_NO_LATENT_BINDINGS"] = (
+        "NOT_EVALUATED_NO_LATENT_BINDINGS"
+    )
+    latent_inference_eligible: Literal[False] = False
+
+
+def evaluate_measurement_coverage(
+    catalog: MeasurementCatalog,
+    ontology: NeuroDomainOntology,
+    validation_reports: tuple[MeasurementValidationReport, ...] | list[MeasurementValidationReport],
+    *,
+    disease: Disease,
+) -> MeasurementCoverageReport:
+    """Summarize valid measurement proxies without claiming latent observability.
+
+    Reports refer to individual canonical observations. Coverage records
+    subconstruct representation, not subject-level completeness, direct state
+    measurement, or the rank of a latent observation operator.
+    """
+    catalog.validate_ontology(ontology)
+    definitions = catalog.definitions_for_disease(disease)
+    definition_by_id = {item.measurement_id: item for item in definitions}
+    valid_counts: dict[str, int] = {}
+    blocked_counts: dict[str, int] = {}
+
+    for report in validation_reports:
+        if report.disease != disease:
+            continue
+        if report.catalog_hash != catalog.catalog_hash:
+            raise ValueError("measurement validation report belongs to a different catalogue hash")
+        if report.measurement_id not in definition_by_id:
+            raise ValueError("measurement validation report is not registered for the selected disease")
+        if report.status == "VALID_FOR_MEASUREMENT_LAYER":
+            valid_counts[report.measurement_id] = valid_counts.get(report.measurement_id, 0) + 1
+        elif report.status == "BLOCKED":
+            blocked_counts[report.measurement_id] = blocked_counts.get(report.measurement_id, 0) + 1
+
+    valid_ids = tuple(sorted(valid_counts))
+    blocked_ids = tuple(sorted(blocked_counts))
+    reported_ids = set(valid_counts) | set(blocked_counts)
+    missing_ids = tuple(sorted(set(definition_by_id) - reported_ids))
+
+    domain_rows: list[DomainMeasurementCoverage] = []
+    subconstruct_total = 0
+    covered_subconstruct_total = 0
+    for domain in DOMAIN_NAMES:
+        entry = ontology.get(domain)
+        defined = tuple(item.code for item in entry.subconstructs)
+        domain_valid_defs = [
+            definition
+            for definition in definitions
+            if definition.target_domain == domain and definition.measurement_id in valid_counts
+        ]
+        covered = tuple(sorted({item.target_subconstruct for item in domain_valid_defs}))
+        uncovered = tuple(sorted(set(defined) - set(covered)))
+        domain_ids = tuple(sorted({item.measurement_id for item in domain_valid_defs}))
+        count = sum(valid_counts[item] for item in domain_ids)
+        subconstruct_total += len(defined)
+        covered_subconstruct_total += len(covered)
+        domain_rows.append(
+            DomainMeasurementCoverage(
+                domain=domain,
+                defined_subconstructs=defined,
+                subconstructs_with_valid_measurement_proxy=covered,
+                subconstructs_without_valid_measurement_proxy=uncovered,
+                valid_measurement_ids=domain_ids,
+                valid_observation_count=count,
+            )
+        )
+
+    if not valid_ids:
+        status = "NO_VALID_MEASUREMENT_PROXIES"
+    elif covered_subconstruct_total == subconstruct_total:
+        status = "ALL_DEFINED_SUBCONSTRUCTS_HAVE_PROXIES"
+    else:
+        status = "PARTIAL_SUBCONSTRUCT_PROXY_COVERAGE"
+
+    return MeasurementCoverageReport(
+        disease=disease,
+        catalog_hash=catalog.catalog_hash,
+        valid_measurement_ids=valid_ids,
+        blocked_measurement_ids=blocked_ids,
+        missing_measurement_ids=missing_ids,
+        valid_observation_count=sum(valid_counts.values()),
+        blocked_observation_count=sum(blocked_counts.values()),
+        domain_coverage=tuple(domain_rows),
+        status=status,
+    )
