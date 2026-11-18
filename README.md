@@ -49,6 +49,10 @@ An additive six-domain network package is being developed under `backend/neuro_t
 - Alzheimer and Parkinson use separate parameterizations. No default biological coefficients or biomarker-to-state mappings are invented.
 - This is a research prototype; it does not replace the existing P-I-N-Q runtime and is not clinically validated.
 
+- A separate cumulative persistent-damage module is implemented in `network/damage.py`, with synaptic/structural, axonal/neuritic, neuronal-somatic and neurovascular compartments; explicit damaging exposures and repair capacity; irregular-time integration; no invented biomarker or latent-state mappings. It remains a sidecar, not yet coupled to the six-state dynamics.
+- An evidence-graded Alzheimer mechanism catalogue contains 28 multiscale nodes and 30 candidate interactions. It distinguishes familial genetic routes, late-onset susceptibility, pathology, amplifiers, damage, reserve and clinical phenotype; it is not a validated causal DAG.
+- The Alzheimer systems reverse-engineering dossier is in `docs/ALZHEIMER_SYSTEMS_REVERSE_ENGINEERING_V1.md`; it documents the decomposition, rival origin hypotheses, feedback loops, candidate intervention layers and validation requirements.
+
 See `docs/NEURO_TWIN_SIX_DOMAIN_NETWORK_V1.md` for the mathematical and validation contract.
 
 ## Local development
