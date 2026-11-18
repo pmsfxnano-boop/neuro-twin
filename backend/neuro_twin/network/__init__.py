@@ -9,6 +9,8 @@ from neuro_twin.network.damage import (
 )
 from neuro_twin.network.mechanisms import (
     AlzheimerMechanismCatalog,
+    AlzheimerOriginArchitectureRegistry,
+    OriginArchitectureHypothesis,
     MechanismEdge,
     MechanismNode,
 )
@@ -66,6 +68,8 @@ __all__ = [
     "DamageAccumulationModel",
     "DamageTrajectory",
     "AlzheimerMechanismCatalog",
+    "AlzheimerOriginArchitectureRegistry",
+    "OriginArchitectureHypothesis",
     "MechanismEdge",
     "MechanismNode",
     "DOMAIN_NAMES",
