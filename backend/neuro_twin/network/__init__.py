@@ -22,12 +22,15 @@ from neuro_twin.network.ontology import (
     NeuroDomainOntology,
 )
 from neuro_twin.network.measurements import (
+    DomainMeasurementCoverage,
+    MeasurementCoverageReport,
     MeasurementCatalog,
     MeasurementDefinition,
     MeasurementEnvelope,
     MeasurementReference,
     MeasurementUncertainty,
     MeasurementValidationReport,
+    evaluate_measurement_coverage,
     harmonize_measurement_envelope,
 )
 from neuro_twin.network.diagnostics import (
@@ -52,12 +55,15 @@ __all__ = [
     "DOMAIN_NAMES",
     "DOMAIN_POLARITY",
     "EvidenceCitation",
+    "DomainMeasurementCoverage",
+    "MeasurementCoverageReport",
     "MeasurementCatalog",
     "MeasurementDefinition",
     "MeasurementEnvelope",
     "MeasurementReference",
     "MeasurementUncertainty",
     "MeasurementValidationReport",
+    "evaluate_measurement_coverage",
     "harmonize_measurement_envelope",
     "DomainOntologyEntry",
     "DomainSubconstruct",
