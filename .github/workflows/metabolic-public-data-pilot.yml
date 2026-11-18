@@ -1,0 +1,56 @@
+name: Neuro-Twin public metabolic data pilot
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/metabolic-public-data-pilot.yml"
+      - "backend/scripts/inspect_geo_supplementary.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-public-geo:
+    name: Download and verify GSE157783 public archives
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Download public GEO archives and inventory TAR contents
+        run: |
+          python backend/scripts/inspect_geo_supplementary.py \
+            --output-dir /tmp/neuro-twin-gse157783 \
+            --manifest artifacts/gse157783_archive_manifest.json
+
+      - name: Publish source-integrity manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: neuro-twin-gse157783-source-manifest
+          path: artifacts/gse157783_archive_manifest.json
+          retention-days: 14
+
+      - name: Add summary
+        if: always()
+        run: |
+          if [ -f artifacts/gse157783_archive_manifest.json ]; then
+            python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path("artifacts/gse157783_archive_manifest.json")
+          data = json.loads(p.read_text())
+          print("## GSE157783 source inventory")
+          for key, item in data["archives"].items():
+              print(f"- {key}: {item['size_bytes']} bytes; {item['member_count']} TAR members; SHA-256 {item['sha256']}")
+              for member in item["files"][:12]:
+                  print(f"  - {member['name']} ({member['size_bytes']} bytes)")
+          PY
+          else
+            echo "GEO archive inventory was not produced."
+          fi
+          } >> "$GITHUB_STEP_SUMMARY"
