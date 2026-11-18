@@ -3,28 +3,62 @@ import json
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from neuro_twin.network import (
+    AlzheimerMechanismCatalog,
+    AlzheimerOriginArchitectureRegistry,
+    DamageAccumulationModel,
+    EdgeKinetics,
     MechanismObservationModel,
+    MechanisticArchitectureModel,
+    NodeKinetics,
     ParameterBound,
     fit_mechanistic_parameters,
 )
-from test_mechanistic_dynamics import _model
 
 
 BASE = Path(__file__).resolve().parents[1] / "neuro_twin" / "network"
 
 
 def _catalog_registry():
-    from neuro_twin.network import AlzheimerMechanismCatalog, AlzheimerOriginArchitectureRegistry
-
     catalog = AlzheimerMechanismCatalog.model_validate(
         json.loads((BASE / "alzheimer_mechanism_map_v1.json").read_text(encoding="utf-8"))
     )
     registry = AlzheimerOriginArchitectureRegistry.model_validate(
         json.loads((BASE / "alzheimer_origin_architectures_v1.json").read_text(encoding="utf-8"))
     )
+    registry.validate_against(catalog)
     return catalog, registry
+
+
+def _model(coefficient):
+    catalog, registry = _catalog_registry()
+    damage = DamageAccumulationModel(
+        disease="alzheimer",
+        time_unit="year",
+        driver_names=("synaptic_circuit_dysfunction",),
+        repair_names=(),
+        damage_weights=np.ones((4, 1)),
+        repair_weights=np.zeros((4, 0)),
+        rate_scale=np.ones(4),
+    )
+    model = MechanisticArchitectureModel(
+        architecture_id="tau_neuronal_vulnerability_dominant",
+        time_unit="year",
+        nodes=(
+            NodeKinetics("tau_misprocessing", 0.9, 0.05),
+            NodeKinetics("tau_seeded_spread", 0.05, 0.08),
+            NodeKinetics("synaptic_circuit_dysfunction", 0.05, 0.08),
+        ),
+        edges=(
+            EdgeKinetics("tau_to_spread", coefficient, "activation", 0.5, 1.0),
+            EdgeKinetics("tau_to_synapse", coefficient, "activation", 0.5, 1.0),
+        ),
+        damage_model=damage,
+    )
+    model.validate_against(catalog, registry)
+    return catalog, registry, model
 
 
 def _observation_model(model, H):
@@ -44,8 +78,7 @@ def _observation_model(model, H):
 
 
 def test_calibrator_recovers_one_selected_edge_parameter_from_synthetic_observations():
-    catalog, registry = _catalog_registry()
-    _, _, truth_model = _model(0.9)
+    catalog, registry, truth_model = _model(0.9)
     _, _, starting_model = _model(0.4)
     time = np.linspace(0.0, 4.0, 17)
     initial = np.asarray([0.8, 0.1, 0.1])
@@ -84,8 +117,7 @@ def test_calibrator_recovers_one_selected_edge_parameter_from_synthetic_observat
 
 
 def test_calibrator_reports_rank_deficiency_when_observation_has_no_sensitivity():
-    catalog, registry = _catalog_registry()
-    _, _, model = _model(0.4)
+    catalog, registry, model = _model(0.4)
     time = np.linspace(0.0, 3.0, 8)
     initial = np.asarray([0.8, 0.1, 0.1])
     operator = _observation_model(model, [0.0, 0.0, 0.0])
@@ -114,12 +146,11 @@ def test_calibrator_reports_rank_deficiency_when_observation_has_no_sensitivity(
 
 
 def test_parameter_bounds_reject_invalid_or_unidentified_parameter_names():
-    catalog, registry = _catalog_registry()
-    _, _, model = _model(0.4)
+    catalog, registry, model = _model(0.4)
     time = np.asarray([0.0, 1.0])
     initial = np.asarray([0.8, 0.1, 0.1])
     operator = _observation_model(model, [0.0, 1.0, 0.0])
-    with np.testing.assert_raises_regex(ValueError, "unsupported or unknown"):
+    with pytest.raises(ValueError, match="unsupported or unknown"):
         fit_mechanistic_parameters(
             model,
             catalog=catalog,
