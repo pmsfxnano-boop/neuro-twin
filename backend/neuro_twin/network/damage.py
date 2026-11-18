@@ -39,9 +39,11 @@ def _readonly_array(value: np.ndarray, *, name: str, shape: tuple[int, ...]) -> 
     return array
 
 
-def _validate_names(values: tuple[str, ...], *, name: str) -> tuple[str, ...]:
+def _validate_names(
+    values: tuple[str, ...], *, name: str, allow_empty: bool = False
+) -> tuple[str, ...]:
     normalized = tuple(values)
-    if not normalized:
+    if not normalized and not allow_empty:
         raise ValueError(f"{name} must contain at least one name")
     if any(not isinstance(item, str) or not item.strip() for item in normalized):
         raise ValueError(f"{name} must contain non-empty strings")
@@ -102,7 +104,7 @@ class DamageAccumulationModel:
             raise ValueError("invalid parameter_status")
 
         drivers = _validate_names(self.driver_names, name="driver_names")
-        repairs = _validate_names(self.repair_names, name="repair_names")
+        repairs = _validate_names(self.repair_names, name="repair_names", allow_empty=True)
         if set(drivers) & set(repairs):
             raise ValueError("driver_names and repair_names must be distinct")
 
