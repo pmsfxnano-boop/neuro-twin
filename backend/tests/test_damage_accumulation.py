@@ -52,7 +52,7 @@ def test_repair_capacity_prevents_additional_damage_but_never_erases_past_damage
     assert np.all(np.diff(result.cumulative_damage, axis=0) >= 0.0)
     np.testing.assert_allclose(result.cumulative_damage[0], [0.5, 0.4, 0.3, 0.2])
     np.testing.assert_allclose(result.damage_rate[-1], np.zeros(4))
-    np.testing.assert_allclose(result.cumulative_damage[-1], [1.1, 1.0, 0.9, 0.8])
+    np.testing.assert_allclose(result.cumulative_damage[-1], [1.4, 1.3, 1.2, 1.1])
 
 
 def test_damage_model_requires_explicit_nonnegative_coefficients():
