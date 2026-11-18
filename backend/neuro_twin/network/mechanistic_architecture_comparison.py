@@ -92,6 +92,16 @@ def _validate_candidate(
             raise ValueError("all parameter draws must belong to the candidate architecture")
         if model.node_ids != first.node_ids or model.edge_ids != first.edge_ids:
             raise ValueError("parameter draws must preserve node and edge topology/order")
+        for reference_edge, draw_edge in zip(first.edges, model.edges):
+            if (
+                reference_edge.edge_id != draw_edge.edge_id
+                or reference_edge.sign != draw_edge.sign
+                or reference_edge.hill_half_saturation != draw_edge.hill_half_saturation
+                or reference_edge.hill_cooperativity != draw_edge.hill_cooperativity
+            ):
+                raise ValueError(
+                    "parameter draws must preserve edge direction/sign and Hill structure"
+                )
         if model.time_unit != first.time_unit:
             raise ValueError("parameter draws must use the same time unit")
         if model.damage_model.driver_names != first.damage_model.driver_names:
