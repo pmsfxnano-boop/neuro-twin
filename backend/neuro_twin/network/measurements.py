@@ -13,6 +13,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from neuro_twin.data.harmonize import UnitRegistry
 from neuro_twin.data.schema import Observation, ObservationKind
 from neuro_twin.network.evidence import Domain
 from neuro_twin.network.model import DOMAIN_NAMES
@@ -356,3 +357,107 @@ def normalize_timestamp_to_utc(value):
     if value.tzinfo is None or value.utcoffset() is None:
         raise ValueError("timestamp must be timezone-aware")
     return value.astimezone(timezone.utc)
+
+
+
+def harmonize_measurement_envelope(
+    observation: Observation,
+    *,
+    measurement_id: str,
+    catalog: MeasurementCatalog,
+    disease: Disease,
+    uncertainty: MeasurementUncertainty | None = None,
+    transformation_id: str | None = None,
+    transformation_version: str | None = None,
+    unit_registry: UnitRegistry | None = None,
+) -> tuple[MeasurementEnvelope, MeasurementValidationReport]:
+    """Convert a raw source observation to its canonical feature and unit.
+
+    The function only uses explicitly accepted source units and registered
+    feature aliases. It preserves the original feature/unit in the envelope,
+    converts absolute uncertainty with the same unit transformation, and
+    validates the canonical result against the catalogue.
+
+    The caller must supply a transformation identity/version whenever the
+    source feature or source unit differs from the canonical definition.
+    """
+    definition = catalog.get(measurement_id)
+    if definition.disease != disease:
+        raise ValueError("measurement definition is not registered for the requested disease")
+
+    source_feature = observation.feature
+    source_unit = observation.unit
+    feature_changed = source_feature != definition.canonical_feature
+    unit_changed = source_unit != definition.canonical_unit
+
+    if feature_changed and source_feature not in definition.source_feature_aliases:
+        raise ValueError("source feature is not a registered alias for this canonical measurement")
+    if source_unit not in definition.accepted_units:
+        raise ValueError("source unit is not accepted for this measurement")
+    if (feature_changed or unit_changed) and not transformation_id:
+        raise ValueError("non-canonical source values require a versioned harmonization identity")
+    if (transformation_id is None) != (transformation_version is None):
+        raise ValueError("transformation_id and transformation_version must be supplied together")
+
+    registry = unit_registry or UnitRegistry()
+    value = observation.value
+    if isinstance(value, list):
+        raise ValueError("measurement catalogue currently accepts scalar observations only")
+    canonical_value = registry.convert(
+        float(value),
+        source_unit,
+        definition.canonical_unit,
+    )
+
+    canonical_uncertainty: MeasurementUncertainty | None = None
+    canonical_uncertainty_value = observation.uncertainty
+    if uncertainty is not None:
+        if observation.uncertainty is None:
+            raise ValueError("typed uncertainty requires a numeric source uncertainty")
+        if abs(float(observation.uncertainty) - uncertainty.value) > 1e-12:
+            raise ValueError("typed uncertainty does not match the source observation")
+        if uncertainty.kind == "coefficient_of_variation":
+            canonical_uncertainty = uncertainty
+        else:
+            if uncertainty.unit != source_unit:
+                raise ValueError("absolute uncertainty unit must match the source measurement unit")
+            canonical_uncertainty_value = registry.convert(
+                uncertainty.value,
+                source_unit,
+                definition.canonical_unit,
+            )
+            canonical_uncertainty = uncertainty.model_copy(
+                update={
+                    "value": canonical_uncertainty_value,
+                    "unit": definition.canonical_unit,
+                }
+            )
+    elif observation.uncertainty is not None and unit_changed:
+        # The value can be converted, but its uncertainty cannot be safely
+        # scaled when the statistical meaning is missing.
+        raise ValueError(
+            "source uncertainty must be typed before unit conversion so it can be converted consistently"
+        )
+    elif observation.uncertainty is not None:
+        canonical_uncertainty_value = observation.uncertainty
+
+    canonical_observation = observation.model_copy(
+        update={
+            "feature": definition.canonical_feature,
+            "unit": definition.canonical_unit,
+            "value": canonical_value,
+            "uncertainty": canonical_uncertainty_value,
+        }
+    )
+    envelope = MeasurementEnvelope(
+        measurement_id=measurement_id,
+        catalog_version=catalog.schema_version,
+        observation=canonical_observation,
+        uncertainty=canonical_uncertainty,
+        source_feature=source_feature,
+        source_unit=source_unit,
+        transformation_id=transformation_id,
+        transformation_version=transformation_version,
+    )
+    report = catalog.validate_envelope(envelope, disease=disease)
+    return envelope, report
