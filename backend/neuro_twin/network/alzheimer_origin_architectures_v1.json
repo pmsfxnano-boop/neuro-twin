@@ -1,0 +1,200 @@
+{
+  "schema_version": "1.0.0",
+  "disease": "alzheimer",
+  "registry_status": "competing_falsifiable_hypotheses_not_ranked",
+  "architectures": [
+    {
+      "architecture_id": "amyloid_production_dominant",
+      "label": "Amyloid-production dominant",
+      "primary_hypothesis": "A change in APP dosage, cleavage or secretase-dependent peptide production is the earliest dominant perturbation, with downstream soluble amyloid stress facilitating tau pathology, glial response and persistent tissue injury.",
+      "candidate_early_nodes": [
+        "familial_app_psen_variants",
+        "app_amyloidogenic_processing"
+      ],
+      "candidate_edge_ids": [
+        "familial_variant_to_app_processing",
+        "app_to_abeta_oligomers",
+        "oligomers_to_tau",
+        "tau_to_spread",
+        "tau_to_synapse",
+        "synapse_to_damage"
+      ],
+      "discriminating_prediction": "A measurable shift in APP processing or A-beta species should precede downstream tau acceleration and damage in the subgroup assigned to this architecture; changing the upstream production pathway should alter the downstream trajectory.",
+      "falsification_criteria": [
+        "Longitudinal data show tau, vascular or injury changes consistently precede the proposed APP/A-beta shift in the target subgroup.",
+        "Well-controlled perturbation of APP/A-beta production changes the biomarker but not downstream tau, synaptic or damage trajectories."
+      ],
+      "evidence_grade": "strong",
+      "limitations": [
+        "Most late-onset disease does not carry a deterministic APP or presenilin mutation.",
+        "Fluid A-beta concentration is not a direct measurement of toxic soluble oligomer exposure at synapses."
+      ]
+    },
+    {
+      "architecture_id": "amyloid_clearance_dominant",
+      "label": "Amyloid-clearance dominant",
+      "primary_hypothesis": "The primary vulnerability is a reduction in amyloid clearance through APOE-dependent lipid transport, endosomal-lysosomal processing, vascular transport or perivascular drainage, allowing net A-beta retention despite no necessary early increase in production.",
+      "candidate_early_nodes": [
+        "apoe_lipid_transport",
+        "endosomal_sorting_defect",
+        "lysosomal_autophagy_failure",
+        "perivascular_clearance_failure"
+      ],
+      "candidate_edge_ids": [
+        "apoe_to_clearance",
+        "endosomal_to_lysosome",
+        "lysosome_to_tau_proteostasis",
+        "clearance_to_abeta",
+        "nv_to_clearance"
+      ],
+      "discriminating_prediction": "Measures that separate production from clearance should show impaired clearance flux preceding net amyloid retention; repair of the relevant clearance route should change later amyloid and downstream damage trajectory.",
+      "falsification_criteria": [
+        "Direct or validated flux measures show normal clearance before amyloid accumulation while production is increased.",
+        "Clearance perturbation does not change A-beta retention or downstream trajectories in the relevant biological subtype."
+      ],
+      "evidence_grade": "moderate",
+      "limitations": [
+        "Clearance is difficult to measure directly in living humans.",
+        "Different cellular and vascular clearance routes may dominate in different subgroups."
+      ]
+    },
+    {
+      "architecture_id": "tau_neuronal_vulnerability_dominant",
+      "label": "Tau / neuronal vulnerability dominant",
+      "primary_hypothesis": "Cell-specific tau misprocessing or neuronal vulnerability is an early dominant driver in a subset, with tau seeding and network injury becoming partly self-sustaining and not fully dependent on contemporaneous amyloid burden.",
+      "candidate_early_nodes": [
+        "tau_misprocessing",
+        "synaptic_circuit_dysfunction",
+        "aging_homeostatic_decline"
+      ],
+      "candidate_edge_ids": [
+        "tau_to_spread",
+        "tau_to_synapse",
+        "synapse_to_damage",
+        "axon_to_damage",
+        "damage_to_function"
+      ],
+      "discriminating_prediction": "A reproducible subgroup should show tau-related and synaptic/circuit changes before or disproportionate to amyloid change, and tau-targeted perturbation should reduce downstream damage even when amyloid status is held constant.",
+      "falsification_criteria": [
+        "In adequately powered longitudinal cohorts, tau changes consistently follow A-beta changes with no reliable tau-first subgroup.",
+        "Tau perturbation changes tau biomarkers but not downstream neuronal or accumulated-damage outcomes."
+      ],
+      "evidence_grade": "moderate",
+      "limitations": [
+        "A tau-first architecture must not be inferred from cross-sectional tau associations.",
+        "Human causal perturbation evidence for tau propagation remains limited."
+      ]
+    },
+    {
+      "architecture_id": "neurovascular_dominant",
+      "label": "Neurovascular dominant",
+      "primary_hypothesis": "Early endothelial, pericyte, blood-brain barrier, perfusion or perivascular drainage dysfunction is the dominant vulnerability, adding neuronal injury and potentially impairing amyloid clearance.",
+      "candidate_early_nodes": [
+        "neurovascular_unit_failure",
+        "vascular_risk_exposures",
+        "perivascular_clearance_failure"
+      ],
+      "candidate_edge_ids": [
+        "vascular_risk_to_nv_unit",
+        "nv_to_clearance",
+        "nv_to_abeta",
+        "clearance_to_abeta",
+        "damage_to_function"
+      ],
+      "discriminating_prediction": "In a defined subgroup, vascular or perfusion abnormalities should precede or independently predict later proteinopathy and persistent neuronal/neurovascular damage after major confounders and co-pathologies are handled.",
+      "falsification_criteria": [
+        "High-quality longitudinal vascular measures appear only after established amyloid/tau pathology and add no independent prognostic or mechanistic information.",
+        "Targeted vascular perturbation does not modify clearance, neuronal injury or damage trajectories in relevant models."
+      ],
+      "evidence_grade": "moderate",
+      "limitations": [
+        "Vascular risk is not synonymous with Alzheimer-specific initiation.",
+        "In-vivo measures poorly capture some capillary and pericyte mechanisms."
+      ]
+    },
+    {
+      "architecture_id": "immune_glial_dominant",
+      "label": "Immune / glial dominant",
+      "primary_hypothesis": "A primary shift in microglial or astrocytic state, phagocytic capacity or inflammatory resolution is an early vulnerability that alters protein clearance, complement-mediated synaptic remodeling and tissue injury.",
+      "candidate_early_nodes": [
+        "microglial_state_shift",
+        "astrocytic_metabolic_support_failure",
+        "sporadic_polygenic_susceptibility"
+      ],
+      "candidate_edge_ids": [
+        "abeta_to_microglia",
+        "microglia_to_complement",
+        "complement_to_synapse",
+        "astrocyte_to_mito",
+        "synapse_to_damage"
+      ],
+      "discriminating_prediction": "Cell-state-resolved longitudinal or perturbation evidence should identify glial functional changes before the downstream injury pattern, while separating effective phagocytic clearance from damaging inflammation.",
+      "falsification_criteria": [
+        "Glial state changes consistently follow pathology and do not predict independent downstream outcomes.",
+        "Selective manipulation of the proposed glial program fails to alter clearance, synaptic injury or damage in relevant human-derived systems."
+      ],
+      "evidence_grade": "moderate",
+      "limitations": [
+        "Glial states are heterogeneous, region-specific and can be protective or damaging.",
+        "Peripheral inflammatory measurements do not directly observe CNS glial states."
+      ]
+    },
+    {
+      "architecture_id": "metabolic_mitochondrial_dominant",
+      "label": "Metabolic / mitochondrial dominant",
+      "primary_hypothesis": "An early failure of bioenergetics, lipid handling, redox or calcium regulation reduces neuronal resilience and amplifies proteostasis failure, synaptic dysfunction and later proteinopathy in a subset.",
+      "candidate_early_nodes": [
+        "mitochondrial_bioenergetic_failure",
+        "redox_calcium_dysregulation",
+        "glucose_lipid_dysregulation"
+      ],
+      "candidate_edge_ids": [
+        "glucose_lipid_to_mito",
+        "mito_to_redox",
+        "redox_to_synapse",
+        "astrocyte_to_mito",
+        "synapse_to_damage"
+      ],
+      "discriminating_prediction": "Cell- and region-resolved metabolic measures should change before or independently of downstream tau/synaptic injury, and restoring the implicated metabolic process should lower future damage in a perturbation model.",
+      "falsification_criteria": [
+        "Metabolic signals are explained entirely by downstream neuronal loss or reduced activity.",
+        "Targeted metabolic rescue fails to alter downstream pathology or accumulated damage under validated conditions."
+      ],
+      "evidence_grade": "emerging",
+      "limitations": [
+        "Metabolic dysfunction can be a cause, consequence or amplifier.",
+        "FDG-PET is not a direct assay of mitochondrial ATP production or redox flux."
+      ]
+    },
+    {
+      "architecture_id": "mixed_multihit_threshold",
+      "label": "Mixed multi-hit / threshold transition",
+      "primary_hypothesis": "No single pathway is sufficient; several vulnerabilities in protein processing, immunity, vascular support and metabolism accumulate until a nonlinear threshold is crossed, after which positive feedback sustains pathology and persistent damage.",
+      "candidate_early_nodes": [
+        "aging_homeostatic_decline",
+        "sporadic_polygenic_susceptibility",
+        "apoe_lipid_transport",
+        "vascular_risk_exposures"
+      ],
+      "candidate_edge_ids": [
+        "polygenic_to_endosomal",
+        "apoe_to_lipid_transport",
+        "vascular_risk_to_nv_unit",
+        "glucose_lipid_to_mito",
+        "abeta_to_microglia",
+        "oligomers_to_tau",
+        "damage_to_function"
+      ],
+      "discriminating_prediction": "A multi-hit model should explain heterogeneity and predict held-out transitions better than single-driver alternatives, with interpretable interactions and calibrated uncertainty rather than merely a better in-sample fit.",
+      "falsification_criteria": [
+        "A simpler single-driver model consistently performs as well or better on independent cohorts and perturbation data.",
+        "The proposed interaction terms are not identifiable or fail pre-registered tests and negative controls."
+      ],
+      "evidence_grade": "emerging",
+      "limitations": [
+        "Multi-hit models are prone to overfitting and post-hoc storytelling.",
+        "Complexity is not evidence; each interaction must earn inclusion through identifiability and external validation."
+      ]
+    }
+  ]
+}
