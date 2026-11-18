@@ -55,6 +55,7 @@ An additive six-domain network package is being developed under `backend/neuro_t
 - A nonlinear mechanism-level simulator executes explicitly parameterized candidate interactions using bounded Hill-type dynamics. It requires a validated evidence-registry binding, explicit edge signs and coefficients, and explicit initial states.
 - Virtual intervention protocols support time-bounded mechanism clamps or additive drives. Baseline and intervention trajectories use identical initial states; the engine reports component-wise accumulated damage prevented at the horizon and damage-burden AUC differences. These are conditional model counterfactuals, not empirical causal effects.
 - A parameter-ensemble summarizer propagates only caller-supplied parameter draws. A held-out predictive scoring module compares rival architecture forecasts on a common observation mask using Gaussian log predictive density, RMSE and interval coverage.
+- A versioned mechanism-level observation operator maps explicit node-state combinations to transformed measurement features. It requires an explicit H matrix, units, noise covariance, source-catalog hash and transformation version; it creates no biomarker mappings by default.
 - The Alzheimer systems reverse-engineering dossier is in `docs/ALZHEIMER_SYSTEMS_REVERSE_ENGINEERING_V1.md`; it documents the decomposition, rival origin hypotheses, feedback loops, candidate intervention layers and validation requirements.
 
 See `docs/NEURO_TWIN_SIX_DOMAIN_NETWORK_V1.md` for the mathematical and validation contract.
