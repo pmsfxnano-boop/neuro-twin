@@ -78,6 +78,7 @@ class SixDomainNetwork:
     time_unit: str
     drift: np.ndarray
     coupling_matrix: np.ndarray
+    candidate_edges: tuple[tuple[str, str], ...]
     version: str = "1.0.0"
     parameter_status: ParameterStatus = "hypothesis"
 
@@ -91,11 +92,29 @@ class SixDomainNetwork:
         if self.parameter_status not in ("hypothesis", "estimated", "validated"):
             raise ValueError("invalid parameter_status")
         object.__setattr__(self, "drift", _finite_vector(self.drift, name="drift", size=6))
-        object.__setattr__(
-            self,
-            "coupling_matrix",
-            _finite_matrix(self.coupling_matrix, name="coupling_matrix", shape=(6, 6)),
-        )
+        matrix = _finite_matrix(self.coupling_matrix, name="coupling_matrix", shape=(6, 6))
+        normalized_edges: list[tuple[str, str]] = []
+        for edge in self.candidate_edges:
+            if not isinstance(edge, (tuple, list)) or len(edge) != 2:
+                raise ValueError("each candidate edge must be a (source, target) pair")
+            source, target = edge
+            if source not in DOMAIN_INDEX or target not in DOMAIN_INDEX:
+                raise ValueError(f"candidate edge contains an unknown domain: {edge!r}")
+            normalized_edges.append((source, target))
+        if len(set(normalized_edges)) != len(normalized_edges):
+            raise ValueError("candidate_edges must not contain duplicates")
+        normalized_edges.sort(key=lambda edge: (DOMAIN_INDEX[edge[0]], DOMAIN_INDEX[edge[1]]))
+        allowed_matrix_entries = {
+            (DOMAIN_INDEX[target], DOMAIN_INDEX[source])
+            for source, target in normalized_edges
+        }
+        nonzero_entries = set(map(tuple, np.argwhere(matrix != 0.0)))
+        if not nonzero_entries.issubset(allowed_matrix_entries):
+            raise ValueError(
+                "coupling_matrix contains non-zero entries outside candidate_edges"
+            )
+        object.__setattr__(self, "coupling_matrix", matrix)
+        object.__setattr__(self, "candidate_edges", tuple(normalized_edges))
 
     @property
     def state_names(self) -> tuple[str, ...]:
@@ -105,6 +124,43 @@ class SixDomainNetwork:
     def matrix_A(self) -> np.ndarray:
         """Return a writable copy of the directed coupling matrix."""
         return np.array(self.coupling_matrix, copy=True)
+
+    @property
+    def parameter_names(self) -> tuple[str, ...]:
+        """Stable parameter order for future calibration and audit records."""
+        drift_names = tuple(f"drift:{name}" for name in DOMAIN_NAMES)
+        edge_names = tuple(f"A:{source}->{target}" for source, target in self.candidate_edges)
+        return drift_names + edge_names
+
+    @property
+    def parameter_count(self) -> int:
+        return len(self.parameter_names)
+
+    def as_parameter_vector(self) -> np.ndarray:
+        """Return drift followed by candidate-edge coefficients in stable order."""
+        edge_values = [
+            self.coupling_matrix[DOMAIN_INDEX[target], DOMAIN_INDEX[source]]
+            for source, target in self.candidate_edges
+        ]
+        return np.concatenate([self.drift, np.asarray(edge_values, dtype=float)])
+
+    def with_parameter_vector(self, values: np.ndarray) -> "SixDomainNetwork":
+        """Create a new immutable model with the same graph and new parameters."""
+        vector = np.asarray(values, dtype=float)
+        if vector.shape != (self.parameter_count,) or not np.all(np.isfinite(vector)):
+            raise ValueError(f"parameter vector must be finite with shape ({self.parameter_count},)")
+        matrix = np.zeros((6, 6), dtype=float)
+        for value, (source, target) in zip(vector[6:], self.candidate_edges):
+            matrix[DOMAIN_INDEX[target], DOMAIN_INDEX[source]] = value
+        return SixDomainNetwork(
+            disease=self.disease,
+            time_unit=self.time_unit,
+            drift=vector[:6],
+            coupling_matrix=matrix,
+            candidate_edges=self.candidate_edges,
+            version=self.version,
+            parameter_status=self.parameter_status,
+        )
 
     def rhs(self, state: np.ndarray) -> np.ndarray:
         """Evaluate dx/dt = drift + A @ state."""
