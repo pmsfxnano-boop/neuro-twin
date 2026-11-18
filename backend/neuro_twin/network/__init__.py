@@ -28,6 +28,7 @@ from neuro_twin.network.measurements import (
     MeasurementReference,
     MeasurementUncertainty,
     MeasurementValidationReport,
+    harmonize_measurement_envelope,
 )
 from neuro_twin.network.diagnostics import (
     FiniteHorizonObservabilityReport,
@@ -57,6 +58,7 @@ __all__ = [
     "MeasurementReference",
     "MeasurementUncertainty",
     "MeasurementValidationReport",
+    "harmonize_measurement_envelope",
     "DomainOntologyEntry",
     "DomainSubconstruct",
     "NeuroDomainOntology",
