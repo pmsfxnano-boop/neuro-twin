@@ -9,8 +9,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from neuro_twin.network.evidence import EvidenceCitation
-from neuro_twin.network.model import DOMAIN_NAMES, Domain
+from neuro_twin.network.evidence import Domain, EvidenceCitation
+from neuro_twin.network.model import DOMAIN_NAMES
 
 
 class DomainSubconstruct(BaseModel):
