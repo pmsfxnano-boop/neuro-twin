@@ -158,7 +158,7 @@ def test_source_unit_must_be_harmonized_to_canonical_unit():
     assert any("canonical unit" in reason for reason in report.blocking_reasons)
 
 
-def test_source_feature_alias_is_not_silently_relabelled():
+def test_noncanonical_source_feature_is_rejected_before_measurement_validation():
     catalog = _load()
     envelope = MeasurementEnvelope(
         measurement_id="ad_plasma_ptau217",
@@ -168,7 +168,7 @@ def test_source_feature_alias_is_not_silently_relabelled():
     )
     report = catalog.validate_envelope(envelope, disease="alzheimer")
     assert report.status == "BLOCKED"
-    assert any("harmonization" in reason for reason in report.blocking_reasons)
+    assert any("does not match the canonical" in reason for reason in report.blocking_reasons)
 
 
 def test_assay_platform_and_provenance_are_mandatory_for_ptau():
