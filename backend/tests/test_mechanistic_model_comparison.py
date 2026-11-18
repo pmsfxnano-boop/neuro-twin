@@ -62,7 +62,7 @@ def test_architecture_comparison_requires_common_held_out_data_and_uncertainty()
         )
     bad = (
         forecasts[0],
-        ArchitectureForecast("b", np.asarray([1.1, 2.1]), np.asarray([0.2, 0.0])),
+        ArchitectureForecast("b", np.asarray([1.1, 2.1]), np.asarray([0.2, -0.1])),
     )
     with pytest.raises(ValueError, match="predictive_sd must be >= 0"):
         compare_architecture_forecasts(
