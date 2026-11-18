@@ -79,6 +79,15 @@ class MeasurementUncertainty(BaseModel):
     method_version: str = Field(min_length=1)
     unit: str | None = None
 
+    @model_validator(mode="after")
+    def uncertainty_unit_semantics(self) -> "MeasurementUncertainty":
+        if self.kind == "coefficient_of_variation":
+            if self.unit not in (None, "fraction"):
+                raise ValueError("coefficient of variation must be dimensionless")
+        elif not self.unit:
+            raise ValueError("absolute uncertainty estimates require an explicit unit")
+        return self
+
 
 class MeasurementDefinition(BaseModel):
     """Catalogue entry describing a source measurement and its construct context.
@@ -142,6 +151,8 @@ class MeasurementEnvelope(BaseModel):
     catalog_version: str = Field(min_length=1)
     observation: Observation
     uncertainty: MeasurementUncertainty | None = None
+    source_feature: str | None = None
+    source_unit: str | None = None
     transformation_id: str | None = None
     transformation_version: str | None = None
     metadata: dict[str, str] = Field(default_factory=dict)
@@ -157,6 +168,11 @@ class MeasurementEnvelope(BaseModel):
                 raise ValueError("typed uncertainty does not match Observation.uncertainty")
         if (self.transformation_id is None) != (self.transformation_version is None):
             raise ValueError("transformation_id and transformation_version must be supplied together")
+        if (self.source_feature is None) != (self.source_unit is None):
+            raise ValueError("source_feature and source_unit must be supplied together")
+        if self.source_feature is not None:
+            if not self.source_feature.strip() or not self.source_unit.strip():
+                raise ValueError("source_feature and source_unit must be non-empty")
         return self
 
 
@@ -248,6 +264,17 @@ class MeasurementCatalog(BaseModel):
                 blocking.append("accepted source unit must be converted to the canonical unit through an explicit versioned harmonization step")
             else:
                 blocking.append("observation unit is not accepted; harmonize explicitly before validation")
+        if envelope.source_feature is not None:
+            if envelope.source_feature != definition.canonical_feature:
+                if envelope.source_feature not in definition.source_feature_aliases:
+                    blocking.append("source feature is not a registered alias for this canonical measurement")
+                if not envelope.transformation_id:
+                    blocking.append("source feature mapping requires an explicit versioned harmonization identity")
+            if envelope.source_unit != definition.canonical_unit:
+                if envelope.source_unit not in definition.accepted_units:
+                    blocking.append("source unit is not accepted for this measurement")
+                if not envelope.transformation_id:
+                    blocking.append("source unit conversion requires an explicit versioned harmonization identity")
         if definition.assay_required and not observation.assay:
             blocking.append("assay identity is required")
         if not observation.quality.schema_valid:
