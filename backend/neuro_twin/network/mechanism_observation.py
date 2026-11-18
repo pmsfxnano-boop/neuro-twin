@@ -70,9 +70,11 @@ class MechanismObservationModel:
             raise ValueError("transformation identity and version are required")
         nodes = _validate_names(self.mechanism_node_ids, name="mechanism_node_ids")
         features = _validate_names(self.feature_names, name="feature_names")
-        units = _validate_names(self.feature_units, name="feature_units")
-        if len(units) != len(features):
-            raise ValueError("feature_units must contain one unit per feature")
+        units = tuple(self.feature_units)
+        if len(units) != len(features) or any(
+            not isinstance(unit, str) or not unit.strip() for unit in units
+        ):
+            raise ValueError("feature_units must contain one non-empty unit per feature")
         H = np.array(self.H, dtype=float, copy=True)
         bias = np.array(self.bias, dtype=float, copy=True)
         R = np.array(self.R, dtype=float, copy=True)
