@@ -63,18 +63,18 @@ def _model(coefficient=0.9):
         parameter_status="hypothesis",
     )
     model.validate_against(catalog, registry)
-    return catalog, model
+    return catalog, registry, model
 
 
 def test_mechanistic_model_is_bound_to_evidence_catalog_and_architecture():
     catalog, registry = _catalog_and_registry()
-    _, model = _model()
+    _, _, model = _model()
     assert model.validate_against(catalog, registry) is model
     assert len(model.config_hash) == 64
 
 
 def test_intervention_changes_mechanism_and_damage_trajectory_in_toy_fixture():
-    catalog, model = _model()
+    catalog, registry, model = _model()
     time = np.asarray([0.0, 1.0, 2.0, 3.0, 4.0])
     initial = np.asarray([0.8, 0.1, 0.1])
     initial_damage = np.zeros(4)
@@ -89,6 +89,7 @@ def test_intervention_changes_mechanism_and_damage_trajectory_in_toy_fixture():
     result = compare_intervention(
         model,
         catalog=catalog,
+        registry=registry,
         time=time,
         initial_activity=initial,
         initial_damage=initial_damage,
@@ -111,6 +112,7 @@ def test_additive_drive_can_reduce_downstream_damage_without_changing_initial_st
     result = compare_intervention(
         model,
         catalog=catalog,
+        registry=registry,
         time=np.asarray([0.0, 1.0, 2.0, 3.0]),
         initial_activity=np.asarray([0.8, 0.1, 0.1]),
         initial_damage=np.zeros(4),
@@ -160,6 +162,7 @@ def test_intervention_must_target_a_modeled_mechanism_node():
     with pytest.raises(ValueError, match="not modeled"):
         model.simulate(
             catalog=catalog,
+            registry=registry,
             time=np.asarray([0.0, 1.0]),
             initial_activity=np.asarray([0.8, 0.1, 0.1]),
             interventions=(
@@ -180,6 +183,7 @@ def test_parameter_ensemble_reports_effect_interval():
     _, model_b = _model(1.0)
     kwargs = {
         "catalog": catalog,
+        "registry": registry,
         "time": np.asarray([0.0, 1.0, 2.0, 3.0]),
         "initial_activity": np.asarray([0.8, 0.1, 0.1]),
         "initial_damage": np.zeros(4),
