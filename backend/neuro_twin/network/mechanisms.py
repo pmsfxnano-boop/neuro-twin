@@ -116,3 +116,63 @@ class AlzheimerMechanismCatalog(BaseModel):
             if node.node_id == node_id:
                 return node
         raise KeyError(node_id)
+
+
+class OriginArchitectureHypothesis(BaseModel):
+    """One falsifiable candidate architecture for Alzheimer disease origin."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    architecture_id: str = Field(pattern=r"^[a-z][a-z0-9_]{2,80}$")
+    label: str = Field(min_length=3)
+    primary_hypothesis: str = Field(min_length=60)
+    candidate_early_nodes: tuple[str, ...] = Field(min_length=1)
+    candidate_edge_ids: tuple[str, ...] = Field(min_length=1)
+    discriminating_prediction: str = Field(min_length=60)
+    falsification_criteria: tuple[str, ...] = Field(min_length=1)
+    evidence_grade: EvidenceGrade
+    limitations: tuple[str, ...] = Field(min_length=1)
+
+
+class AlzheimerOriginArchitectureRegistry(BaseModel):
+    """Competing origin hypotheses linked to the shared mechanism inventory."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    schema_version: str = Field(min_length=1)
+    disease: Literal["alzheimer"] = "alzheimer"
+    registry_status: Literal[
+        "competing_falsifiable_hypotheses_not_ranked"
+    ] = "competing_falsifiable_hypotheses_not_ranked"
+    architectures: tuple[OriginArchitectureHypothesis, ...] = Field(min_length=2)
+
+    @model_validator(mode="after")
+    def unique_architectures(self) -> "AlzheimerOriginArchitectureRegistry":
+        identifiers = [item.architecture_id for item in self.architectures]
+        if len(identifiers) != len(set(identifiers)):
+            raise ValueError("architecture identifiers must be unique")
+        return self
+
+    def validate_against(
+        self, catalog: AlzheimerMechanismCatalog
+    ) -> "AlzheimerOriginArchitectureRegistry":
+        if catalog.disease != self.disease:
+            raise ValueError("origin architectures and mechanism catalog disease mismatch")
+        node_ids = {item.node_id for item in catalog.nodes}
+        edge_by_id = {item.edge_id: item for item in catalog.edges}
+        for architecture in self.architectures:
+            missing_nodes = set(architecture.candidate_early_nodes) - node_ids
+            missing_edges = set(architecture.candidate_edge_ids) - set(edge_by_id)
+            if missing_nodes:
+                raise ValueError(
+                    f"{architecture.architecture_id} references unknown nodes: {sorted(missing_nodes)}"
+                )
+            if missing_edges:
+                raise ValueError(
+                    f"{architecture.architecture_id} references unknown edges: {sorted(missing_edges)}"
+                )
+            for edge_id in architecture.candidate_edge_ids:
+                edge = edge_by_id[edge_id]
+                if edge.source_node not in node_ids or edge.target_node not in node_ids:
+                    raise ValueError(f"{architecture.architecture_id} has invalid edge endpoints")
+        return self
