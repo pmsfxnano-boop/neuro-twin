@@ -15,6 +15,7 @@ from neuro_twin.data.schema import (
 from neuro_twin.network import (
     MeasurementCatalog,
     MeasurementEnvelope,
+    evaluate_measurement_coverage,
     MeasurementUncertainty,
     NeuroDomainOntology,
     harmonize_measurement_envelope,
@@ -440,3 +441,98 @@ def test_harmonization_refuses_unit_conversion_without_typed_uncertainty_semanti
             transformation_id="unit-registry-ngL-to-pgml",
             transformation_version="1.0.0",
         )
+
+
+def test_measurement_coverage_reports_subconstruct_proxies_not_latent_states():
+    catalog = _load()
+    p_t = MeasurementEnvelope(
+        measurement_id="ad_plasma_ptau217",
+        catalog_version=catalog.schema_version,
+        observation=_observation(),
+        uncertainty=_typed_uncertainty(),
+    )
+    gfap = MeasurementEnvelope(
+        measurement_id="ad_plasma_gfap",
+        catalog_version=catalog.schema_version,
+        observation=_observation(
+            feature="plasma_GFAP", value=74.0, uncertainty=1.4
+        ),
+        uncertainty=_typed_uncertainty(value=1.4),
+    )
+    reports = [
+        catalog.validate_envelope(p_t, disease="alzheimer"),
+        catalog.validate_envelope(gfap, disease="alzheimer"),
+    ]
+    coverage = evaluate_measurement_coverage(
+        catalog,
+        NeuroDomainOntology.model_validate(json.loads(ONTOLOGY_PATH.read_text(encoding="utf-8"))),
+        reports,
+        disease="alzheimer",
+    )
+    by_domain = {row.domain: row for row in coverage.domain_coverage}
+    assert coverage.status == "PARTIAL_SUBCONSTRUCT_PROXY_COVERAGE"
+    assert coverage.valid_measurement_ids == ("ad_plasma_gfap", "ad_plasma_ptau217")
+    assert by_domain["P"].subconstructs_with_valid_measurement_proxy == ("pathology_burden",)
+    assert by_domain["I"].subconstructs_with_valid_measurement_proxy == ("astrocytic_reactivity",)
+    assert by_domain["M"].subconstructs_with_valid_measurement_proxy == ()
+    assert by_domain["Pr"].subconstructs_with_valid_measurement_proxy == ()
+    assert coverage.latent_observability_status == "NOT_EVALUATED_NO_LATENT_BINDINGS"
+    assert coverage.latent_inference_eligible is False
+
+
+def test_measurement_coverage_separates_blocked_from_missing_measurements():
+    catalog = _load()
+    blocked_envelope = MeasurementEnvelope(
+        measurement_id="ad_plasma_ptau217",
+        catalog_version=catalog.schema_version,
+        observation=_observation(assay=None),
+        uncertainty=_typed_uncertainty(),
+    )
+    blocked = catalog.validate_envelope(blocked_envelope, disease="alzheimer")
+    coverage = evaluate_measurement_coverage(
+        catalog,
+        NeuroDomainOntology.model_validate(json.loads(ONTOLOGY_PATH.read_text(encoding="utf-8"))),
+        [blocked],
+        disease="alzheimer",
+    )
+    assert coverage.blocked_measurement_ids == ("ad_plasma_ptau217",)
+    assert "ad_plasma_gfap" in coverage.missing_measurement_ids
+    assert "ad_plasma_ptau217" not in coverage.missing_measurement_ids
+    assert coverage.valid_observation_count == 0
+    assert coverage.blocked_observation_count == 1
+
+
+def test_measurement_coverage_rejects_reports_from_a_different_catalog_hash():
+    catalog = _load()
+    envelope = MeasurementEnvelope(
+        measurement_id="ad_plasma_ptau217",
+        catalog_version=catalog.schema_version,
+        observation=_observation(),
+        uncertainty=_typed_uncertainty(),
+    )
+    report = catalog.validate_envelope(envelope, disease="alzheimer")
+    from pydantic import ValidationError
+    forged = report.model_copy(update={"catalog_hash": "0" * 64})
+    with pytest.raises(ValueError, match="different catalogue hash"):
+        evaluate_measurement_coverage(
+            catalog,
+            NeuroDomainOntology.model_validate(json.loads(ONTOLOGY_PATH.read_text(encoding="utf-8"))),
+            [forged],
+            disease="alzheimer",
+        )
+
+
+def test_empty_measurement_coverage_is_not_ready_for_any_proxy_interpretation():
+    catalog = _load()
+    coverage = evaluate_measurement_coverage(
+        catalog,
+        NeuroDomainOntology.model_validate(json.loads(ONTOLOGY_PATH.read_text(encoding="utf-8"))),
+        [],
+        disease="parkinson",
+    )
+    assert coverage.status == "NO_VALID_MEASUREMENT_PROXIES"
+    assert coverage.valid_measurement_ids == ()
+    assert coverage.missing_measurement_ids == (
+        "pd_csf_alpha_syn_saa", "pd_mds_updrs_part_iii", "pd_plasma_nfl"
+    )
+    assert coverage.latent_inference_eligible is False
