@@ -214,6 +214,11 @@
           "code": "network_integrity",
           "label": "Network integrity",
           "description": "Regional and distributed circuit organization and connectivity relevant to the disease phenotype."
+        },
+        {
+          "code": "regional_structure",
+          "label": "Regional neuroanatomical structure",
+          "description": "Regional morphometric and anatomical measures such as volume, thickness and shape derived from MRI, interpreted as tissue-level structural observations rather than direct neuronal cell counts or functional capacity."
         }
       ],
       "overlap_cautions": [
