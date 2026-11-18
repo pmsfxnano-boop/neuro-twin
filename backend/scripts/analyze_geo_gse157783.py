@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+from contextlib import contextmanager
 import hashlib
 import io
 import itertools
@@ -83,33 +84,25 @@ def sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def read_tar_tsv(path: Path, suffix: str) -> io.TextIOWrapper:
-    """Return a streaming text wrapper for the single matching TSV TAR member."""
-    archive = tarfile.open(path, mode="r:gz")
-    candidates = [
-        member for member in archive.getmembers()
-        if member.isfile() and member.name.lower().endswith(suffix.lower())
-    ]
-    if len(candidates) != 1:
-        archive.close()
-        raise RuntimeError(
-            f"{path.name}: expected one {suffix} member, found {len(candidates)}"
-        )
-    stream = archive.extractfile(candidates[0])
-    if stream is None:
-        archive.close()
-        raise RuntimeError(f"Cannot read member {candidates[0].name}")
-    # The caller closes this wrapper; close the TAR archive when the stream closes.
-    wrapper = io.TextIOWrapper(stream, encoding="utf-8", errors="strict", newline="")
-    wrapper._neuro_twin_archive = archive  # type: ignore[attr-defined]
-    return wrapper
-
-
-def close_tar_tsv(stream: io.TextIOWrapper) -> None:
-    archive = getattr(stream, "_neuro_twin_archive", None)
-    stream.close()
-    if archive is not None:
-        archive.close()
+@contextmanager
+def read_tar_tsv(path: Path, suffix: str):
+    """Yield a streaming text wrapper and close both the member and TAR archive."""
+    with tarfile.open(path, mode="r:gz") as archive:
+        candidates = [
+            member for member in archive.getmembers()
+            if member.isfile() and member.name.lower().endswith(suffix.lower())
+        ]
+        if len(candidates) != 1:
+            raise RuntimeError(
+                f"{path.name}: expected one {suffix} member, found {len(candidates)}"
+            )
+        raw_stream = archive.extractfile(candidates[0])
+        if raw_stream is None:
+            raise RuntimeError(f"Cannot read member {candidates[0].name}")
+        with io.TextIOWrapper(
+            raw_stream, encoding="utf-8", errors="strict", newline=""
+        ) as text_stream:
+            yield text_stream
 
 
 def load_cells(path: Path) -> tuple[list[str], list[str], list[str], dict[str, str]]:
@@ -381,9 +374,6 @@ def summarize_tests(
         else:
             unmapped += 1
 
-    cell_counts = np.asarray([0] * len(group_records), dtype=np.int64)
-    # group_records already follows group index order; counts are separately
-    # supplemented by cell-count data in the caller.
     library_sizes = counts.sum(axis=0, dtype=np.int64)
     log_cpm = np.log2(
         (counts.astype(np.float64) + 0.5)
