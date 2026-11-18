@@ -275,12 +275,14 @@ class MechanisticArchitectureModel:
         self,
         *,
         catalog: AlzheimerMechanismCatalog,
+        registry: AlzheimerOriginArchitectureRegistry,
         time: np.ndarray,
         initial_activity: np.ndarray,
         interventions: tuple[InterventionProtocol, ...] = (),
         relative_tolerance: float = 1e-7,
         absolute_tolerance: float = 1e-9,
     ) -> MechanismTrajectory:
+        self.validate_against(catalog, registry)
         t = _validate_time(time)
         initial = np.asarray(initial_activity, dtype=float)
         if initial.shape != (len(self.nodes),):
@@ -375,13 +377,14 @@ class MechanisticArchitectureModel:
         self,
         *,
         catalog: AlzheimerMechanismCatalog,
+        registry: AlzheimerOriginArchitectureRegistry,
         time: np.ndarray,
         initial_activity: np.ndarray,
         initial_damage: np.ndarray,
         interventions: tuple[InterventionProtocol, ...] = (),
     ) -> MechanisticSimulationResult:
         mechanism = self.simulate(
-            catalog=catalog, time=time, initial_activity=initial_activity,
+            catalog=catalog, registry=registry, time=time, initial_activity=initial_activity,
             interventions=interventions,
         )
         index = {name: i for i, name in enumerate(mechanism.node_ids)}
@@ -407,6 +410,7 @@ def compare_intervention(
     model: MechanisticArchitectureModel,
     *,
     catalog: AlzheimerMechanismCatalog,
+    registry: AlzheimerOriginArchitectureRegistry,
     time: np.ndarray,
     initial_activity: np.ndarray,
     initial_damage: np.ndarray,
@@ -416,11 +420,11 @@ def compare_intervention(
     if not interventions:
         raise ValueError("at least one intervention protocol is required")
     baseline = model.simulate_with_damage(
-        catalog=catalog, time=time, initial_activity=initial_activity,
+        catalog=catalog, registry=registry, time=time, initial_activity=initial_activity,
         initial_damage=initial_damage,
     )
     treated = model.simulate_with_damage(
-        catalog=catalog, time=time, initial_activity=initial_activity,
+        catalog=catalog, registry=registry, time=time, initial_activity=initial_activity,
         initial_damage=initial_damage, interventions=interventions,
     )
     prevented_final = baseline.damage.cumulative_damage[-1] - treated.damage.cumulative_damage[-1]
