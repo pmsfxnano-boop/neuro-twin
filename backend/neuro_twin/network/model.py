@@ -10,6 +10,8 @@ module does not assign biomarker mappings or biological coefficient values.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
+import json
 from typing import Literal
 
 import numpy as np
@@ -69,6 +71,9 @@ class SixDomainNetwork:
     coupling_matrix:
         Directed 6x6 matrix in DOMAIN_NAMES order. Element [i, j] is the
         contribution of state j to the time derivative of state i.
+    candidate_edges:
+        Explicit permitted edges in (source, target) order. Non-zero matrix
+        entries outside this candidate graph are rejected.
     parameter_status:
         "hypothesis" is the safe default. "estimated" and "validated" are
         provenance labels and must only be set by a separately audited process.
@@ -124,6 +129,21 @@ class SixDomainNetwork:
     def matrix_A(self) -> np.ndarray:
         """Return a writable copy of the directed coupling matrix."""
         return np.array(self.coupling_matrix, copy=True)
+
+    @property
+    def config_hash(self) -> str:
+        """Stable SHA-256 of the disease-specific model configuration."""
+        payload = {
+            "disease": self.disease,
+            "time_unit": self.time_unit,
+            "version": self.version,
+            "parameter_status": self.parameter_status,
+            "drift": self.drift.tolist(),
+            "coupling_matrix": self.coupling_matrix.tolist(),
+            "candidate_edges": [list(edge) for edge in self.candidate_edges],
+        }
+        encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        return hashlib.sha256(encoded).hexdigest()
 
     @property
     def parameter_names(self) -> tuple[str, ...]:
