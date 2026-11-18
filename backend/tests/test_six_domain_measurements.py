@@ -17,6 +17,7 @@ from neuro_twin.network import (
     MeasurementEnvelope,
     MeasurementUncertainty,
     NeuroDomainOntology,
+    harmonize_measurement_envelope,
 )
 
 
@@ -400,4 +401,41 @@ def test_cv_uncertainty_is_dimensionless():
             source="assay_validation",
             method_version="cv-method-1",
             unit="pg/mL",
+        )
+
+
+def test_harmonization_converts_measurement_and_absolute_uncertainty_together():
+    catalog = _load()
+    source = _observation(unit="ng/L", uncertainty=0.12)
+    source_uncertainty = _typed_uncertainty(value=0.12, unit="ng/L")
+    envelope, report = harmonize_measurement_envelope(
+        source,
+        measurement_id="ad_plasma_ptau217",
+        catalog=catalog,
+        disease="alzheimer",
+        uncertainty=source_uncertainty,
+        transformation_id="unit-registry-ngL-to-pgml",
+        transformation_version="1.0.0",
+    )
+    assert envelope.observation.unit == "pg/mL"
+    assert envelope.observation.value == pytest.approx(1.25)
+    assert envelope.observation.uncertainty == pytest.approx(0.12)
+    assert envelope.uncertainty.unit == "pg/mL"
+    assert envelope.source_unit == "ng/L"
+    assert envelope.transformation_version == "1.0.0"
+    assert report.status == "VALID_FOR_MEASUREMENT_LAYER"
+    assert report.latent_inference_eligible is False
+
+
+def test_harmonization_refuses_unit_conversion_without_typed_uncertainty_semantics():
+    catalog = _load()
+    source = _observation(unit="ng/L", uncertainty=0.12)
+    with pytest.raises(ValueError, match="typed before unit conversion"):
+        harmonize_measurement_envelope(
+            source,
+            measurement_id="ad_plasma_ptau217",
+            catalog=catalog,
+            disease="alzheimer",
+            transformation_id="unit-registry-ngL-to-pgml",
+            transformation_version="1.0.0",
         )
