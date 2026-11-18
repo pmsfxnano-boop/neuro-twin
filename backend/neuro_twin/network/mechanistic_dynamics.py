@@ -389,6 +389,9 @@ class MechanisticArchitectureModel:
         interventions: tuple[InterventionProtocol, ...] = (),
     ) -> MechanisticSimulationResult:
         requested_time = _validate_time(time)
+        for item in interventions:
+            if item.start_time < requested_time[0] or item.end_time > requested_time[-1]:
+                raise ValueError("intervention interval must lie within requested simulation time")
         integration_time = np.asarray(
             sorted(
                 set(float(x) for x in requested_time)
@@ -434,6 +437,9 @@ def compare_intervention(
     if not interventions:
         raise ValueError("at least one intervention protocol is required")
     requested_time = _validate_time(time)
+    for item in interventions:
+        if item.start_time < requested_time[0] or item.end_time > requested_time[-1]:
+            raise ValueError("intervention interval must lie within requested simulation time")
     comparison_time = np.asarray(
         sorted(
             set(float(x) for x in requested_time)
