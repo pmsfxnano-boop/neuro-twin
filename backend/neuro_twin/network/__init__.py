@@ -49,6 +49,12 @@ from neuro_twin.network.mechanistic_architecture_comparison import (
     MechanisticArchitectureForecast,
     compare_mechanistic_architectures,
 )
+from neuro_twin.network.intervention_timing import (
+    InterventionTimingEffect,
+    InterventionTimingSweepResult,
+    InterventionTimingWindow,
+    sweep_intervention_timing,
+)
 from neuro_twin.network.model import (
     DOMAIN_NAMES,
     DOMAIN_POLARITY,
@@ -109,6 +115,10 @@ __all__ = [
     "NodeKinetics",
     "compare_intervention",
     "summarize_parameter_ensemble",
+    "InterventionTimingEffect",
+    "InterventionTimingSweepResult",
+    "InterventionTimingWindow",
+    "sweep_intervention_timing",
     "ArchitectureCandidateRun",
     "MechanisticArchitectureComparison",
     "MechanisticArchitectureForecast",
