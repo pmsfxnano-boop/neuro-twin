@@ -409,6 +409,30 @@ cohort adapters, pre-registered estimands, parameter-recovery tests and
 independent validation. The parameter-ensemble uncertainty summarizer only
 propagates parameter draws supplied by a separate audited estimation process.
 
+## Intervention-timing sweep
+
+The v1 timing sweep is implemented in
+backend/neuro_twin/network/intervention_timing.py. For one declared
+architecture, it runs the same virtual perturbation across a caller-specified
+set of start/end windows and across caller-supplied parameter/initial-state
+draws. It compares each perturbed trajectory with a paired baseline under
+identical model and initial conditions.
+
+For every window and damage compartment, it reports:
+- median final damage prevented and a supplied-draw quantile interval;
+- median reduction in integrated damage burden and its interval;
+- fraction of supplied parameter draws with positive or negative effect.
+
+These fractions are descriptive robustness frequencies, not probabilities
+unless the parameter draws have a separately justified probability meaning.
+The time unit belongs to the model (for example, years only if the model
+parameters and observations are actually parameterized in years). The sweep
+does not convert an intervention window into a real clinical treatment
+window, and clamp/additive-drive controls are not drug doses or PK/PD
+models. A simulated early window that looks more favorable is only a
+candidate timing hypothesis until checked against longitudinal target
+engagement and controlled perturbation/intervention evidence.
+
 ## Validation boundary
 
 The included tests are deterministic numerical/software tests using
