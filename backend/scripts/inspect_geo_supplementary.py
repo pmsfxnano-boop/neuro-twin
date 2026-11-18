@@ -28,7 +28,7 @@ FILES = {
 BASE_URL = "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE157nnn/GSE157783/suppl/"
 
 
-def download(url: str, destination: Path, attempts: int = 4) -> tuple[int, str]:
+def download(url: str, destination: Path, attempts: int = 4) -> tuple[int, str, int | None]:
     """Stream a public GEO file to disk and return byte count and SHA-256."""
     last_error: Exception | None = None
     for attempt in range(attempts):
@@ -39,7 +39,10 @@ def download(url: str, destination: Path, attempts: int = 4) -> tuple[int, str]:
             headers={"User-Agent": "Neuro-Twin-public-research/0.1 (GEO data audit)"},
         )
         try:
+            request.add_header("Accept-Encoding", "identity")
             with urllib.request.urlopen(request, timeout=90) as response:
+                content_length_header = response.headers.get("Content-Length")
+                expected_bytes = int(content_length_header) if content_length_header else None
                 with destination.open("wb") as output:
                     while True:
                         chunk = response.read(8 * 1024 * 1024)
@@ -50,7 +53,11 @@ def download(url: str, destination: Path, attempts: int = 4) -> tuple[int, str]:
                         byte_count += len(chunk)
             if byte_count == 0:
                 raise RuntimeError(f"empty response for {url}")
-            return byte_count, digest.hexdigest()
+            if expected_bytes is not None and byte_count != expected_bytes:
+                raise RuntimeError(
+                    f"truncated response for {url}: received {byte_count}, expected {expected_bytes}"
+                )
+            return byte_count, digest.hexdigest(), expected_bytes
         except (OSError, urllib.error.URLError, RuntimeError) as exc:
             last_error = exc
             destination.unlink(missing_ok=True)
@@ -119,12 +126,25 @@ def build_manifest(output_dir: Path) -> dict[str, Any]:
     for key, filename in FILES.items():
         url = BASE_URL + filename
         local_path = output_dir / filename
-        size_bytes, sha256 = download(url, local_path)
-        archive_layout = inspect_tar(local_path)
+        last_error: Exception | None = None
+        for validation_attempt in range(3):
+            size_bytes, sha256, expected_bytes = download(url, local_path)
+            try:
+                archive_layout = inspect_tar(local_path)
+                last_error = None
+                break
+            except (tarfile.TarError, EOFError, OSError, RuntimeError) as exc:
+                last_error = exc
+                local_path.unlink(missing_ok=True)
+                if validation_attempt < 2:
+                    time.sleep(2**validation_attempt)
+        if last_error is not None:
+            raise RuntimeError(f"could not validate GEO archive {filename}: {last_error}") from last_error
         manifest["archives"][key] = {
             "filename": filename,
             "url": url,
             "size_bytes": size_bytes,
+            "content_length_bytes": expected_bytes,
             "sha256": sha256,
             **archive_layout,
         }
