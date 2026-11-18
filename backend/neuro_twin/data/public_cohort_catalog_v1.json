@@ -269,6 +269,57 @@
       "result": "PFKFB2 expression and associated glycolysis/trafficking vs OXPHOS signatures are redistributed by cell type and disease stage in postmortem substantia nigra.",
       "evidence_class": "published_secondary_analysis",
       "not_reanalysed_by_neuro_twin": true
+    },
+    {
+      "id": "NEURO_TWIN_PD_GSE157783_PSEUDOBULK_V1",
+      "dataset_id": "GSE157783",
+      "analysis_version": "1.0.0",
+      "analysis_branch": "feat/six-domain-dynamic-network-v1",
+      "analysis_commit": "82863796e4ec0576350feb53d3549b1d04253462",
+      "workflow_run_id": 44279937682,
+      "biological_design": {
+        "donors_total": 11,
+        "pd_donors": 5,
+        "control_donors": 6,
+        "cells": 41435,
+        "genes": 26737,
+        "donor_celltype_profiles": 123
+      },
+      "pathway_panel": [
+        "R-HSA-70171",
+        "R-HSA-70268",
+        "R-HSA-9857492",
+        "R-HSA-71403",
+        "R-HSA-611105",
+        "R-HSA-5205685",
+        "R-HSA-1632852",
+        "R-HSA-432720"
+      ],
+      "inferential_results": {
+        "potential_contrasts": 96,
+        "estimable_contrasts": 72,
+        "fdr_q_lt_0_05": 0,
+        "min_nominal_p": 0.0541,
+        "min_fdr_q": 0.7925
+      },
+      "primary_nominal_signal": {
+        "pathway": "pyruvate_metabolism",
+        "cell_type": "Oligodendrocytes",
+        "pd_minus_control_z": 0.367,
+        "hedges_g": 1.21,
+        "p": 0.0541,
+        "q": 0.7925,
+        "status": "not_significant"
+      },
+      "critical_limitations": [
+        "Dopaminergic-neuron class had only 1 PD and 1 control donor meeting minimum cell count; not inferentially testable.",
+        "Postmortem cross-sectional RNA counts do not establish temporal order or metabolic flux.",
+        "No age, sex, postmortem interval or clinical covariate adjustment in this pilot.",
+        "No contrast survived multiple-testing correction."
+      ],
+      "evidence_class": "Neuro-Twin independent raw-count analysis",
+      "interpretation": "No robust pathway-level evidence for a coherent metabolic shutdown in this small PD midbrain pilot; effects are mixed and cell-type-specific. This does not falsify early metabolic vulnerability or an amplifier role.",
+      "artifact_url": "https://github.com/pmsfxnano-boop/neuro-twin/actions/runs/44279937682"
     }
   ]
 }
