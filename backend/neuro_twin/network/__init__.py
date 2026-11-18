@@ -26,6 +26,13 @@ from neuro_twin.network.mechanistic_dynamics import (
     compare_intervention,
     summarize_parameter_ensemble,
 )
+from neuro_twin.network.mechanistic_cohort_calibration import (
+    CohortSubjectPrediction,
+    MechanisticCohortCalibrationResult,
+    MechanisticSubjectSeries,
+    SubjectInitialStateBound,
+    fit_mechanistic_cohort_parameters,
+)
 from neuro_twin.network.mechanistic_calibration import (
     MechanisticCalibrationResult,
     ParameterBound,
@@ -123,6 +130,11 @@ __all__ = [
     "MechanisticArchitectureComparison",
     "MechanisticArchitectureForecast",
     "compare_mechanistic_architectures",
+    "CohortSubjectPrediction",
+    "MechanisticCohortCalibrationResult",
+    "MechanisticSubjectSeries",
+    "SubjectInitialStateBound",
+    "fit_mechanistic_cohort_parameters",
     "MechanisticCalibrationResult",
     "ParameterBound",
     "fit_mechanistic_parameters",
