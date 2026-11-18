@@ -132,6 +132,34 @@ from currently available datasets. Observability and identifiability are
 empirical gates to be evaluated per disease, cohort, modality combination,
 and observation schedule.
 
+## Literature interaction register
+
+`backend/neuro_twin/network/edge_evidence_v1.json` contains a versioned,
+disease-separated inventory of literature-level interactions. Its schema is
+validated by `network/evidence.py`. The initial records cover provisional
+metabolism–proteostasis interactions in Alzheimer disease and Parkinson
+disease, an unresolved inflammation–proteostasis interaction in Alzheimer
+disease, and selected Parkinson candidate mechanisms involving
+proteostasis–inflammation, inflammation–neuronal integrity, and
+metabolism–neuronal integrity.
+
+The initial register is based on review syntheses, including the 2025
+Alzheimer molecular-neurobiology review (Hein et al., DOI
+10.1007/s12035-025-05602-0), a 2026 Alzheimer systems-biology scoping review
+(Bice et al., DOI 10.1186/s13024-026-00934-4), the 2024 review of
+mitochondrial/lysosomal/synaptic cross-talk in Parkinson disease (Brooker et
+al., DOI 10.1016/j.conb.2024.102841), and a 2025 Parkinson signaling-pathways
+review (Khan et al., DOI 10.3390/ijms26136416). The registry also references
+the 2024 autophagy–lysosome review (DOI 10.1038/s41580-024-00757-5) and
+other disease-specific reviews.
+
+Every entry is explicitly marked `literature_candidate_only`, has no
+coefficient sign constraint, and is not eligible for parameter fitting.
+Undirected evidence is not converted into a directed edge. Candidate
+mechanisms do not establish causality, patient-level temporal ordering, or
+parameter values. The registry is a source-traceable hypothesis inventory,
+not a validated biological graph.
+
 ## Validation boundary
 
 The included tests are deterministic numerical/software tests using
@@ -158,7 +186,10 @@ Required next research gates:
 - `backend/neuro_twin/network/observation.py`
 - `backend/neuro_twin/network/state_space.py`
 - `backend/neuro_twin/network/diagnostics.py`
+- `backend/neuro_twin/network/evidence.py`
+- `backend/neuro_twin/network/edge_evidence_v1.json`
 - `backend/tests/test_six_domain_network.py`
 - `backend/tests/test_six_domain_network_diagnostics.py`
+- `backend/tests/test_six_domain_evidence_registry.py`
 
 The package is additive and does not yet connect to the production API or UI.
