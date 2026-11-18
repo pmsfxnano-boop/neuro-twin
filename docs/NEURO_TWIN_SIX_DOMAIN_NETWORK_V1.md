@@ -45,10 +45,18 @@ dx/dt = b + A x
 - `b[i]` is the drift of state `i`, in latent-coordinate units per time unit.
 - `A[i,j]` is the directed influence of source state `j` on the derivative
   of target state `i`; diagonal terms are self-dynamics.
+- The permitted graph is an explicit list of directed candidate edges
+  `(source, target)`. Non-zero matrix entries outside that list are rejected.
+  An edge in this list is a candidate parameter, not evidence of causality.
 - Time units are mandatory metadata. Coefficients in `A` therefore have
   inverse-time units.
-- Initial states, drift, and coupling coefficients must be explicit inputs.
-  No empirical coefficient values or default causal edges are supplied.
+- Initial states, drift, candidate edges, and coupling coefficients must be
+  explicit inputs. No empirical coefficient values or default causal edges
+  are supplied.
+- The current parameter vector has six drift terms plus one coefficient per
+  declared candidate edge. This is a structural parameterization contract,
+  not a recommendation to fit every parameter at once. Sparse graph design,
+  regularization, and identifiability gates must limit the fitted dimension.
 
 For any interval `dt`, the affine transition is evaluated with a matrix
 exponential:
