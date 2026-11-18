@@ -82,8 +82,8 @@ def test_intervention_changes_mechanism_and_damage_trajectory_in_toy_fixture():
         intervention_id="virtual_tau_suppression",
         target_node="tau_misprocessing",
         mode="clamp",
-        start_time=1.0,
-        end_time=4.0,
+        start_time=0.5,
+        end_time=3.5,
         intensity=0.0,
     )
     result = compare_intervention(
@@ -96,8 +96,10 @@ def test_intervention_changes_mechanism_and_damage_trajectory_in_toy_fixture():
         interventions=(intervention,),
     )
 
-    assert result.baseline.damage.cumulative_damage.shape == (5, 4)
-    assert result.intervention.damage.cumulative_damage.shape == (5, 4)
+    assert result.baseline.damage.cumulative_damage.shape == (7, 4)
+    assert result.intervention.damage.cumulative_damage.shape == (7, 4)
+    assert 0.5 in result.intervention.damage.time
+    assert 3.5 in result.intervention.damage.time
     assert np.all(result.effect.damage_prevented_at_final > 0.0)
     assert np.all(result.effect.damage_burden_auc_prevented > 0.0)
     assert (
@@ -206,3 +208,26 @@ def test_parameter_ensemble_reports_effect_interval():
     assert summary["damage_prevented_median"].shape == (4,)
     assert summary["damage_prevented_interval"].shape == (2, 4)
     assert np.all(summary["damage_prevented_interval"][0] <= summary["damage_prevented_interval"][1])
+
+
+def test_intervention_cannot_expand_the_requested_simulation_horizon():
+    catalog, registry, model = _model()
+    with pytest.raises(ValueError, match="within requested simulation time"):
+        compare_intervention(
+            model,
+            catalog=catalog,
+            registry=registry,
+            time=np.asarray([0.0, 2.0]),
+            initial_activity=np.asarray([0.8, 0.1, 0.1]),
+            initial_damage=np.zeros(4),
+            interventions=(
+                InterventionProtocol(
+                    intervention_id="out_of_range",
+                    target_node="tau_misprocessing",
+                    mode="clamp",
+                    start_time=-0.1,
+                    end_time=1.0,
+                    intensity=0.0,
+                ),
+            ),
+        )
