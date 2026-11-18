@@ -4,23 +4,74 @@
   "purpose": "Initial public human-data catalog for evaluating shared metabolic vulnerability and disease-specific routing in Alzheimer disease and Parkinson disease.",
   "datasets": [
     {
-      "id": "GSE184950",
-      "disease": "parkinson",
-      "tissue": "substantia_nigra",
-      "modality": "snRNA-seq",
-      "donors": 34,
+      "id": "GSE122063",
+      "disease": "alzheimer_and_vascular_dementia",
+      "tissue": "frontal_and_temporal_cortex",
+      "modality": "bulk_microarray",
+      "arrays": 136,
+      "donors": 31,
       "groups": {
-        "control": 10,
-        "pd": 6,
-        "pdd": 18
+        "ad": 12,
+        "vascular_dementia": 8,
+        "control": 11
       },
-      "nuclei_qc": 390360,
       "access": "public_GEO",
-      "raw_size_approx_gb": 1.7,
-      "priority": "primary_PD_cell_resolved",
-      "caveat": "Postmortem cross-sectional; cannot establish temporal precedence.",
-      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE184950",
-      "published_secondary_analysis_doi": "10.1021/acsomega.6c07768"
+      "priority": "disease_specificity_control",
+      "caveat": "Repeated regions/technical structure; use donor-aware model.",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE122063"
+    },
+    {
+      "id": "GSE132903",
+      "disease": "alzheimer",
+      "tissue": "middle_temporal_gyrus",
+      "modality": "bulk_microarray",
+      "donors": 195,
+      "groups": {
+        "ad": 97,
+        "control": 98
+      },
+      "access": "public_GEO",
+      "priority": "independent_AD_replication",
+      "caveat": "Platform-specific gene coverage.",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE132903"
+    },
+    {
+      "id": "GSE138852",
+      "disease": "alzheimer",
+      "tissue": "entorhinal_cortex",
+      "modality": "snRNA-seq",
+      "donors": 12,
+      "groups": {
+        "ad": 6,
+        "control": 6
+      },
+      "nuclei_in_source_study": 13214,
+      "access": "public_GEO",
+      "priority": "independent_AD_early_region_validation",
+      "caveat": "Independent reanalysis found low neuronal representation; inhibitory neuron PDHA1 test not estimable; does not directly replicate or refute that cell-specific finding.",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE138852",
+      "published_secondary_analysis_doi": "10.1007/s12031-026-02598-7"
+    },
+    {
+      "id": "GSE157783",
+      "disease": "parkinson",
+      "tissue": "postmortem_midbrain",
+      "modality": "snRNA-seq",
+      "donors": 11,
+      "groups": {
+        "control": 6,
+        "idiopathic_pd": 5
+      },
+      "nuclei_after_qc_reported": 41377,
+      "access": "public_GEO",
+      "supplementary_files": {
+        "umi_matrix_tar_mb": 123.3,
+        "cell_metadata_tar_mb": 0.25,
+        "gene_metadata_tar_mb": 0.95
+      },
+      "priority": "first_raw_PD_pilot",
+      "caveat": "Small postmortem cohort; published post-QC nucleus totals vary by pipeline; group assignments must follow GEO sample records.",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE157783"
     },
     {
       "id": "GSE157827",
@@ -41,6 +92,44 @@
       "published_secondary_analysis_doi": "10.1007/s12031-026-02598-7"
     },
     {
+      "id": "GSE174367",
+      "disease": "alzheimer",
+      "tissue": "prefrontal_cortex",
+      "modality": "snRNA-seq_and_snATAC-seq",
+      "donors_reported_original": {
+        "ad": 12,
+        "control": 8
+      },
+      "nuclei_after_qc_reported": 58894,
+      "access": "public_GEO",
+      "supplementary_files": {
+        "snRNA_filtered_feature_bc_matrix_h5_mb": 261.3,
+        "snRNA_cell_metadata_csv_mb": 0.425
+      },
+      "priority": "AD_cell_resolved_cross_check",
+      "caveat": "Donor inclusion and nuclei count differ across published reanalyses; reconcile sample IDs and metadata before donor-level testing.",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174367"
+    },
+    {
+      "id": "GSE184950",
+      "disease": "parkinson",
+      "tissue": "substantia_nigra",
+      "modality": "snRNA-seq",
+      "donors": 34,
+      "groups": {
+        "control": 10,
+        "pd": 6,
+        "pdd": 18
+      },
+      "nuclei_qc": 390360,
+      "access": "public_GEO",
+      "raw_size_approx_gb": 1.7,
+      "priority": "primary_PD_cell_resolved",
+      "caveat": "Postmortem cross-sectional; cannot establish temporal precedence.",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE184950",
+      "published_secondary_analysis_doi": "10.1021/acsomega.6c07768"
+    },
+    {
       "id": "GSE33000",
       "disease": "alzheimer_and_huntington_control",
       "tissue": "prefrontal_cortex",
@@ -51,34 +140,6 @@
       "priority": "large_AD_discovery",
       "caveat": "Bulk tissue, cell-composition effects; contains HD material beyond AD/control subset.",
       "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE33000"
-    },
-    {
-      "id": "GSE5281",
-      "disease": "alzheimer",
-      "tissue": "six_postmortem_brain_regions_laser_captured_neurons",
-      "modality": "microarray",
-      "arrays": 161,
-      "arrays_ad": 87,
-      "arrays_control": 74,
-      "access": "public_GEO",
-      "priority": "neuronal_region_replication",
-      "caveat": "Donor linkage across regions not adequate; analyse within region.",
-      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE5281"
-    },
-    {
-      "id": "GSE132903",
-      "disease": "alzheimer",
-      "tissue": "middle_temporal_gyrus",
-      "modality": "bulk_microarray",
-      "donors": 195,
-      "groups": {
-        "ad": 97,
-        "control": 98
-      },
-      "access": "public_GEO",
-      "priority": "independent_AD_replication",
-      "caveat": "Platform-specific gene coverage.",
-      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE132903"
     },
     {
       "id": "GSE48350",
@@ -97,21 +158,17 @@
       "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE48350"
     },
     {
-      "id": "GSE122063",
-      "disease": "alzheimer_and_vascular_dementia",
-      "tissue": "frontal_and_temporal_cortex",
-      "modality": "bulk_microarray",
-      "arrays": 136,
-      "donors": 31,
-      "groups": {
-        "ad": 12,
-        "vascular_dementia": 8,
-        "control": 11
-      },
+      "id": "GSE5281",
+      "disease": "alzheimer",
+      "tissue": "six_postmortem_brain_regions_laser_captured_neurons",
+      "modality": "microarray",
+      "arrays": 161,
+      "arrays_ad": 87,
+      "arrays_control": 74,
       "access": "public_GEO",
-      "priority": "disease_specificity_control",
-      "caveat": "Repeated regions/technical structure; use donor-aware model.",
-      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE122063"
+      "priority": "neuronal_region_replication",
+      "caveat": "Donor linkage across regions not adequate; analyse within region.",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE5281"
     },
     {
       "id": "GSE7621",
