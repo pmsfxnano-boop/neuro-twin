@@ -34,6 +34,32 @@ must be reviewed before any disease-specific observation binding is registered.
 Each coordinate is latent. It is not equivalent to a directly measured
 concentration, imaging intensity, cognitive score, or clinical diagnosis.
 
+## Hierarchical domain ontology
+
+The top-level state vector is coarse-grained. A separate ontology in
+`backend/neuro_twin/network/domain_ontology_v1.json` decomposes the domains
+into candidate subconstructs without expanding them into extra fitted states
+or assigning automatic composite scores.
+
+Key distinctions are enforced:
+
+- `M` contains separate candidate constructs for mitochondrial bioenergetics,
+  glucose/lactate metabolism, lipid metabolism, and redox homeostasis.
+- `Pr` contains folding/chaperone systems, ubiquitin-proteasome function,
+  autophagy-lysosome clearance, and aggregation/trafficking.
+- A tau, amyloid-beta or alpha-synuclein pathology assay does not directly
+  measure total proteostasis capacity or flux.
+- `N` (neuronal/circuit integrity) is distinct from `Q` (realized functional
+  capacity); reserve, compensation, treatment and comorbidity may separate them.
+- `P` is a latent progression-burden state, not its derivative. Its
+  instantaneous velocity is `dP/dt`; it is not a diagnosis, clinical stage,
+  nor a composite sum of the other five domains.
+
+The ontology explicitly leaves parent-domain aggregation
+`not_operationalized`. Equal weighting, averaging or collapsing subconstructs
+into a single score is not allowed until a measurement and aggregation model
+has been specified and validated.
+
 ## Dynamic model
 
 The v1.0 reference model is a transparent affine continuous-time network:
@@ -188,8 +214,20 @@ Required next research gates:
 - `backend/neuro_twin/network/diagnostics.py`
 - `backend/neuro_twin/network/evidence.py`
 - `backend/neuro_twin/network/edge_evidence_v1.json`
+- `backend/neuro_twin/network/ontology.py`
+- `backend/neuro_twin/network/domain_ontology_v1.json`
 - `backend/tests/test_six_domain_network.py`
 - `backend/tests/test_six_domain_network_diagnostics.py`
 - `backend/tests/test_six_domain_evidence_registry.py`
+- `backend/tests/test_six_domain_domain_ontology.py`
 
 The package is additive and does not yet connect to the production API or UI.
+
+## Selected evidence sources
+
+- Bice et al. (2026), *Systems biology of Alzheimer's Disease: a scoping review of key pathways and mechanisms*, DOI [10.1186/s13024-026-00934-4](https://doi.org/10.1186/s13024-026-00934-4).
+- Zhao et al. (2026), *Noninvasive diagnosis of Alzheimer's disease: a review of emerging biomarkers and multimodal approaches*, DOI [10.3389/fcell.2026.1964029](https://doi.org/10.3389/fcell.2026.1964029).
+- Brooker et al. (2024), *Cell biology of Parkinson's disease: Mechanisms of synaptic, lysosomal, and mitochondrial dysfunction*, DOI [10.1016/j.conb.2024.102841](https://doi.org/10.1016/j.conb.2024.102841).
+- Nixon and Rubinsztein (2024), *Mechanisms of autophagy-lysosome dysfunction in neurodegenerative diseases*, DOI [10.1038/s41580-024-00757-5](https://doi.org/10.1038/s41580-024-00757-5).
+
+These reviews support the construct inventory and candidate mechanism register; they do not validate the Neuro-Twin state variables, parameters, or predictions.
