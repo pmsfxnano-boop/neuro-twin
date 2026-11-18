@@ -511,7 +511,6 @@ def test_measurement_coverage_rejects_reports_from_a_different_catalog_hash():
         uncertainty=_typed_uncertainty(),
     )
     report = catalog.validate_envelope(envelope, disease="alzheimer")
-    from pydantic import ValidationError
     forged = report.model_copy(update={"catalog_hash": "0" * 64})
     with pytest.raises(ValueError, match="different catalogue hash"):
         evaluate_measurement_coverage(
