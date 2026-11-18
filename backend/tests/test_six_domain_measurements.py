@@ -332,3 +332,72 @@ def test_naive_timestamps_are_blocked_even_if_canonical_schema_accepts_them():
     report = catalog.validate_envelope(envelope, disease="alzheimer")
     assert report.status == "BLOCKED"
     assert any("timezone-aware" in reason for reason in report.blocking_reasons)
+
+
+def test_versioned_harmonization_trace_is_required_for_source_unit_conversion():
+    catalog = _load()
+    envelope = MeasurementEnvelope(
+        measurement_id="ad_plasma_ptau217",
+        catalog_version=catalog.schema_version,
+        observation=_observation(unit="pg/mL"),
+        uncertainty=_typed_uncertainty(),
+        source_feature="plasma_pTau217",
+        source_unit="ng/L",
+        transformation_id="unit-conversion-ngL-to-pgml",
+        transformation_version="1.0.0",
+    )
+    report = catalog.validate_envelope(envelope, disease="alzheimer")
+    assert report.status == "VALID_FOR_MEASUREMENT_LAYER"
+
+
+def test_source_unit_conversion_without_transform_identity_is_blocked():
+    catalog = _load()
+    envelope = MeasurementEnvelope(
+        measurement_id="ad_plasma_ptau217",
+        catalog_version=catalog.schema_version,
+        observation=_observation(unit="pg/mL"),
+        uncertainty=_typed_uncertainty(),
+        source_feature="plasma_pTau217",
+        source_unit="ng/L",
+    )
+    report = catalog.validate_envelope(envelope, disease="alzheimer")
+    assert report.status == "BLOCKED"
+    assert any("versioned harmonization identity" in reason for reason in report.blocking_reasons)
+
+
+def test_structural_mri_requires_scanner_and_segmentation_metadata():
+    catalog = _load()
+    envelope = MeasurementEnvelope(
+        measurement_id="ad_mri_hippocampal_volume",
+        catalog_version=catalog.schema_version,
+        observation=_observation(
+            feature="MRI_hippocampal_volume",
+            modality="structural_mri",
+            kind=ObservationKind.MRI_FEATURE,
+            unit="mm3",
+            value=4100.0,
+            extra={},
+        ),
+        uncertainty=MeasurementUncertainty(
+            value=20.0,
+            kind="standard_error",
+            source="quality_control_estimate",
+            method_version="segmentation-qc-1",
+            unit="mm3",
+        ),
+    )
+    report = catalog.validate_envelope(envelope, disease="alzheimer")
+    assert report.status == "BLOCKED"
+    assert any("scanner_vendor" in reason for reason in report.blocking_reasons)
+    assert any("segmentation_pipeline_version" in reason for reason in report.blocking_reasons)
+
+
+def test_cv_uncertainty_is_dimensionless():
+    with pytest.raises(ValidationError, match="dimensionless"):
+        MeasurementUncertainty(
+            value=0.12,
+            kind="coefficient_of_variation",
+            source="assay_validation",
+            method_version="cv-method-1",
+            unit="pg/mL",
+        )
