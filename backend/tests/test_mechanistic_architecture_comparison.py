@@ -1,5 +1,6 @@
 """Integration tests for end-to-end competing architecture comparison."""
 import json
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
@@ -231,4 +232,33 @@ def test_architecture_comparison_rejects_parameter_draw_topology_changes():
             measurement_sd=np.full((3, 1), 0.1),
             available_mask=np.ones((3, 1), dtype=bool),
             candidates=tuple(candidates),
+        )
+
+
+def test_parameter_draws_cannot_change_structural_edge_sign():
+    catalog, registry = _catalog_registry()
+    first = _candidates()[0]
+    base = first.parameter_draws[0]
+    changed_edge = replace(base.edges[0], sign="inhibition")
+    changed_model = replace(
+        base,
+        edges=(changed_edge, *base.edges[1:]),
+    )
+    altered = ArchitectureCandidateRun(
+        architecture_id=first.architecture_id,
+        parameter_draws=(base, changed_model),
+        initial_activity_draws=first.initial_activity_draws,
+        observation_model=first.observation_model,
+    )
+    with pytest.raises(ValueError, match="preserve edge direction/sign"):
+        compare_mechanistic_architectures(
+            evaluation_id="edge-sign-invariance",
+            holdout_kind="temporal_holdout",
+            catalog=catalog,
+            registry=registry,
+            time=np.asarray([0.0, 1.0, 2.0]),
+            observed=np.asarray([[0.1], [0.2], [0.3]]),
+            measurement_sd=np.full((3, 1), 0.1),
+            available_mask=np.ones((3, 1), dtype=bool),
+            candidates=(altered, _candidates()[1]),
         )
