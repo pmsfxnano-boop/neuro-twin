@@ -35,6 +35,17 @@ React + TypeScript + Three.js PWA
 5. UI state is downstream of the scientific runtime; the frontend must not fabricate scientific values.
 6. Raw clinical/imaging data are not committed to Git.
 
+## Six-domain dynamic network — research prototype
+
+An additive six-domain network package is being developed under `backend/neuro_twin/network/`:
+
+- `P` progression, `I` inflammation, `M` metabolism, `N` neuronal integrity, `Q` functional capacity, and `Pr` proteostasis.
+- The v1.0 baseline uses an explicit continuous-time affine network with directed coupling parameters, exact irregular-time propagation, explicit observation operators, and six-state filtering/smoothing.
+- Alzheimer and Parkinson use separate parameterizations. No default biological coefficients or biomarker-to-state mappings are invented.
+- This is a research prototype; it does not replace the existing P-I-N-Q runtime and is not clinically validated.
+
+See `docs/NEURO_TWIN_SIX_DOMAIN_NETWORK_V1.md` for the mathematical and validation contract.
+
 ## Local development
 
 ### Backend
