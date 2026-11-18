@@ -73,3 +73,21 @@ def test_architecture_comparison_requires_common_held_out_data_and_uncertainty()
             available_mask=np.asarray([True, True]),
             forecasts=bad,
         )
+
+
+def test_zero_parameter_spread_is_valid_when_measurement_uncertainty_is_nonzero():
+    observed = np.asarray([1.0, 2.0])
+    zero_spread = np.zeros(2)
+    forecasts = (
+        ArchitectureForecast("a", np.asarray([1.0, 2.0]), zero_spread),
+        ArchitectureForecast("b", np.asarray([1.1, 2.1]), zero_spread),
+    )
+    report = compare_architecture_forecasts(
+        evaluation_id="fixed_parameter_holdout",
+        holdout_kind="subject_holdout",
+        observed=observed,
+        measurement_sd=np.asarray([0.1, 0.1]),
+        available_mask=np.asarray([True, True]),
+        forecasts=forecasts,
+    )
+    assert report.scores[0].architecture_id == "a"
