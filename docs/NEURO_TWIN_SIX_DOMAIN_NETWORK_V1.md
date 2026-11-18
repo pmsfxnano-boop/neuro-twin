@@ -157,6 +157,8 @@ Required next research gates:
 - `backend/neuro_twin/network/model.py`
 - `backend/neuro_twin/network/observation.py`
 - `backend/neuro_twin/network/state_space.py`
+- `backend/neuro_twin/network/diagnostics.py`
 - `backend/tests/test_six_domain_network.py`
+- `backend/tests/test_six_domain_network_diagnostics.py`
 
 The package is additive and does not yet connect to the production API or UI.
