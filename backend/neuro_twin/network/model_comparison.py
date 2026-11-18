@@ -100,8 +100,8 @@ def compare_architecture_forecasts(
             )
         if not np.all(np.isfinite(mean[mask])):
             raise ValueError(f"forecast {forecast.architecture_id} has non-finite means")
-        if not np.all(np.isfinite(pred_sd[mask])) or np.any(pred_sd[mask] <= 0.0):
-            raise ValueError(f"forecast {forecast.architecture_id} predictive_sd must be > 0")
+        if not np.all(np.isfinite(pred_sd[mask])) or np.any(pred_sd[mask] < 0.0):
+            raise ValueError(f"forecast {forecast.architecture_id} predictive_sd must be >= 0")
 
         total_sd = np.sqrt(pred_sd[mask] ** 2 + obs_sd[mask] ** 2)
         residual = y[mask] - mean[mask]
