@@ -512,6 +512,21 @@ human data with subject-level splits and assessed on separate temporal and
 external holdouts. A rank-deficient or poorly conditioned fit must be treated
 as insufficient information, not resolved by adding more parameters.
 
+### 9.4 Shared-parameter cohort calibration
+
+The cohort calibrator estimates a shared set of candidate kinetic parameters
+across multiple longitudinal subjects while allowing each subject to retain
+their own initial latent activity values and irregular visit schedule. This
+is an important step beyond fitting one trajectory, because a candidate
+mechanism should explain repeated within-subject dynamics across individuals,
+not only one person's measurements.
+
+The first implementation uses weighted nonlinear least squares with local
+rank/conditioning diagnostics. It has no subject-specific random kinetic
+effects or hierarchical posterior yet. The fit must be tested with synthetic
+parameter recovery, subject-level train/test splits, temporal holdouts and
+external cohorts before the shared coefficients are interpreted biologically.
+
 ### 9.5 Testing intervention timing
 
 The intervention-timing sweep evaluates candidate start/end windows for a
