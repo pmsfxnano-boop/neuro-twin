@@ -398,6 +398,57 @@ A mechanism map edge can be:
 
 Even a strongly supported biological relationship does not supply a numerical coefficient for the Neuro-Twin dynamics. Coefficients require defined units, parameter identifiability, calibration data, uncertainty estimates and out-of-sample testing.
 
+## 8.4 Existing modeling work and required differentiation
+
+Neuro-Twin must not claim that mechanistic Alzheimer simulation, QSP, system
+dynamics or intervention simulation are new in themselves. The field already
+contains substantial prior art:
+
+- A 2026 Neuro-Dynamic QSP study integrated amyloid-beta, tau, neuronal damage
+  and cognitive decline. It assembled data from 4,056 participants in
+  lecanemab studies and ADNI, reproduced trial endpoints and tested other
+  anti-amyloid therapies. Its published model emphasizes an amyloid-to-tau
+  cascade and identifies A-beta protofibrils as potent drivers of tau in its
+  model (Cao et al., 2026,
+  [DOI 10.1038/s41540-026-00677-4](https://doi.org/10.1038/s41540-026-00677-4)).
+- A 2023 system-dynamics model used 33 factors and 148 causal links for
+  sporadic Alzheimer disease and tested 15 modifiable risk factors against
+  statements derived from meta-analyses of observational studies and RCTs
+  ([DOI 10.1002/alz.12923](https://doi.org/10.1002/alz.12923)).
+- A 2026 systematic review documents the growing use of QSP models for
+  anti-amyloid treatment evaluation
+  ([DOI 10.1002/psp4.70223](https://doi.org/10.1002/psp4.70223)).
+- A 2026 causal-analysis review stresses that molecular association does not
+  identify cause, mechanism or treatable target, and calls for brain-relevant
+  genetic instruments, longitudinal multi-omics, cell-type resolution and
+  triangulation across methods
+  ([DOI 10.1186/s13195-026-02235-w](https://doi.org/10.1186/s13195-026-02235-w)).
+
+Therefore, Neuro-Twin cannot differentiate itself merely by having more
+nodes, more equations, a digital twin label or a virtual intervention button.
+Its intended differentiator must be demonstrated rather than asserted:
+
+1. Compare competing origin architectures rather than presupposing a single
+   amyloid-first cascade.
+2. Explicitly model the distinction between current mechanism activity,
+   latent domains, persistent damage, compensation and clinical expression.
+3. Require every executed edge to carry an explicit direction/sign assumption,
+   evidence provenance and falsification route.
+4. Compare predictions on common temporal and external holdouts, not just
+   reproduce the training cohort or a known trial.
+5. Quantify which parameters are identifiable and abstain when they are not.
+6. Test intervention timing and downstream persistent-damage consequences
+   against randomized clinical, genetic or controlled experimental evidence.
+7. Report where a candidate intervention fails, worsens another compartment,
+   or only moves a biomarker without changing the damage trajectory.
+
+The 2026 Neuro-Dynamic QSP model is an especially relevant benchmark. Neuro-Twin
+should reproduce its validated reference results as a benchmark where
+comparable data and licenses allow, then demonstrate incremental value on
+alternative origin architectures, multi-domain damage, causal falsification
+and intervention generalization. Until those comparisons are completed,
+claims of superiority or novelty would be premature.
+
 ## 9. How this decomposition changes the Neuro-Twin engine
 
 ### 9.1 Current foundation
