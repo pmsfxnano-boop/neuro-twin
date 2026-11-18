@@ -42,6 +42,7 @@ An additive six-domain network package is being developed under `backend/neuro_t
 - `P` progression, `I` inflammation, `M` metabolism, `N` neuronal integrity, `Q` functional capacity, and `Pr` proteostasis.
 - The v1.0 baseline uses an explicit continuous-time affine network with directed coupling parameters, exact irregular-time propagation, explicit observation operators, and six-state filtering/smoothing.
 - Observability and local parameter-identifiability diagnostics report rank, weak/unidentified combinations, and schedule/missingness effects before calibration.
+- A disease-specific evidence register preserves candidate biological interactions and citations while preventing literature hypotheses from becoming fitted or causal parameters.
 - Alzheimer and Parkinson use separate parameterizations. No default biological coefficients or biomarker-to-state mappings are invented.
 - This is a research prototype; it does not replace the existing P-I-N-Q runtime and is not clinically validated.
 
