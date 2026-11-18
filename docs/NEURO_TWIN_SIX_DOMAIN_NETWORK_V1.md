@@ -356,6 +356,26 @@ architecture's origin hypothesis is causal. The prediction arrays must be
 produced by an explicit, versioned observation operator before this scoring
 function is used on biological data.
 
+The end-to-end runner in
+backend/neuro_twin/network/mechanistic_architecture_comparison.py connects
+these pieces. It accepts at least two registered origin architectures, one
+or more parameter/initial-state draws per architecture, and one explicit
+observation operator per architecture. Architecture-specific H matrices may
+differ because the latent mechanisms differ, but the output contract must be
+identical: same ordered features, units, measurement covariance, source data
+catalog hash, feature transformation/version, and evaluation time grid.
+The runner generates forecasts from the mechanistic ODEs, summarizes
+parameter-draw dispersion, and ranks all candidates against the same held-out
+observations and availability mask. It refuses comparisons when these common
+measurement contracts differ.
+
+The resulting ranking is predictive discrimination conditional on the
+supplied mechanisms, parameters and observation operators. It does not prove
+which pathway initiated disease, because observational prediction can remain
+compatible with confounding, reverse causality or unmodeled mechanisms. The
+model comparison must be complemented by genetics, temporal precedence,
+controlled perturbations, negative controls and external replication.
+
 This architecture is therefore a controlled executable hypothesis framework,
 not yet a calibrated mechanistic model. It must be fit to authorized
 longitudinal human data, checked for parameter identifiability, evaluated on
