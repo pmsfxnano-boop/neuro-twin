@@ -1,5 +1,6 @@
 """Tests for time-window sweeps and parameter-draw robustness."""
 import json
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
@@ -109,8 +110,7 @@ def test_timing_sweep_rejects_inconsistent_model_draws_and_out_of_range_windows(
             intensity=0.0,
             windows=(InterventionTimingWindow(1.0, 2.1),),
         )
-    different_architecture = _model(0.8)
-    object.__setattr__(different_architecture, "architecture_id", "immune_glial_dominant")
+    different_architecture = replace(_model(0.8), architecture_id="immune_glial_dominant")
     with pytest.raises(ValueError):
         sweep_intervention_timing(
             (models[0], different_architecture),
