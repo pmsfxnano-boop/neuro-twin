@@ -109,7 +109,7 @@ def inspect_tar(path: Path) -> dict[str, Any]:
     }
 
 
-def build_manifest(output_dir: Path) -> dict[str, Any]:
+def build_manifest(output_dir: Path, *, keep_archives: bool = False) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     manifest: dict[str, Any] = {
         "schema_version": "1.0.0",
@@ -117,6 +117,7 @@ def build_manifest(output_dir: Path) -> dict[str, Any]:
         "source": "NCBI Gene Expression Omnibus",
         "retrieved_at": datetime.now(timezone.utc).isoformat(),
         "purpose": "public_processed_archive_integrity_and_layout_audit",
+        "archives_retained_for_downstream_analysis": keep_archives,
         "interpretation": (
             "No expression analysis or biological inference is performed by this job."
         ),
@@ -148,8 +149,10 @@ def build_manifest(output_dir: Path) -> dict[str, Any]:
             "sha256": sha256,
             **archive_layout,
         }
-        # Keep raw data ephemeral on the runner; the artifact contains only metadata.
-        local_path.unlink()
+        # Raw archives are deleted by default. The downstream analysis workflow
+        # may explicitly retain them on the ephemeral runner.
+        if not keep_archives:
+            local_path.unlink()
 
     return manifest
 
@@ -166,9 +169,14 @@ def main() -> None:
         type=Path,
         default=Path("artifacts/gse157783_archive_manifest.json"),
     )
+    parser.add_argument(
+        "--keep-archives",
+        action="store_true",
+        help="Keep verified raw archives on the ephemeral runner for a following analysis step.",
+    )
     args = parser.parse_args()
 
-    manifest = build_manifest(args.output_dir)
+    manifest = build_manifest(args.output_dir, keep_archives=args.keep_archives)
     args.manifest.parent.mkdir(parents=True, exist_ok=True)
     args.manifest.write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n",
