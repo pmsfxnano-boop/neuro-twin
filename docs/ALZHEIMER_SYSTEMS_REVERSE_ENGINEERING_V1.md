@@ -74,6 +74,28 @@ The engine must distinguish:
 
 Sleep/circadian disruption, physical inactivity, sensory impairment, infection/inflammatory exposures, endocrine factors and microbiome-related mechanisms belong in the wider research map, but their causal maturity varies. They must not be promoted to primary causal drivers merely because associations have been reported.
 
+## 2.6 Competing origin architectures stored in the engine
+
+The initial unranked hypothesis set is now machine-readable in
+\`backend/neuro_twin/network/alzheimer_origin_architectures_v1.json\`,
+validated by \`AlzheimerOriginArchitectureRegistry\` in
+\`network/mechanisms.py\`. It defines seven rival model classes:
+
+1. amyloid-production dominant;
+2. amyloid-clearance dominant;
+3. tau / neuronal-vulnerability dominant;
+4. neurovascular dominant;
+5. immune / glial dominant;
+6. metabolic / mitochondrial dominant;
+7. mixed multi-hit / threshold transition.
+
+Each architecture references only nodes and edges already present in the
+evidence-graded mechanism inventory. It specifies candidate early nodes,
+candidate relationships, a discriminating prediction, falsification criteria,
+evidence maturity and limitations. The registry does not rank the hypotheses,
+estimate posterior probabilities, or claim that the alternatives are mutually
+exclusive. It creates a controlled contract for subsequent model comparison.
+
 ## 3. Multiscale decomposition of Alzheimer pathobiology
 
 The following modules are not independent boxes. They form an interacting network with reciprocal feedback, cell-type specificity, regional vulnerability and changing influence across disease stages.
