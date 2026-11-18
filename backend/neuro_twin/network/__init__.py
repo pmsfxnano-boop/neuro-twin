@@ -14,6 +14,24 @@ from neuro_twin.network.mechanisms import (
     MechanismEdge,
     MechanismNode,
 )
+from neuro_twin.network.mechanistic_dynamics import (
+    DamageInterventionEffect,
+    EdgeKinetics,
+    InterventionComparison,
+    InterventionProtocol,
+    MechanismTrajectory,
+    MechanisticArchitectureModel,
+    MechanisticSimulationResult,
+    NodeKinetics,
+    compare_intervention,
+    summarize_parameter_ensemble,
+)
+from neuro_twin.network.model_comparison import (
+    ArchitectureComparisonReport,
+    ArchitectureForecast,
+    ArchitecturePredictiveScore,
+    compare_architecture_forecasts,
+)
 from neuro_twin.network.model import (
     DOMAIN_NAMES,
     DOMAIN_POLARITY,
@@ -64,6 +82,20 @@ from neuro_twin.network.state_space import (
 )
 
 __all__ = [
+    "DamageInterventionEffect",
+    "EdgeKinetics",
+    "InterventionComparison",
+    "InterventionProtocol",
+    "MechanismTrajectory",
+    "MechanisticArchitectureModel",
+    "MechanisticSimulationResult",
+    "NodeKinetics",
+    "compare_intervention",
+    "summarize_parameter_ensemble",
+    "ArchitectureComparisonReport",
+    "ArchitectureForecast",
+    "ArchitecturePredictiveScore",
+    "compare_architecture_forecasts",
     "DAMAGE_COMPONENTS",
     "DamageAccumulationModel",
     "DamageTrajectory",
