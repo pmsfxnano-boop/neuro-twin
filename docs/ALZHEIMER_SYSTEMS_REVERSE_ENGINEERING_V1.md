@@ -404,13 +404,27 @@ Neuro-Twin must not claim that mechanistic Alzheimer simulation, QSP, system
 dynamics or intervention simulation are new in themselves. The field already
 contains substantial prior art:
 
-- A 2026 Neuro-Dynamic QSP study integrated amyloid-beta, tau, neuronal damage
-  and cognitive decline. It assembled data from 4,056 participants in
-  lecanemab studies and ADNI, reproduced trial endpoints and tested other
-  anti-amyloid therapies. Its published model emphasizes an amyloid-to-tau
-  cascade and identifies A-beta protofibrils as potent drivers of tau in its
-  model (Cao et al., 2026,
+- A 2026 Neuro-Dynamic QSP study already integrates amyloid-beta, tau,
+  neuronal damage and cognitive decline in 11 ODEs across three linked
+  modules. Its amyloid module distinguishes monomers, oligomers, protofibrils
+  and plaques; its tau module represents staged neuronal pathology and
+  neurodegeneration. It assembled longitudinal data from 4,056 participants:
+  lecanemab Study 201 (854), Study 301 / Clarity AD (1,795) and ADNI (1,407).
+  The authors reported reproduction of lecanemab trial endpoints and
+  validation against other anti-amyloid therapies. The model estimates a
+  stronger tau-driving contribution from protofibrils than plaques within
+  its specified model (Cao et al., 2026,
   [DOI 10.1038/s41540-026-00677-4](https://doi.org/10.1038/s41540-026-00677-4)).
+
+  This is an essential benchmark, not a strawman. Its authors delimit the
+  empirical scope: the analyzed cohort was amyloid-positive early symptomatic
+  AD and did not evaluate cognitively unimpaired preclinical participants,
+  late-stage dementia, atypical variants, mixed pathologies or A-beta-negative
+  tauopathies. They also describe neuroimmune responses as upstream or
+  intermediate modulators and propose future variants with explicit
+  neuroimmune mechanisms. Neuro-Twin must test any claimed increment against
+  this published model and its validation domain, not assume the prior model
+  is biologically incomplete in all populations.
 - A 2023 system-dynamics model used 33 factors and 148 causal links for
   sporadic Alzheimer disease and tested 15 modifiable risk factors against
   statements derived from meta-analyses of observational studies and RCTs
