@@ -1,0 +1,217 @@
+{
+  "schema_version": "1.0.0",
+  "catalog_status": "public_source_metadata_verified_published_results_not_raw_ingested",
+  "purpose": "Initial public human-data catalog for evaluating shared metabolic vulnerability and disease-specific routing in Alzheimer disease and Parkinson disease.",
+  "datasets": [
+    {
+      "id": "GSE184950",
+      "disease": "parkinson",
+      "tissue": "substantia_nigra",
+      "modality": "snRNA-seq",
+      "donors": 34,
+      "groups": {
+        "control": 10,
+        "pd": 6,
+        "pdd": 18
+      },
+      "nuclei_qc": 390360,
+      "access": "public_GEO",
+      "raw_size_approx_gb": 1.7,
+      "priority": "primary_PD_cell_resolved",
+      "caveat": "Postmortem cross-sectional; cannot establish temporal precedence.",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE184950",
+      "published_secondary_analysis_doi": "10.1021/acsomega.6c07768"
+    },
+    {
+      "id": "GSE157827",
+      "disease": "alzheimer",
+      "tissue": "prefrontal_cortex",
+      "modality": "snRNA-seq",
+      "donors": 21,
+      "groups": {
+        "ad": 12,
+        "control": 9
+      },
+      "nuclei_in_published_reanalysis": 167290,
+      "access": "public_GEO",
+      "raw_size_approx_gb": 1.2,
+      "priority": "primary_AD_cell_resolved",
+      "caveat": "Small donor count; postmortem; some gene-cell-type pairs not estimable.",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE157827",
+      "published_secondary_analysis_doi": "10.1007/s12031-026-02598-7"
+    },
+    {
+      "id": "GSE33000",
+      "disease": "alzheimer_and_huntington_control",
+      "tissue": "prefrontal_cortex",
+      "modality": "bulk_microarray",
+      "donors_ad": 310,
+      "donors_control": 157,
+      "access": "public_GEO",
+      "priority": "large_AD_discovery",
+      "caveat": "Bulk tissue, cell-composition effects; contains HD material beyond AD/control subset.",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE33000"
+    },
+    {
+      "id": "GSE5281",
+      "disease": "alzheimer",
+      "tissue": "six_postmortem_brain_regions_laser_captured_neurons",
+      "modality": "microarray",
+      "arrays": 161,
+      "arrays_ad": 87,
+      "arrays_control": 74,
+      "access": "public_GEO",
+      "priority": "neuronal_region_replication",
+      "caveat": "Donor linkage across regions not adequate; analyse within region.",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE5281"
+    },
+    {
+      "id": "GSE132903",
+      "disease": "alzheimer",
+      "tissue": "middle_temporal_gyrus",
+      "modality": "bulk_microarray",
+      "donors": 195,
+      "groups": {
+        "ad": 97,
+        "control": 98
+      },
+      "access": "public_GEO",
+      "priority": "independent_AD_replication",
+      "caveat": "Platform-specific gene coverage.",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE132903"
+    },
+    {
+      "id": "GSE48350",
+      "disease": "alzheimer",
+      "tissue": "multiple_cortical_regions",
+      "modality": "bulk_microarray",
+      "arrays": 253,
+      "donors": 84,
+      "groups": {
+        "ad": 28,
+        "control": 56
+      },
+      "access": "public_GEO",
+      "priority": "multi_region_AD_replication",
+      "caveat": "Repeated regions per donor; collapse within donor after within-region standardisation.",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE48350"
+    },
+    {
+      "id": "GSE122063",
+      "disease": "alzheimer_and_vascular_dementia",
+      "tissue": "frontal_and_temporal_cortex",
+      "modality": "bulk_microarray",
+      "arrays": 136,
+      "donors": 31,
+      "groups": {
+        "ad": 12,
+        "vascular_dementia": 8,
+        "control": 11
+      },
+      "access": "public_GEO",
+      "priority": "disease_specificity_control",
+      "caveat": "Repeated regions/technical structure; use donor-aware model.",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE122063"
+    },
+    {
+      "id": "GSE7621",
+      "disease": "parkinson",
+      "tissue": "substantia_nigra",
+      "modality": "bulk_microarray",
+      "donors": 25,
+      "groups": {
+        "pd": 16,
+        "control": 9
+      },
+      "access": "public_GEO",
+      "priority": "secondary_PD_bulk_validation",
+      "caveat": "Legacy Affymetrix cohort from 2007; postmortem composition effects.",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE7621"
+    },
+    {
+      "id": "GSE8397",
+      "disease": "parkinson",
+      "tissue": "medial_lateral_substantia_nigra_and_frontal_cortex",
+      "modality": "bulk_microarray",
+      "tissue_samples": 47,
+      "arrays": 94,
+      "access": "public_GEO",
+      "priority": "secondary_PD_region_validation",
+      "caveat": "A/B arrays are paired technical platform data; medial/lateral samples may share donors.",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE8397"
+    }
+  ],
+  "controlled_longitudinal_cohorts": [
+    {
+      "id": "ADNI",
+      "disease": "alzheimer",
+      "modalities": [
+        "clinical",
+        "cognition",
+        "MRI",
+        "PET",
+        "CSF",
+        "plasma",
+        "genetics"
+      ],
+      "access": "application_and_DUA_required",
+      "url": "https://adni.loni.usc.edu/data-samples/adni-data/",
+      "role": "Temporal ordering / lead-lag after authorization."
+    },
+    {
+      "id": "PPMI",
+      "disease": "parkinson",
+      "modalities": [
+        "clinical",
+        "imaging",
+        "omics",
+        "genetics",
+        "sensors",
+        "biomarkers"
+      ],
+      "access": "application_and_DUA_required",
+      "url": "https://www.ppmi-info.org/access-data-specimens/download-data",
+      "role": "Temporal ordering / lead-lag after authorization."
+    },
+    {
+      "id": "AMP-AD",
+      "disease": "alzheimer",
+      "modalities": [
+        "transcriptomics",
+        "proteomics",
+        "single_nucleus",
+        "multiomics"
+      ],
+      "access": "mixed_open_and_controlled; individual_level_access_controlled",
+      "url": "https://help.adknowledgeportal.org/apd/access-data",
+      "role": "Open molecular atlases and controlled individual-level data."
+    }
+  ],
+  "published_result_records": [
+    {
+      "id": "AD_PDH_LIPOY_TCA_2026",
+      "doi": "10.1007/s12031-026-02598-7",
+      "source_datasets": [
+        "GSE157827",
+        "GSE33000",
+        "GSE5281",
+        "GSE132903",
+        "GSE122063",
+        "GSE48350"
+      ],
+      "result": "Post hoc lipoylation/PDH/TCA module lower across four independent cohorts (effect -0.245, 95% CI -0.363 to -0.127, I2 0%, q 0.035). PDHA1 direction consistent in four cohorts but gene-level q 0.086. Not AD-specific versus Huntington or vascular dementia; no evidence for cuproptosis.",
+      "evidence_class": "published_secondary_analysis",
+      "not_reanalysed_by_neuro_twin": true
+    },
+    {
+      "id": "PD_PFKFB2_CELL_STATE_2026",
+      "doi": "10.1021/acsomega.6c07768",
+      "source_datasets": [
+        "GSE184950"
+      ],
+      "result": "PFKFB2 expression and associated glycolysis/trafficking vs OXPHOS signatures are redistributed by cell type and disease stage in postmortem substantia nigra.",
+      "evidence_class": "published_secondary_analysis",
+      "not_reanalysed_by_neuro_twin": true
+    }
+  ]
+}
