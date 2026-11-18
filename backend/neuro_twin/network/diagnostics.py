@@ -166,8 +166,8 @@ def _eigen_subspace_diagnostics(
     eigenvalues = eigenvalues[order]
     eigenvectors = eigenvectors[:, order]
     leading = float(eigenvalues[0]) if len(eigenvalues) else 0.0
-    absolute_tolerance = relative_tolerance * leading
-    rank = int(np.sum(eigenvalues > absolute_tolerance)) if leading > 0 else 0
+    absolute_tolerance = np.sqrt(relative_tolerance * leading)
+    rank = int(np.sum(eigenvalues > relative_tolerance * leading)) if leading > 0 else 0
     identifiable = eigenvectors[:, :rank].copy()
     unidentifiable = eigenvectors[:, rank:].copy()
     singular_values = np.sqrt(eigenvalues)
