@@ -45,6 +45,7 @@ An additive six-domain network package is being developed under `backend/neuro_t
 - A disease-specific evidence register preserves candidate biological interactions and citations while preventing literature hypotheses from becoming fitted or causal parameters.
 - A hierarchical domain ontology decomposes M and Pr into non-interchangeable subconstructs and leaves domain aggregation uncalibrated.
 - A typed measurement catalogue validates modality, assay, canonical units, uncertainty semantics and provenance while keeping all latent bindings unregistered.
+- A disease-specific coverage report identifies measured proxies, missing subconstructs and blocked observations without claiming latent observability.
 - Alzheimer and Parkinson use separate parameterizations. No default biological coefficients or biomarker-to-state mappings are invented.
 - This is a research prototype; it does not replace the existing P-I-N-Q runtime and is not clinically validated.
 
