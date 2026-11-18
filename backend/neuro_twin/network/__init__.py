@@ -11,6 +11,11 @@ from neuro_twin.network.model import (
     simulate_network,
 )
 from neuro_twin.network.observation import LinearNetworkObservationModel
+from neuro_twin.network.evidence import (
+    EvidenceCitation,
+    MechanisticEvidenceRegistry,
+    MechanisticInteractionRecord,
+)
 from neuro_twin.network.diagnostics import (
     FiniteHorizonObservabilityReport,
     LocalParameterIdentifiabilityReport,
@@ -32,6 +37,9 @@ from neuro_twin.network.state_space import (
 __all__ = [
     "DOMAIN_NAMES",
     "DOMAIN_POLARITY",
+    "EvidenceCitation",
+    "MechanisticEvidenceRegistry",
+    "MechanisticInteractionRecord",
     "FiniteHorizonObservabilityReport",
     "LocalParameterIdentifiabilityReport",
     "StructuralObservabilityReport",
