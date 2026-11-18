@@ -43,6 +43,12 @@ from neuro_twin.network.model_comparison import (
     ArchitecturePredictiveScore,
     compare_architecture_forecasts,
 )
+from neuro_twin.network.mechanistic_architecture_comparison import (
+    ArchitectureCandidateRun,
+    MechanisticArchitectureComparison,
+    MechanisticArchitectureForecast,
+    compare_mechanistic_architectures,
+)
 from neuro_twin.network.model import (
     DOMAIN_NAMES,
     DOMAIN_POLARITY,
@@ -103,6 +109,10 @@ __all__ = [
     "NodeKinetics",
     "compare_intervention",
     "summarize_parameter_ensemble",
+    "ArchitectureCandidateRun",
+    "MechanisticArchitectureComparison",
+    "MechanisticArchitectureForecast",
+    "compare_mechanistic_architectures",
     "MechanisticCalibrationResult",
     "ParameterBound",
     "fit_mechanistic_parameters",
