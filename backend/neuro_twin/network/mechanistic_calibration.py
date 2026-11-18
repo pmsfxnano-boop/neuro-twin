@@ -6,7 +6,7 @@ estimates; they are not validated biological coefficients.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from typing import Literal
 
 import numpy as np
