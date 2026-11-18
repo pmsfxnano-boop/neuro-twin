@@ -377,6 +377,7 @@ def test_structural_mri_requires_scanner_and_segmentation_metadata():
             kind=ObservationKind.MRI_FEATURE,
             unit="mm3",
             value=4100.0,
+            uncertainty=20.0,
             extra={},
         ),
         uncertainty=MeasurementUncertainty(
