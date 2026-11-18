@@ -73,7 +73,7 @@ def preview_tsv(archive: tarfile.TarFile, member: tarfile.TarInfo) -> dict[str, 
         raise RuntimeError(f"could not read TAR member: {member.name}")
     rows: list[dict[str, Any]] = []
     with stream, io.TextIOWrapper(stream, encoding="utf-8", errors="replace", newline="") as text:
-        reader = csv.reader(text, delimiter="\\t")
+        reader = csv.reader(text, delimiter=chr(9))
         for row in itertools.islice(reader, 5):
             rows.append({
                 "field_count": len(row),
