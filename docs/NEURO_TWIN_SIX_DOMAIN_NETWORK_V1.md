@@ -409,6 +409,34 @@ cohort adapters, pre-registered estimands, parameter-recovery tests and
 independent validation. The parameter-ensemble uncertainty summarizer only
 propagates parameter draws supplied by a separate audited estimation process.
 
+## Shared-parameter cohort calibration
+
+The cohort extension is implemented in
+backend/neuro_twin/network/mechanistic_cohort_calibration.py. It fits one
+shared mechanism graph and shared kinetic parameters across two or more
+subject-level longitudinal series, while allowing irregular visit schedules
+and subject-specific missing observation channels. Each subject has its own
+explicit initial latent activity vector at the start of their observed series;
+selected subject/node initial states can additionally be fitted within
+subject-specific [0,1] bounds.
+
+At each observed visit, residuals are whitened using the feature covariance
+for the available channels. The cohort objective is the concatenation of
+within-subject whitened residuals. The result includes shared parameter
+estimates, local covariance/standard errors, singular values, numerical
+rank/conditioning, per-subject predicted trajectories and fitted initial
+states. A rank-deficient fit remains rank-deficient; the engine does not add
+edges or unconstrained parameters to force a fit.
+
+This is a shared-kinetic, fixed-effects least-squares prototype with
+subject-specific initial states. It is **not** a hierarchical Bayesian model,
+does not yet include subject-level random effects on kinetic rates, latent
+confounder adjustment, site/assay random effects, informative missingness,
+or posterior model probabilities. Those extensions require enough independent
+subjects and visits, parameter-recovery tests, cohort provenance, and external
+replication. The routine reports candidate fits only; it cannot establish
+causal origins or population treatment effects by itself.
+
 ## Intervention-timing sweep
 
 The v1 timing sweep is implemented in
