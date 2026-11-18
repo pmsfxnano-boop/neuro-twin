@@ -108,7 +108,7 @@ def test_intervention_changes_mechanism_and_damage_trajectory_in_toy_fixture():
 
 
 def test_additive_drive_can_reduce_downstream_damage_without_changing_initial_state():
-    catalog, model = _model()
+    catalog, registry, model = _model()
     result = compare_intervention(
         model,
         catalog=catalog,
@@ -179,8 +179,8 @@ def test_intervention_must_target_a_modeled_mechanism_node():
 
 
 def test_parameter_ensemble_reports_effect_interval():
-    catalog, model_a = _model(0.7)
-    _, model_b = _model(1.0)
+    catalog, registry, model_a = _model(0.7)
+    _, _, model_b = _model(1.0)
     kwargs = {
         "catalog": catalog,
         "registry": registry,
