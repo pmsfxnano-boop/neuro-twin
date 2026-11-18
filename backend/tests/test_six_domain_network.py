@@ -204,7 +204,7 @@ def test_filter_rejects_infinite_observation_values():
 
 def test_coupling_matrix_cannot_activate_an_undeclared_edge():
     coupling = np.zeros((6, 6))
-    coupling[1, 0] = 0.25  # I influences dI/dt? Entry [target=I, source=P].
+    coupling[1, 0] = 0.25  # P -> I: entry [target=I, source=P].
     with pytest.raises(ValueError, match="outside candidate_edges"):
         _network(coupling=coupling, candidate_edges=())
 
@@ -221,3 +221,12 @@ def test_parameter_vector_round_trip_preserves_explicit_graph():
     np.testing.assert_allclose(rebuilt.coupling_matrix, model.coupling_matrix)
     assert rebuilt.candidate_edges == model.candidate_edges
     assert rebuilt.parameter_count == 8
+
+
+def test_model_configuration_hash_is_deterministic_and_disease_scoped():
+    first = _network()
+    second = _network()
+    parkinson = _network(disease="parkinson")
+    assert first.config_hash == second.config_hash
+    assert first.config_hash != parkinson.config_hash
+    assert len(first.config_hash) == 64
