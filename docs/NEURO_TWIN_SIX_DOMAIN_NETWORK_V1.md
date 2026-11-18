@@ -158,6 +158,68 @@ from currently available datasets. Observability and identifiability are
 empirical gates to be evaluated per disease, cohort, modality combination,
 and observation schedule.
 
+## Observation and measurement engine
+
+The initial source-measurement inventory is stored in
+`backend/neuro_twin/network/measurement_catalog_v1.json` and validated by
+`network/measurements.py`. It is separate from the latent observation
+operator `H` and from the existing four-state production observation
+registry.
+
+Each definition records disease scope, canonical feature, modality,
+observation kind, specimen, analyte or metric, value type, canonical unit,
+permitted source units, value direction, target subconstruct, relation type,
+uncertainty policy, assay requirements, required acquisition/processing
+metadata, provenance requirements, limitations, and references.
+
+The v1.0 inventory contains 11 initial measurement definitions:
+
+- **Alzheimer disease:** plasma p-tau217, CSF Aβ42/40, plasma GFAP, plasma
+  NfL, regional FDG-PET SUVR, amyloid-PET Centiloid, MRI hippocampal volume,
+  and ADAS-Cog total score.
+- **Parkinson disease:** CSF alpha-synuclein seed-amplification result,
+  MDS-UPDRS Part III, and plasma NfL.
+
+This list is an initial measurement contract, not a claim that every variable
+is available in every ADNI or PPMI release. Source-specific variable names,
+assay platforms, visit schedules and access conditions must be confirmed
+against the currently downloaded source data dictionary and snapshot.
+
+A validated measurement envelope carries the existing canonical
+`Observation` plus typed uncertainty semantics (standard deviation,
+standard error, coefficient of variation or confidence-interval half-width),
+catalog version, and optional harmonization identity. A numeric uncertainty
+without its statistical meaning is not accepted as a typed uncertainty.
+Accepted non-canonical units and source feature aliases require an explicit,
+versioned harmonization step; the validator does not relabel or rescale values.
+
+A measurement can pass the measurement-layer checks while remaining
+**ineligible for latent inference**. In v1.0 every measurement definition has
+`latent_binding_status = not_registered`; no feature-to-`H` weights are
+created. A subconstruct proxy is not a direct measurement of P, I, M, N, Q
+or Pr.
+
+Measurement validation checks disease scope, canonical feature, modality,
+observation kind, canonical unit, assay identity where required, time-zone
+aware timestamps, provenance source version and raw hash, preanalytical and
+processing metadata, quality flags, typed uncertainty, and scalar/binary
+value constraints. Scanner and center effects remain explicit warnings for
+downstream harmonization and sensitivity analysis; they are not silently
+corrected.
+
+The catalog is validated against the hierarchical ontology. In particular,
+regional MRI morphometry has a separate N subconstruct
+`regional_structure`; it is not treated as a neuronal cell count.
+
+### Source governance
+
+PPMI provides data dictionaries, code lists, user guidance and biomarker
+resources. Its individual-level data access process requires registration and
+a Data Use Agreement; its biospecimens follow a separate request and
+verification process. The measurement catalog therefore does not assume
+that a public website listing implies unrestricted access to participant-level
+files or physical specimens.
+
 ## Literature interaction register
 
 `backend/neuro_twin/network/edge_evidence_v1.json` contains a versioned,
@@ -216,10 +278,13 @@ Required next research gates:
 - `backend/neuro_twin/network/edge_evidence_v1.json`
 - `backend/neuro_twin/network/ontology.py`
 - `backend/neuro_twin/network/domain_ontology_v1.json`
+- `backend/neuro_twin/network/measurements.py`
+- `backend/neuro_twin/network/measurement_catalog_v1.json`
 - `backend/tests/test_six_domain_network.py`
 - `backend/tests/test_six_domain_network_diagnostics.py`
 - `backend/tests/test_six_domain_evidence_registry.py`
 - `backend/tests/test_six_domain_domain_ontology.py`
+- `backend/tests/test_six_domain_measurements.py`
 
 The package is additive and does not yet connect to the production API or UI.
 
@@ -231,3 +296,14 @@ The package is additive and does not yet connect to the production API or UI.
 - Nixon and Rubinsztein (2024), *Mechanisms of autophagy-lysosome dysfunction in neurodegenerative diseases*, DOI [10.1038/s41580-024-00757-5](https://doi.org/10.1038/s41580-024-00757-5).
 
 These reviews support the construct inventory and candidate mechanism register; they do not validate the Neuro-Twin state variables, parameters, or predictions.
+
+## Measurement source documentation
+
+- Alzheimer's Association Workgroup (2024), *Revised criteria for diagnosis and staging of Alzheimer's disease*, DOI [10.1002/alz.13859](https://doi.org/10.1002/alz.13859). This provides a framework for Core 1 amyloid and phosphorylated-tau biomarkers and later-changing tau biomarkers; fluid and PET staging must not be treated as interchangeable.
+- Alzheimer's Association (2024), *DETeCD-ADRD clinical practice guideline*, DOI [10.1002/alz.14333](https://doi.org/10.1002/alz.14333). It discusses plasma/CSF p-tau species, GFAP, NfL, MRI and FDG-PET in distinct measurement categories.
+- PPMI official [Guidance Resources](https://www.ppmi-info.org/access-data-specimens/guidance-resources) publish data dictionaries, code lists, data user guides, biomarker resources and SAA guidance.
+- PPMI official [Access Data](https://bank.ppmi-info.org/access-data-specimens/download-data) documents individual-level data access, registration and Data Use Agreement requirements.
+- Morris and Lees (2024), *Limitations of the α-Synuclein Seed Amplification Assay in Clinical Practice*, DOI [10.1001/jamaneurol.2024.2381](https://doi.org/10.1001/jamaneurol.2024.2381), cautions against overgeneralizing assay results across the pathological diversity of Parkinson syndromes.
+- (2026), *Seed Amplification Assays for Parkinson's Disease: A Review of α-Synuclein Assays in Body Fluids and Tissues*, DOI [10.1111/jnc.70435](https://doi.org/10.1111/jnc.70435), notes continuing protocol standardization and multicenter validation needs.
+
+These references support measurement categories and limitations. They do not validate the Neuro-Twin latent-state mappings or confer clinical validity.
