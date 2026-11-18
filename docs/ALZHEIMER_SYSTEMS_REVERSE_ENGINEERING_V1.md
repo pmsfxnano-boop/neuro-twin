@@ -498,6 +498,22 @@ human data with subject-level splits and assessed on separate temporal and
 external holdouts. A rank-deficient or poorly conditioned fit must be treated
 as insufficient information, not resolved by adding more parameters.
 
+### 9.5 Testing intervention timing
+
+The intervention-timing sweep evaluates candidate start/end windows for a
+declared perturbation within one architecture and across caller-supplied
+parameter draws. It reports the change in each persistent-damage compartment
+and integrated damage burden, including the fraction of supplied draws that
+show benefit or harm. This makes the question of when to perturb explicit.
+
+These are not human treatment windows. Biological time must ultimately be
+anchored to observed stages and target engagement. The current mechanism
+clamp/additive-drive is an abstract intervention on a normalized state, not
+a drug-dose or pharmacokinetic/pharmacodynamic representation. A real
+intervention model must connect a specified treatment or experimental
+perturbation to target engagement, exposure, tissue/cell context, mediator
+changes and measured downstream outcomes.
+
 ## 10. Falsifiable research questions for Neuro-Twin
 
 The project should generate explicit, refutable hypotheses, for example:
