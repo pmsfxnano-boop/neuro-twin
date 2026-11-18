@@ -113,15 +113,16 @@ used to publish a prospective state estimate.
 
 Alzheimer and Parkinson are explicit, separate model scopes. The architecture
 can share numerical code, contracts, and validation machinery, but each
-disease requires its own parameterization, observation operators, priors,
-and validation. The package rejects other disease labels rather than
-silently widening the agreed scope.
+disease requires its own candidate graph, parameter vector, observation
+operators, priors, and validation. The package rejects other disease labels
+rather than silently widening the agreed scope.
 
 ## Parameter status and evidence
 
-A model defaults to `parameter_status = hypothesis`. A matrix that can be
-simulated is not thereby estimated, identifiable, causal, or clinically
-validated. Promotion to estimated or validated status must be performed by
+A model defaults to `parameter_status = hypothesis`. Its SHA-256 configuration
+hash covers disease scope, time unit, version, drift, coupling matrix,
+candidate graph, and parameter status. A matrix that can be simulated is not
+thereby estimated, identifiable, causal, or clinically validated. Promotion to estimated or validated status must be performed by
 an audited calibration/validation workflow and must preserve dataset versions,
 PIT cut-offs, preprocessing versions, hashes, uncertainty, and evaluation
 results.
