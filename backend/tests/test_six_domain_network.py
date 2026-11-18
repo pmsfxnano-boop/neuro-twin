@@ -133,6 +133,9 @@ def test_process_noise_discretization_is_positive_semidefinite():
     transition = exact_network_transition(model, 2.0, q)
     assert transition.phi.shape == (6, 6)
     assert np.linalg.eigvalsh(transition.q).min() >= -1e-10
+    expected_variance = 0.05 * (1.0 - np.exp(-0.4)) / 0.2
+    np.testing.assert_allclose(np.diag(transition.q), expected_variance, rtol=1e-10)
+    np.testing.assert_allclose(transition.q - np.diag(np.diag(transition.q)), 0.0, atol=1e-12)
 
 
 def test_filter_handles_missing_observations_and_preserves_covariance():
@@ -230,3 +233,12 @@ def test_model_configuration_hash_is_deterministic_and_disease_scoped():
     assert first.config_hash == second.config_hash
     assert first.config_hash != parkinson.config_hash
     assert len(first.config_hash) == 64
+
+
+def test_directed_edge_uses_source_to_target_matrix_convention():
+    coupling = np.zeros((6, 6))
+    coupling[1, 0] = 0.25  # P -> I, stored at A[target=I, source=P].
+    model = _network(coupling=coupling, candidate_edges=(("P", "I"),))
+    derivative = model.rhs(np.asarray([2.0, 0.0, 0.0, 0.0, 0.0, 0.0]))
+    assert derivative[1] == pytest.approx(0.5)
+    assert np.count_nonzero(model.coupling_matrix) == 1
