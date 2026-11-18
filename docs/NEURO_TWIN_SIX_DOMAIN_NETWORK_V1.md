@@ -362,6 +362,33 @@ longitudinal human data, checked for parameter identifiability, evaluated on
 held-out cohorts, and triangulated against genetic and perturbation evidence
 before any intervention ranking is scientifically interpretable.
 
+## Constrained mechanism-parameter calibration
+
+The initial calibration component is implemented in
+backend/neuro_twin/network/mechanistic_calibration.py. It performs weighted
+nonlinear least squares on one declared longitudinal observation set. The
+caller must select every fitted parameter and provide an initial value and
+finite lower/upper bounds. Supported parameter families are node baseline
+activity, node relaxation rate, directed-edge coefficient magnitude, and
+initial mechanism activity. Edge sign and graph topology are fixed by the
+explicit hypothesis model; the fitter does not discover new edges or signs.
+
+Observed residuals are whitened by the supplied positive-definite observation
+covariance after applying the observation-availability mask. The fitter
+returns candidate estimates, local covariance/standard errors, singular
+values, numerical rank, condition number, fitted predictions and the model
+with fitted values applied. The returned model remains
+parameter_status=hypothesis. A local full-rank result is not global
+identifiability, causal confirmation or external validation.
+
+This v1 fitter is a single-trajectory frequentist calibration component. It
+does not yet provide hierarchical multi-subject random effects, Bayesian
+posterior inference, latent-confounder adjustment, model evidence, or
+population-level causal estimation. Those require source-linked longitudinal
+cohort adapters, pre-registered estimands, parameter-recovery tests and
+independent validation. The parameter-ensemble uncertainty summarizer only
+propagates parameter draws supplied by a separate audited estimation process.
+
 ## Validation boundary
 
 The included tests are deterministic numerical/software tests using
