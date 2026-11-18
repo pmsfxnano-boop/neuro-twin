@@ -482,6 +482,22 @@ The affine six-state model should remain a transparent baseline. A more complex 
 8. Evaluate temporal OOS prediction and causal/interventional hypotheses in independent data.
 9. Only then couple D to the six-state dynamics and permit counterfactual interruption experiments.
 
+### 9.4 Parameter calibration gate
+
+The new mechanism calibration code can fit selected node baselines,
+relaxation rates, edge coefficient magnitudes and initial states to a
+longitudinal observation series through an explicit observation operator.
+It whitens residuals using the supplied feature covariance and reports local
+Jacobian rank and conditioning. It intentionally cannot fit an edge whose
+direction has not first been declared, and it cannot create missing edges.
+
+This is only a single-trajectory weighted least-squares prototype. It is not
+a hierarchical cohort model or Bayesian posterior estimator. It must first
+pass synthetic parameter-recovery tests, then be calibrated on authorized
+human data with subject-level splits and assessed on separate temporal and
+external holdouts. A rank-deficient or poorly conditioned fit must be treated
+as insufficient information, not resolved by adding more parameters.
+
 ## 10. Falsifiable research questions for Neuro-Twin
 
 The project should generate explicit, refutable hypotheses, for example:
