@@ -2,6 +2,16 @@
 
 This package is additive: the existing P-I-N-Q runtime remains unchanged.
 """
+from neuro_twin.network.damage import (
+    DAMAGE_COMPONENTS,
+    DamageAccumulationModel,
+    DamageTrajectory,
+)
+from neuro_twin.network.mechanisms import (
+    AlzheimerMechanismCatalog,
+    MechanismEdge,
+    MechanismNode,
+)
 from neuro_twin.network.model import (
     DOMAIN_NAMES,
     DOMAIN_POLARITY,
@@ -52,6 +62,12 @@ from neuro_twin.network.state_space import (
 )
 
 __all__ = [
+    "DAMAGE_COMPONENTS",
+    "DamageAccumulationModel",
+    "DamageTrajectory",
+    "AlzheimerMechanismCatalog",
+    "MechanismEdge",
+    "MechanismNode",
     "DOMAIN_NAMES",
     "DOMAIN_POLARITY",
     "EvidenceCitation",
