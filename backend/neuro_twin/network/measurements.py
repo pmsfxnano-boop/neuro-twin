@@ -14,7 +14,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from neuro_twin.data.schema import Observation, ObservationKind
-from neuro_twin.network.evidence import Domain, EvidenceCitation
+from neuro_twin.network.evidence import Domain
 from neuro_twin.network.model import DOMAIN_NAMES
 from neuro_twin.network.ontology import NeuroDomainOntology
 
@@ -243,8 +243,11 @@ class MeasurementCatalog(BaseModel):
             blocking.append("observation modality does not match the measurement definition")
         if observation.observation_kind != definition.observation_kind:
             blocking.append("observation kind does not match the measurement definition")
-        if observation.unit not in definition.accepted_units:
-            blocking.append("observation unit is not accepted; harmonize explicitly before validation")
+        if observation.unit != definition.canonical_unit:
+            if observation.unit in definition.accepted_units:
+                blocking.append("accepted source unit must be converted to the canonical unit through an explicit versioned harmonization step")
+            else:
+                blocking.append("observation unit is not accepted; harmonize explicitly before validation")
         if definition.assay_required and not observation.assay:
             blocking.append("assay identity is required")
         if not observation.quality.schema_valid:
