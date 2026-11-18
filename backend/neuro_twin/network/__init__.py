@@ -16,6 +16,11 @@ from neuro_twin.network.evidence import (
     MechanisticEvidenceRegistry,
     MechanisticInteractionRecord,
 )
+from neuro_twin.network.ontology import (
+    DomainOntologyEntry,
+    DomainSubconstruct,
+    NeuroDomainOntology,
+)
 from neuro_twin.network.diagnostics import (
     FiniteHorizonObservabilityReport,
     LocalParameterIdentifiabilityReport,
@@ -38,6 +43,9 @@ __all__ = [
     "DOMAIN_NAMES",
     "DOMAIN_POLARITY",
     "EvidenceCitation",
+    "DomainOntologyEntry",
+    "DomainSubconstruct",
+    "NeuroDomainOntology",
     "MechanisticEvidenceRegistry",
     "MechanisticInteractionRecord",
     "FiniteHorizonObservabilityReport",
