@@ -26,6 +26,11 @@ from neuro_twin.network.mechanistic_dynamics import (
     compare_intervention,
     summarize_parameter_ensemble,
 )
+from neuro_twin.network.mechanistic_calibration import (
+    MechanisticCalibrationResult,
+    ParameterBound,
+    fit_mechanistic_parameters,
+)
 from neuro_twin.network.mechanism_observation import (
     MechanismForecastEnsemble,
     MechanismObservationModel,
@@ -98,6 +103,9 @@ __all__ = [
     "NodeKinetics",
     "compare_intervention",
     "summarize_parameter_ensemble",
+    "MechanisticCalibrationResult",
+    "ParameterBound",
+    "fit_mechanistic_parameters",
     "MechanismForecastEnsemble",
     "MechanismObservationModel",
     "MechanismObservationPrediction",
