@@ -1,0 +1,400 @@
+{
+  "schema_version": "1.0.0",
+  "ontology_status": "construct_inventory_not_measurement_model",
+  "entries": [
+    {
+      "domain": "P",
+      "construct_name": "Disease-specific progression burden",
+      "operational_definition": "A latent coordinate representing the current level of disease-specific neurodegenerative process burden. P is a state, not its derivative: instantaneous progression velocity is dP/dt. P must remain distinct from a diagnostic label, a clinical severity score, neuronal integrity, and proteostasis impairment.",
+      "working_polarity": "Higher = greater latent disease-process burden; dP/dt represents its instantaneous rate of change.",
+      "subconstructs": [
+        {
+          "code": "pathology_burden",
+          "label": "Disease pathology burden",
+          "description": "Disease-specific accumulated pathological process burden, with distinct pathological substrates for Alzheimer disease and Parkinson disease."
+        },
+        {
+          "code": "trajectory_position",
+          "label": "Trajectory position",
+          "description": "Position along an individual's latent disease trajectory, separated from the local velocity and from observed clinical function."
+        }
+      ],
+      "overlap_cautions": [
+        "P must not be defined as a weighted sum of I, M, N, Q and Pr; such a construction would create circularity and undermine identifiability.",
+        "The same pathology biomarker may also inform a molecular subconstruct of Pr, but must not be duplicated as independent evidence without a measurement model.",
+        "A clinical stage label is not a direct observation of P."
+      ],
+      "not_equivalent_to": [
+        "clinical diagnosis",
+        "clinical stage label",
+        "dP/dt",
+        "global neuronal injury",
+        "single protein concentration"
+      ],
+      "aggregation_status": "not_operationalized",
+      "citations": [
+        {
+          "title": "Toward a Unified Framework in Molecular Neurobiology of Alzheimer's Disease: Revisiting the Pathophysiological Hypotheses",
+          "publication_year": 2025,
+          "doi": "10.1007/s12035-025-05602-0",
+          "pmid": "41379271",
+          "url": "https://doi.org/10.1007/s12035-025-05602-0"
+        },
+        {
+          "title": "Systems biology of Alzheimer's Disease: a scoping review of key pathways and mechanisms",
+          "publication_year": 2026,
+          "doi": "10.1186/s13024-026-00934-4",
+          "pmid": "41731612",
+          "url": "https://doi.org/10.1186/s13024-026-00934-4"
+        },
+        {
+          "title": "Cell biology of Parkinson's disease: Mechanisms of synaptic, lysosomal, and mitochondrial dysfunction",
+          "publication_year": 2024,
+          "doi": "10.1016/j.conb.2024.102841",
+          "pmid": "38306948",
+          "url": "https://doi.org/10.1016/j.conb.2024.102841"
+        }
+      ]
+    },
+    {
+      "domain": "I",
+      "construct_name": "Neuroimmune and inflammatory state",
+      "operational_definition": "A latent description of central nervous system immune activation, glial response, inflammatory signaling, and resolution processes. Increased I denotes greater neuroimmune activation, not necessarily net neuronal toxicity; protective, reparative, and harmful responses must not be collapsed without evidence.",
+      "working_polarity": "Higher = greater neuroimmune activation; effect on neuronal integrity may depend on cell state, disease stage, region and context.",
+      "subconstructs": [
+        {
+          "code": "microglial_state",
+          "label": "Microglial state",
+          "description": "Microglial activation and state transitions, including surveillance, inflammatory, phagocytic and potentially reparative programs."
+        },
+        {
+          "code": "astrocytic_reactivity",
+          "label": "Astrocytic reactivity",
+          "description": "Astrocytic response states and signaling, which may be protective, reactive or context-dependent."
+        },
+        {
+          "code": "cytokine_complement",
+          "label": "Cytokine and complement signaling",
+          "description": "Inflammatory cytokine, chemokine and complement pathway activity, with separate source and target cell context."
+        },
+        {
+          "code": "inflammasome_resolution",
+          "label": "Inflammasome and resolution",
+          "description": "Inflammasome-associated signaling and counter-regulatory mechanisms involved in resolving or sustaining immune responses."
+        }
+      ],
+      "overlap_cautions": [
+        "GFAP is a proxy for astrocytic response, not a complete measure of neuroinflammation.",
+        "Inflammation may be protective or damaging; a scalar activation burden cannot represent this distinction without additional structure.",
+        "Systemic inflammatory markers must not be treated as direct CNS immune-state measurements."
+      ],
+      "not_equivalent_to": [
+        "GFAP concentration alone",
+        "peripheral inflammation alone",
+        "neuronal injury",
+        "all immune activity being harmful"
+      ],
+      "aggregation_status": "not_operationalized",
+      "citations": [
+        {
+          "title": "Toward a Unified Framework in Molecular Neurobiology of Alzheimer's Disease: Revisiting the Pathophysiological Hypotheses",
+          "publication_year": 2025,
+          "doi": "10.1007/s12035-025-05602-0",
+          "pmid": "41379271",
+          "url": "https://doi.org/10.1007/s12035-025-05602-0"
+        },
+        {
+          "title": "Parkinson Disease Signaling Pathways, Molecular Mechanisms, and Potential Therapeutic Strategies: A Comprehensive Review",
+          "publication_year": 2025,
+          "doi": "10.3390/ijms26136416",
+          "pmid": "40650193",
+          "url": "https://doi.org/10.3390/ijms26136416"
+        },
+        {
+          "title": "Noninvasive diagnosis of Alzheimer's disease: a review of emerging biomarkers and multimodal approaches",
+          "publication_year": 2026,
+          "doi": "10.3389/fcell.2026.1964029",
+          "pmid": "42923225",
+          "url": "https://doi.org/10.3389/fcell.2026.1964029"
+        }
+      ]
+    },
+    {
+      "domain": "M",
+      "construct_name": "Metabolic and bioenergetic state",
+      "operational_definition": "A latent description of neuronal and glial metabolic regulation, energy supply, substrate utilization, lipid handling and redox balance. The top-level M coordinate is a coarse-grained parent construct; its subdomains are not interchangeable measurements and should not be collapsed into one score without a validated aggregation model.",
+      "working_polarity": "Higher = greater metabolic dysregulation; a more detailed model may require separate bioenergetic, substrate, lipid and redox latent factors.",
+      "subconstructs": [
+        {
+          "code": "mitochondrial_bioenergetics",
+          "label": "Mitochondrial bioenergetics",
+          "description": "Mitochondrial respiratory capacity, oxidative phosphorylation, ATP supply and mitochondrial quality-control dependencies."
+        },
+        {
+          "code": "glucose_lactate",
+          "label": "Glucose and lactate metabolism",
+          "description": "Glucose uptake and utilization, glycolytic activity, lactate production and transport, and metabolic coupling between neural cell types."
+        },
+        {
+          "code": "lipid_metabolism",
+          "label": "Lipid metabolism",
+          "description": "Lipid synthesis, transport, remodeling and utilization, including membrane and lipid-droplet processes."
+        },
+        {
+          "code": "redox_homeostasis",
+          "label": "Redox homeostasis",
+          "description": "NAD redox balance, glutathione systems, reactive oxygen species handling and oxidative stress responses."
+        }
+      ],
+      "overlap_cautions": [
+        "FDG-PET reflects regional glucose utilization and is not a direct measurement of mitochondrial ATP production or total metabolic health.",
+        "Oxidative stress overlaps biologically with inflammation and proteostasis; it must not be counted as three independent measurements.",
+        "Mitochondrial and lysosomal processes interact with Pr, so the model must define non-overlapping observation constructs."
+      ],
+      "not_equivalent_to": [
+        "FDG uptake alone",
+        "ATP concentration alone",
+        "oxidative stress alone",
+        "body-wide metabolic syndrome"
+      ],
+      "aggregation_status": "not_operationalized",
+      "citations": [
+        {
+          "title": "Systems biology of Alzheimer's Disease: a scoping review of key pathways and mechanisms",
+          "publication_year": 2026,
+          "doi": "10.1186/s13024-026-00934-4",
+          "pmid": "41731612",
+          "url": "https://doi.org/10.1186/s13024-026-00934-4"
+        },
+        {
+          "title": "Cell biology of Parkinson's disease: Mechanisms of synaptic, lysosomal, and mitochondrial dysfunction",
+          "publication_year": 2024,
+          "doi": "10.1016/j.conb.2024.102841",
+          "pmid": "38306948",
+          "url": "https://doi.org/10.1016/j.conb.2024.102841"
+        },
+        {
+          "title": "Parkinson Disease Signaling Pathways, Molecular Mechanisms, and Potential Therapeutic Strategies: A Comprehensive Review",
+          "publication_year": 2025,
+          "doi": "10.3390/ijms26136416",
+          "pmid": "40650193",
+          "url": "https://doi.org/10.3390/ijms26136416"
+        },
+        {
+          "title": "Toward a Unified Framework in Molecular Neurobiology of Alzheimer's Disease: Revisiting the Pathophysiological Hypotheses",
+          "publication_year": 2025,
+          "doi": "10.1007/s12035-025-05602-0",
+          "pmid": "41379271",
+          "url": "https://doi.org/10.1007/s12035-025-05602-0"
+        }
+      ]
+    },
+    {
+      "domain": "N",
+      "construct_name": "Neuronal and circuit integrity",
+      "operational_definition": "A latent description of preserved neuronal viability and structural-functional substrate, including axonal, synaptic and network integrity. Injury markers indicate aspects of damage or turnover and are not direct measurements of all preserved neuronal capacity.",
+      "working_polarity": "Higher = greater preserved neuronal and circuit integrity.",
+      "subconstructs": [
+        {
+          "code": "neuronal_viability",
+          "label": "Neuronal viability",
+          "description": "Cell survival and cellular integrity within disease-relevant neuronal populations and anatomical regions."
+        },
+        {
+          "code": "axonal_integrity",
+          "label": "Axonal integrity",
+          "description": "Axonal structure and integrity, including degeneration and injury processes."
+        },
+        {
+          "code": "synaptic_integrity",
+          "label": "Synaptic integrity",
+          "description": "Synaptic density, maintenance, transmission substrate and structural remodeling."
+        },
+        {
+          "code": "network_integrity",
+          "label": "Network integrity",
+          "description": "Regional and distributed circuit organization and connectivity relevant to the disease phenotype."
+        },
+        {
+          "code": "regional_structure",
+          "label": "Regional neuroanatomical structure",
+          "description": "Regional morphometric and anatomical measures such as volume, thickness and shape derived from MRI, interpreted as tissue-level structural observations rather than direct neuronal cell counts or functional capacity."
+        }
+      ],
+      "overlap_cautions": [
+        "NfL is a marker of neuroaxonal injury and is not disease-specific or a direct measurement of preserved neuronal integrity.",
+        "Structural MRI atrophy is an indirect tissue-level observation and depends on region, segmentation and acquisition pipeline.",
+        "N is not interchangeable with Q: structural integrity and realized function may diverge through reserve, compensation and comorbidity."
+      ],
+      "not_equivalent_to": [
+        "NfL alone",
+        "whole-brain volume alone",
+        "cognitive performance",
+        "motor score"
+      ],
+      "aggregation_status": "not_operationalized",
+      "citations": [
+        {
+          "title": "Noninvasive diagnosis of Alzheimer's disease: a review of emerging biomarkers and multimodal approaches",
+          "publication_year": 2026,
+          "doi": "10.3389/fcell.2026.1964029",
+          "pmid": "42923225",
+          "url": "https://doi.org/10.3389/fcell.2026.1964029"
+        },
+        {
+          "title": "Cell biology of Parkinson's disease: Mechanisms of synaptic, lysosomal, and mitochondrial dysfunction",
+          "publication_year": 2024,
+          "doi": "10.1016/j.conb.2024.102841",
+          "pmid": "38306948",
+          "url": "https://doi.org/10.1016/j.conb.2024.102841"
+        },
+        {
+          "title": "Parkinson Disease Signaling Pathways, Molecular Mechanisms, and Potential Therapeutic Strategies: A Comprehensive Review",
+          "publication_year": 2025,
+          "doi": "10.3390/ijms26136416",
+          "pmid": "40650193",
+          "url": "https://doi.org/10.3390/ijms26136416"
+        }
+      ]
+    },
+    {
+      "domain": "Q",
+      "construct_name": "Functional capacity",
+      "operational_definition": "A latent description of realized cognitive, motor, non-motor and everyday functional capacity. Q is a phenotype-level construct and may diverge from N because reserve, compensation, environment, treatment and comorbidities modify observed function.",
+      "working_polarity": "Higher = greater functional capacity; the observed phenotype remains multidimensional and disease-specific.",
+      "subconstructs": [
+        {
+          "code": "cognitive_function",
+          "label": "Cognitive function",
+          "description": "Memory, executive, language, attention, visuospatial and other cognitive capacities relevant to the disease."
+        },
+        {
+          "code": "motor_function",
+          "label": "Motor function",
+          "description": "Motor performance, gait, dexterity, bradykinesia, rigidity and other disease-relevant movement capacities."
+        },
+        {
+          "code": "nonmotor_function",
+          "label": "Non-motor and autonomic function",
+          "description": "Sleep, mood, autonomic, sensory and other non-motor capacities and symptoms."
+        },
+        {
+          "code": "daily_living",
+          "label": "Activities of daily living",
+          "description": "Ability to perform daily tasks and maintain independence, interpreted in the individual's social and environmental context."
+        }
+      ],
+      "overlap_cautions": [
+        "A single cognitive test or motor scale samples only part of Q.",
+        "Q is affected by cognitive reserve, education, treatment, mood, environment and comorbidity; these factors must not be silently interpreted as changes in N.",
+        "Alzheimer and Parkinson require different disease-specific functional observation models."
+      ],
+      "not_equivalent_to": [
+        "single cognitive test",
+        "single motor scale",
+        "diagnosis",
+        "neuronal integrity"
+      ],
+      "aggregation_status": "not_operationalized",
+      "citations": [
+        {
+          "title": "Noninvasive diagnosis of Alzheimer's disease: a review of emerging biomarkers and multimodal approaches",
+          "publication_year": 2026,
+          "doi": "10.3389/fcell.2026.1964029",
+          "pmid": "42923225",
+          "url": "https://doi.org/10.3389/fcell.2026.1964029"
+        },
+        {
+          "title": "Parkinson Disease Signaling Pathways, Molecular Mechanisms, and Potential Therapeutic Strategies: A Comprehensive Review",
+          "publication_year": 2025,
+          "doi": "10.3390/ijms26136416",
+          "pmid": "40650193",
+          "url": "https://doi.org/10.3390/ijms26136416"
+        },
+        {
+          "title": "Cell biology of Parkinson's disease: Mechanisms of synaptic, lysosomal, and mitochondrial dysfunction",
+          "publication_year": 2024,
+          "doi": "10.1016/j.conb.2024.102841",
+          "pmid": "38306948",
+          "url": "https://doi.org/10.1016/j.conb.2024.102841"
+        }
+      ]
+    },
+    {
+      "domain": "Pr",
+      "construct_name": "Proteostasis state",
+      "operational_definition": "A latent description of protein homeostasis and quality-control capacity, including protein synthesis and folding, chaperone support, trafficking, degradation, autophagy-lysosomal clearance and handling of aggregation-prone species. Increased Pr denotes greater impairment; pathology abundance alone does not measure the full capacity or flux of proteostasis systems.",
+      "working_polarity": "Higher = greater proteostasis impairment; subdomain-specific capacities and pathological cargo burden may move differently.",
+      "subconstructs": [
+        {
+          "code": "folding_chaperones",
+          "label": "Folding and chaperone systems",
+          "description": "Protein folding, refolding, chaperone networks and endoplasmic-reticulum protein quality-control responses."
+        },
+        {
+          "code": "ubiquitin_proteasome",
+          "label": "Ubiquitin-proteasome system",
+          "description": "Ubiquitination, substrate recognition and proteasomal degradation of damaged or unwanted proteins."
+        },
+        {
+          "code": "autophagy_lysosome",
+          "label": "Autophagy and lysosomal clearance",
+          "description": "Autophagosome formation and trafficking, lysosomal acidification, cargo degradation and recycling."
+        },
+        {
+          "code": "aggregation_trafficking",
+          "label": "Aggregation and protein trafficking",
+          "description": "Handling, transport, seeding, spread and clearance of aggregation-prone proteins, including tau, amyloid-beta and alpha-synuclein in disease-specific contexts."
+        }
+      ],
+      "overlap_cautions": [
+        "p-tau, amyloid-beta and alpha-synuclein assays measure specific pathological species or seeding activity; they do not directly quantify all proteostasis machinery or its flux.",
+        "Autophagy-lysosomal mechanisms overlap with mitochondrial quality control and therefore with M; the constructs must be separated at the observation-model level.",
+        "Protein aggregation, protein degradation capacity and aggregate clearance are related but are not the same latent quantity."
+      ],
+      "not_equivalent_to": [
+        "tau concentration alone",
+        "amyloid concentration alone",
+        "alpha-synuclein seeding assay alone",
+        "aggregate count alone"
+      ],
+      "aggregation_status": "not_operationalized",
+      "citations": [
+        {
+          "title": "Toward a Unified Framework in Molecular Neurobiology of Alzheimer's Disease: Revisiting the Pathophysiological Hypotheses",
+          "publication_year": 2025,
+          "doi": "10.1007/s12035-025-05602-0",
+          "pmid": "41379271",
+          "url": "https://doi.org/10.1007/s12035-025-05602-0"
+        },
+        {
+          "title": "Systems biology of Alzheimer's Disease: a scoping review of key pathways and mechanisms",
+          "publication_year": 2026,
+          "doi": "10.1186/s13024-026-00934-4",
+          "pmid": "41731612",
+          "url": "https://doi.org/10.1186/s13024-026-00934-4"
+        },
+        {
+          "title": "Cell biology of Parkinson's disease: Mechanisms of synaptic, lysosomal, and mitochondrial dysfunction",
+          "publication_year": 2024,
+          "doi": "10.1016/j.conb.2024.102841",
+          "pmid": "38306948",
+          "url": "https://doi.org/10.1016/j.conb.2024.102841"
+        },
+        {
+          "title": "Alpha-Synuclein: Multiple pathogenic roles in trafficking and proteostasis pathways in Parkinson's disease",
+          "publication_year": 2024,
+          "doi": "10.1177/10738584241232963",
+          "pmid": "38420922",
+          "url": "https://doi.org/10.1177/10738584241232963"
+        },
+        {
+          "title": "Mechanisms of autophagy-lysosome dysfunction in neurodegenerative diseases",
+          "publication_year": 2024,
+          "doi": "10.1038/s41580-024-00757-5",
+          "url": "https://doi.org/10.1038/s41580-024-00757-5"
+        }
+      ]
+    }
+  ]
+}

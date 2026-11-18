@@ -1,0 +1,239 @@
+{
+  "schema_version": "1.0.0",
+  "registry_status": "literature_candidates_only",
+  "records": [
+    {
+      "interaction_id": "ad_metabolism_proteostasis",
+      "disease": "alzheimer",
+      "domain_a": "M",
+      "domain_b": "Pr",
+      "direction_class": "directed_candidate",
+      "candidate_directions": [
+        [
+          "M",
+          "Pr"
+        ]
+      ],
+      "mechanism_summary": "Review-level synthesis describes mitochondrial and lysosomal dysfunction as amplifiers of proteotoxic stress in Alzheimer disease. M-to-Pr is retained only as a directional hypothesis because metabolic impairment may alter energy-dependent protein clearance; lysosomal and proteostasis subdomains must be operationally separated.",
+      "evidence_context": [
+        "review_synthesis"
+      ],
+      "references": [
+        {
+          "title": "Toward a Unified Framework in Molecular Neurobiology of Alzheimer's Disease: Revisiting the Pathophysiological Hypotheses",
+          "publication_year": 2025,
+          "doi": "10.1007/s12035-025-05602-0",
+          "pmid": "41379271",
+          "url": "https://doi.org/10.1007/s12035-025-05602-0"
+        },
+        {
+          "title": "Mechanisms of autophagy-lysosome dysfunction in neurodegenerative diseases",
+          "publication_year": 2024,
+          "doi": "10.1038/s41580-024-00757-5",
+          "url": "https://doi.org/10.1038/s41580-024-00757-5"
+        }
+      ],
+      "limitations": "Review-level mechanistic synthesis, not a longitudinal causal estimate. M and Pr require non-overlapping operational definitions. No sign or coefficient is assigned."
+    },
+    {
+      "interaction_id": "ad_inflammation_proteostasis",
+      "disease": "alzheimer",
+      "domain_a": "I",
+      "domain_b": "Pr",
+      "direction_class": "undirected_interaction",
+      "candidate_directions": [],
+      "mechanism_summary": "Neuroinflammation is described as a central hub connecting amyloid, tau, and vascular factors, while proteostasis, inflammation, and metabolic pathways are presented as interacting systems. The direction and temporal ordering between I and Pr remain unresolved in this record.",
+      "evidence_context": [
+        "review_synthesis"
+      ],
+      "references": [
+        {
+          "title": "Toward a Unified Framework in Molecular Neurobiology of Alzheimer's Disease: Revisiting the Pathophysiological Hypotheses",
+          "publication_year": 2025,
+          "doi": "10.1007/s12035-025-05602-0",
+          "pmid": "41379271",
+          "url": "https://doi.org/10.1007/s12035-025-05602-0"
+        },
+        {
+          "title": "Systems biology of Alzheimer's Disease: a scoping review of key pathways and mechanisms",
+          "publication_year": 2026,
+          "doi": "10.1186/s13024-026-00934-4",
+          "pmid": "41731612",
+          "url": "https://doi.org/10.1186/s13024-026-00934-4"
+        }
+      ],
+      "limitations": "A hub or pathway interaction does not establish a directed edge. The 2026 scoping review reports heterogeneous evidence maturity across pathways; this record must not be converted into a directed parameter."
+    },
+    {
+      "interaction_id": "pd_metabolism_proteostasis_feedback",
+      "disease": "parkinson",
+      "domain_a": "M",
+      "domain_b": "Pr",
+      "direction_class": "reciprocal_candidate",
+      "candidate_directions": [
+        [
+          "M",
+          "Pr"
+        ],
+        [
+          "Pr",
+          "M"
+        ]
+      ],
+      "mechanism_summary": "Parkinson disease reviews describe linked mitochondrial oxidative stress and lysosomal dysfunction in a pathogenic feedback cycle involving oxidized dopamine and alpha-synuclein. Impaired lysosomal activity can also compromise protein processing and mitophagy, supporting reciprocal candidate hypotheses between M and Pr.",
+      "evidence_context": [
+        "review_synthesis"
+      ],
+      "references": [
+        {
+          "title": "Cell biology of Parkinson's disease: Mechanisms of synaptic, lysosomal, and mitochondrial dysfunction",
+          "publication_year": 2024,
+          "doi": "10.1016/j.conb.2024.102841",
+          "pmid": "38306948",
+          "url": "https://doi.org/10.1016/j.conb.2024.102841"
+        },
+        {
+          "title": "Parkinson Disease Signaling Pathways, Molecular Mechanisms, and Potential Therapeutic Strategies: A Comprehensive Review",
+          "publication_year": 2025,
+          "doi": "10.3390/ijms26136416",
+          "pmid": "40650193",
+          "url": "https://doi.org/10.3390/ijms26136416"
+        }
+      ],
+      "limitations": "The feedback is a mechanistic synthesis across genetic, cellular, and experimental evidence. It does not determine patient-specific edge strength, timing, sign, or whether the same relationship applies to every Parkinson subtype."
+    },
+    {
+      "interaction_id": "pd_proteostasis_inflammation",
+      "disease": "parkinson",
+      "domain_a": "Pr",
+      "domain_b": "I",
+      "direction_class": "directed_candidate",
+      "candidate_directions": [
+        [
+          "Pr",
+          "I"
+        ]
+      ],
+      "mechanism_summary": "A Parkinson disease review describes alpha-synuclein acting as a damage-associated molecular pattern that can engage pattern-recognition receptors on microglia and initiate innate immune signaling. This supports a provisional Pr-to-I mechanism hypothesis.",
+      "evidence_context": [
+        "review_synthesis"
+      ],
+      "references": [
+        {
+          "title": "Parkinson Disease Signaling Pathways, Molecular Mechanisms, and Potential Therapeutic Strategies: A Comprehensive Review",
+          "publication_year": 2025,
+          "doi": "10.3390/ijms26136416",
+          "pmid": "40650193",
+          "url": "https://doi.org/10.3390/ijms26136416"
+        },
+        {
+          "title": "Alpha-Synuclein: Multiple pathogenic roles in trafficking and proteostasis pathways in Parkinson's disease",
+          "publication_year": 2024,
+          "doi": "10.1177/10738584241232963",
+          "pmid": "38420922",
+          "url": "https://doi.org/10.1177/10738584241232963"
+        }
+      ],
+      "limitations": "A molecular trigger described in reviews does not define a person-level latent-state coupling. The Pr construct is broader than alpha-synuclein abundance; direction and effect size require disease-specific experimental and longitudinal support."
+    },
+    {
+      "interaction_id": "pd_inflammation_neuronal_integrity",
+      "disease": "parkinson",
+      "domain_a": "I",
+      "domain_b": "N",
+      "direction_class": "directed_candidate",
+      "candidate_directions": [
+        [
+          "I",
+          "N"
+        ]
+      ],
+      "mechanism_summary": "Review-level evidence links activated microglia and astrocytes, inflammatory cytokines, and reactive oxygen species with neuronal oxidative stress and selective neuronal vulnerability in Parkinson disease. I-to-N is retained as a provisional candidate direction.",
+      "evidence_context": [
+        "review_synthesis"
+      ],
+      "references": [
+        {
+          "title": "Parkinson Disease Signaling Pathways, Molecular Mechanisms, and Potential Therapeutic Strategies: A Comprehensive Review",
+          "publication_year": 2025,
+          "doi": "10.3390/ijms26136416",
+          "pmid": "40650193",
+          "url": "https://doi.org/10.3390/ijms26136416"
+        },
+        {
+          "title": "Key genes and convergent pathogenic mechanisms in Parkinson disease",
+          "publication_year": 2024,
+          "doi": "10.1038/s41583-024-00812-2",
+          "url": "https://doi.org/10.1038/s41583-024-00812-2"
+        }
+      ],
+      "limitations": "Inflammation is context-, region-, and stage-dependent and may include protective responses. N is defined as preserved integrity, so any future coefficient sign must be empirically and biologically validated."
+    },
+    {
+      "interaction_id": "pd_metabolism_neuronal_integrity",
+      "disease": "parkinson",
+      "domain_a": "M",
+      "domain_b": "N",
+      "direction_class": "directed_candidate",
+      "candidate_directions": [
+        [
+          "M",
+          "N"
+        ]
+      ],
+      "mechanism_summary": "Parkinson disease reviews identify mitochondrial dysfunction and oxidative stress as convergent mechanisms associated with vulnerability and degeneration of dopaminergic neurons. M-to-N is recorded as a provisional mechanism direction.",
+      "evidence_context": [
+        "review_synthesis"
+      ],
+      "references": [
+        {
+          "title": "Key genes and convergent pathogenic mechanisms in Parkinson disease",
+          "publication_year": 2024,
+          "doi": "10.1038/s41583-024-00812-2",
+          "url": "https://doi.org/10.1038/s41583-024-00812-2"
+        },
+        {
+          "title": "Cell biology of Parkinson's disease: Mechanisms of synaptic, lysosomal, and mitochondrial dysfunction",
+          "publication_year": 2024,
+          "doi": "10.1016/j.conb.2024.102841",
+          "pmid": "38306948",
+          "url": "https://doi.org/10.1016/j.conb.2024.102841"
+        }
+      ],
+      "limitations": "M aggregates multiple metabolic subdomains. Mitochondrial dysfunction is not equivalent to a global metabolic score, and this review-level direction is not a fitted causal parameter."
+    },
+    {
+      "interaction_id": "pd_proteostasis_neuronal_integrity",
+      "disease": "parkinson",
+      "domain_a": "Pr",
+      "domain_b": "N",
+      "direction_class": "directed_candidate",
+      "candidate_directions": [
+        [
+          "Pr",
+          "N"
+        ]
+      ],
+      "mechanism_summary": "Alpha-synuclein aggregation and disruption of multiple proteostasis pathways are repeatedly described in Parkinson disease and are associated with neuronal pathology. Pr-to-N is retained as a candidate direction linking impaired protein quality control with neuronal integrity loss.",
+      "evidence_context": [
+        "review_synthesis"
+      ],
+      "references": [
+        {
+          "title": "The pathogenesis of Parkinson's disease",
+          "publication_year": 2024,
+          "doi": "10.1016/S0140-6736(23)01478-2",
+          "url": "https://doi.org/10.1016/S0140-6736(23)01478-2"
+        },
+        {
+          "title": "Alpha-Synuclein: Multiple pathogenic roles in trafficking and proteostasis pathways in Parkinson's disease",
+          "publication_year": 2024,
+          "doi": "10.1177/10738584241232963",
+          "pmid": "38420922",
+          "url": "https://doi.org/10.1177/10738584241232963"
+        }
+      ],
+      "limitations": "Alpha-synuclein pathology is not a direct measurement of the entire proteostasis system. The relationship is heterogeneous across cell types and disease subgroups; no coefficient or sign is provided."
+    }
+  ]
+}

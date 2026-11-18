@@ -1,0 +1,629 @@
+{
+  "schema_version": "1.0.0",
+  "catalog_status": "measurement_inventory_only",
+  "definitions": [
+    {
+      "measurement_id": "ad_plasma_ptau217",
+      "disease": "alzheimer",
+      "canonical_feature": "plasma_pTau217",
+      "source_feature_aliases": [],
+      "modality": "blood_biomarker",
+      "observation_kind": "biomarker",
+      "specimen": "plasma",
+      "analyte_or_metric": "phosphorylated tau 217 concentration",
+      "value_type": "continuous",
+      "canonical_unit": "pg/mL",
+      "accepted_units": [
+        "pg/mL",
+        "ng/L"
+      ],
+      "value_direction": "Higher values are generally associated with greater Alzheimer's-related tau pathology; assay-specific interpretation and validation are mandatory.",
+      "target_domain": "P",
+      "target_subconstruct": "pathology_burden",
+      "construct_relation": "candidate_proxy",
+      "uncertainty_policy": "required",
+      "accepted_uncertainty_kinds": [
+        "standard_deviation",
+        "standard_error",
+        "coefficient_of_variation"
+      ],
+      "assay_required": true,
+      "required_extra_keys": [
+        "assay_platform"
+      ],
+      "required_provenance_source_version": true,
+      "required_provenance_raw_hash": true,
+      "limitations": [
+        "This is a pathology-associated analyte and not a direct measurement of latent progression velocity dP/dt.",
+        "Performance, units, cutoffs and calibration are assay- and population-dependent; platform identity must be retained.",
+        "A plasma p-tau217 value does not measure total proteostasis capacity or the full tau-processing system."
+      ],
+      "references": [
+        {
+          "organization": "Alzheimer's Association Workgroup",
+          "title": "Revised criteria for diagnosis and staging of Alzheimer's disease",
+          "year": 2024,
+          "doi": "10.1002/alz.13859",
+          "url": "https://doi.org/10.1002/alz.13859"
+        },
+        {
+          "organization": "Alzheimer's Association",
+          "title": "DETeCD-ADRD clinical practice guideline: Executive summary of recommendations for primary care",
+          "year": 2024,
+          "doi": "10.1002/alz.14333",
+          "url": "https://doi.org/10.1002/alz.14333"
+        },
+        {
+          "organization": "Alzheimer's Disease Neuroimaging Initiative",
+          "title": "ADNI General Procedures Manual",
+          "year": 2024,
+          "url": "https://adni.loni.usc.edu/wp-content/uploads/2024/02/ADNI_General_Procedures_Manual.pdf"
+        }
+      ]
+    },
+    {
+      "measurement_id": "ad_csf_abeta42_40",
+      "disease": "alzheimer",
+      "canonical_feature": "csf_Abeta42_40_ratio",
+      "source_feature_aliases": [],
+      "modality": "csf_biomarker",
+      "observation_kind": "biomarker",
+      "specimen": "cerebrospinal fluid",
+      "analyte_or_metric": "CSF amyloid-beta 42 to amyloid-beta 40 ratio",
+      "value_type": "ratio",
+      "canonical_unit": "ratio",
+      "accepted_units": [
+        "ratio"
+      ],
+      "value_direction": "Lower ratios are generally associated with cerebral amyloid pathology; interpretation requires assay- and protocol-specific calibration.",
+      "target_domain": "P",
+      "target_subconstruct": "pathology_burden",
+      "construct_relation": "candidate_proxy",
+      "uncertainty_policy": "required",
+      "accepted_uncertainty_kinds": [
+        "standard_deviation",
+        "standard_error",
+        "coefficient_of_variation"
+      ],
+      "assay_required": true,
+      "required_extra_keys": [
+        "assay_platform"
+      ],
+      "required_provenance_source_version": true,
+      "required_provenance_raw_hash": true,
+      "limitations": [
+        "Aβ42/40 is a pathology-associated ratio and is not a direct measurement of progression velocity.",
+        "Absolute concentrations and ratios are not interchangeable; retain raw analyte values and the versioned ratio calculation when available.",
+        "CSF collection, processing, storage, assay platform and batch effects must be retained."
+      ],
+      "references": [
+        {
+          "organization": "Alzheimer's Association Workgroup",
+          "title": "Revised criteria for diagnosis and staging of Alzheimer's disease",
+          "year": 2024,
+          "doi": "10.1002/alz.13859",
+          "url": "https://doi.org/10.1002/alz.13859"
+        },
+        {
+          "organization": "Alzheimer's Association",
+          "title": "DETeCD-ADRD clinical practice guideline: Executive summary of recommendations for primary care",
+          "year": 2024,
+          "doi": "10.1002/alz.14333",
+          "url": "https://doi.org/10.1002/alz.14333"
+        },
+        {
+          "organization": "Alzheimer's Disease Neuroimaging Initiative",
+          "title": "ADNI General Procedures Manual",
+          "year": 2024,
+          "url": "https://adni.loni.usc.edu/wp-content/uploads/2024/02/ADNI_General_Procedures_Manual.pdf"
+        }
+      ]
+    },
+    {
+      "measurement_id": "ad_plasma_gfap",
+      "disease": "alzheimer",
+      "canonical_feature": "plasma_GFAP",
+      "source_feature_aliases": [],
+      "modality": "blood_biomarker",
+      "observation_kind": "biomarker",
+      "specimen": "plasma",
+      "analyte_or_metric": "glial fibrillary acidic protein concentration",
+      "value_type": "continuous",
+      "canonical_unit": "pg/mL",
+      "accepted_units": [
+        "pg/mL",
+        "ng/L"
+      ],
+      "value_direction": "Higher values may indicate greater astrocytic activation or response; they do not represent the complete neuroinflammatory state.",
+      "target_domain": "I",
+      "target_subconstruct": "astrocytic_reactivity",
+      "construct_relation": "candidate_proxy",
+      "uncertainty_policy": "required",
+      "accepted_uncertainty_kinds": [
+        "standard_deviation",
+        "standard_error",
+        "coefficient_of_variation"
+      ],
+      "assay_required": true,
+      "required_extra_keys": [
+        "assay_platform"
+      ],
+      "required_provenance_source_version": true,
+      "required_provenance_raw_hash": true,
+      "limitations": [
+        "GFAP is an astrocytic-response proxy and is not a complete measure of microglial, cytokine, complement or CNS immune activity.",
+        "Peripheral GFAP does not directly quantify regional CNS inflammatory activity.",
+        "Interpretation depends on assay platform, specimen handling and relevant comorbidities."
+      ],
+      "references": [
+        {
+          "organization": "Alzheimer's Association",
+          "title": "DETeCD-ADRD clinical practice guideline: Executive summary of recommendations for primary care",
+          "year": 2024,
+          "doi": "10.1002/alz.14333",
+          "url": "https://doi.org/10.1002/alz.14333"
+        },
+        {
+          "organization": "Alzheimer's Association Workgroup",
+          "title": "Revised criteria for diagnosis and staging of Alzheimer's disease",
+          "year": 2024,
+          "doi": "10.1002/alz.13859",
+          "url": "https://doi.org/10.1002/alz.13859"
+        },
+        {
+          "organization": "Alzheimer's Disease Neuroimaging Initiative",
+          "title": "ADNI General Procedures Manual",
+          "year": 2024,
+          "url": "https://adni.loni.usc.edu/wp-content/uploads/2024/02/ADNI_General_Procedures_Manual.pdf"
+        }
+      ]
+    },
+    {
+      "measurement_id": "ad_plasma_nfl",
+      "disease": "alzheimer",
+      "canonical_feature": "plasma_NfL",
+      "source_feature_aliases": [],
+      "modality": "blood_biomarker",
+      "observation_kind": "biomarker",
+      "specimen": "plasma",
+      "analyte_or_metric": "neurofilament light chain concentration",
+      "value_type": "continuous",
+      "canonical_unit": "pg/mL",
+      "accepted_units": [
+        "pg/mL",
+        "ng/L"
+      ],
+      "value_direction": "Higher values indicate greater neuroaxonal injury signal but are not specific to Alzheimer's disease.",
+      "target_domain": "N",
+      "target_subconstruct": "axonal_integrity",
+      "construct_relation": "candidate_proxy",
+      "uncertainty_policy": "required",
+      "accepted_uncertainty_kinds": [
+        "standard_deviation",
+        "standard_error",
+        "coefficient_of_variation"
+      ],
+      "assay_required": true,
+      "required_extra_keys": [
+        "assay_platform"
+      ],
+      "required_provenance_source_version": true,
+      "required_provenance_raw_hash": true,
+      "limitations": [
+        "NfL is an injury/turnover marker and not a direct measurement of preserved neuronal integrity.",
+        "NfL is not disease-specific and may reflect injury from multiple neurological or systemic processes.",
+        "A value must not be interpreted without assay, specimen, age/context and collection metadata."
+      ],
+      "references": [
+        {
+          "organization": "Alzheimer's Association",
+          "title": "DETeCD-ADRD clinical practice guideline: Executive summary of recommendations for primary care",
+          "year": 2024,
+          "doi": "10.1002/alz.14333",
+          "url": "https://doi.org/10.1002/alz.14333"
+        },
+        {
+          "organization": "Alzheimer's Association Workgroup",
+          "title": "Revised criteria for diagnosis and staging of Alzheimer's disease",
+          "year": 2024,
+          "doi": "10.1002/alz.13859",
+          "url": "https://doi.org/10.1002/alz.13859"
+        },
+        {
+          "organization": "Alzheimer's Disease Neuroimaging Initiative",
+          "title": "ADNI General Procedures Manual",
+          "year": 2024,
+          "url": "https://adni.loni.usc.edu/wp-content/uploads/2024/02/ADNI_General_Procedures_Manual.pdf"
+        }
+      ]
+    },
+    {
+      "measurement_id": "ad_fdg_pet_regional_suvr",
+      "disease": "alzheimer",
+      "canonical_feature": "FDG_PET_regional_SUVR",
+      "source_feature_aliases": [],
+      "modality": "fdg_pet",
+      "observation_kind": "pet_feature",
+      "specimen": null,
+      "analyte_or_metric": "regional fluorodeoxyglucose PET standardized uptake value ratio",
+      "value_type": "continuous",
+      "canonical_unit": "SUVR",
+      "accepted_units": [
+        "SUVR"
+      ],
+      "value_direction": "Lower regional FDG uptake may indicate regional glucose hypometabolism; direction depends on region, reference region and processing pipeline.",
+      "target_domain": "M",
+      "target_subconstruct": "glucose_lactate",
+      "construct_relation": "image_derived_feature",
+      "uncertainty_policy": "required",
+      "accepted_uncertainty_kinds": [
+        "standard_deviation",
+        "standard_error"
+      ],
+      "assay_required": false,
+      "required_extra_keys": [
+        "tracer",
+        "reference_region",
+        "processing_pipeline_version"
+      ],
+      "required_provenance_source_version": true,
+      "required_provenance_raw_hash": true,
+      "limitations": [
+        "FDG-PET reflects regional glucose utilization and is not a direct measurement of ATP concentration, oxidative phosphorylation or total metabolic health.",
+        "SUVR is dependent on reference region, acquisition timing, reconstruction, scanner and processing pipeline.",
+        "A regional imaging metric is not equivalent to a global scalar metabolic state."
+      ],
+      "references": [
+        {
+          "organization": "Alzheimer's Association Workgroup",
+          "title": "Revised criteria for diagnosis and staging of Alzheimer's disease",
+          "year": 2024,
+          "doi": "10.1002/alz.13859",
+          "url": "https://doi.org/10.1002/alz.13859"
+        },
+        {
+          "organization": "Alzheimer's Association",
+          "title": "DETeCD-ADRD clinical practice guideline: Executive summary of recommendations for primary care",
+          "year": 2024,
+          "doi": "10.1002/alz.14333",
+          "url": "https://doi.org/10.1002/alz.14333"
+        }
+      ]
+    },
+    {
+      "measurement_id": "ad_amyloid_pet_centiloid",
+      "disease": "alzheimer",
+      "canonical_feature": "amyloid_PET_Centiloid",
+      "source_feature_aliases": [],
+      "modality": "amyloid_pet",
+      "observation_kind": "pet_feature",
+      "specimen": null,
+      "analyte_or_metric": "amyloid PET standardized Centiloid scale",
+      "value_type": "continuous",
+      "canonical_unit": "Centiloid",
+      "accepted_units": [
+        "Centiloid"
+      ],
+      "value_direction": "Higher Centiloid values indicate greater amyloid PET signal under the specified tracer and validated conversion pipeline.",
+      "target_domain": "P",
+      "target_subconstruct": "pathology_burden",
+      "construct_relation": "image_derived_feature",
+      "uncertainty_policy": "required",
+      "accepted_uncertainty_kinds": [
+        "standard_deviation",
+        "standard_error"
+      ],
+      "assay_required": false,
+      "required_extra_keys": [
+        "tracer",
+        "reference_region",
+        "processing_pipeline_version",
+        "centiloid_conversion_version"
+      ],
+      "required_provenance_source_version": true,
+      "required_provenance_raw_hash": true,
+      "limitations": [
+        "Centiloid values require validated tracer-specific conversion and a specified processing pipeline.",
+        "Amyloid PET is a pathological biomarker and is not a direct measure of latent progression velocity or current cognitive function.",
+        "Amyloid PET staging and fluid-biomarker staging are not interchangeable without validated bridging."
+      ],
+      "references": [
+        {
+          "organization": "Alzheimer's Association Workgroup",
+          "title": "Revised criteria for diagnosis and staging of Alzheimer's disease",
+          "year": 2024,
+          "doi": "10.1002/alz.13859",
+          "url": "https://doi.org/10.1002/alz.13859"
+        },
+        {
+          "organization": "Alzheimer's Association",
+          "title": "DETeCD-ADRD clinical practice guideline: Executive summary of recommendations for primary care",
+          "year": 2024,
+          "doi": "10.1002/alz.14333",
+          "url": "https://doi.org/10.1002/alz.14333"
+        }
+      ]
+    },
+    {
+      "measurement_id": "ad_mri_hippocampal_volume",
+      "disease": "alzheimer",
+      "canonical_feature": "MRI_hippocampal_volume",
+      "source_feature_aliases": [],
+      "modality": "structural_mri",
+      "observation_kind": "mri_feature",
+      "specimen": null,
+      "analyte_or_metric": "segmented hippocampal regional volume",
+      "value_type": "continuous",
+      "canonical_unit": "mm3",
+      "accepted_units": [
+        "mm3"
+      ],
+      "value_direction": "Lower hippocampal volume may indicate regional atrophy; it is an indirect morphometric measure and not a neuronal cell count.",
+      "target_domain": "N",
+      "target_subconstruct": "regional_structure",
+      "construct_relation": "image_derived_feature",
+      "uncertainty_policy": "required",
+      "accepted_uncertainty_kinds": [
+        "standard_deviation",
+        "standard_error"
+      ],
+      "assay_required": false,
+      "required_extra_keys": [
+        "scanner_vendor",
+        "scanner_model",
+        "sequence",
+        "segmentation_pipeline_version",
+        "intracranial_volume_adjustment"
+      ],
+      "required_provenance_source_version": true,
+      "required_provenance_raw_hash": true,
+      "limitations": [
+        "MRI-derived regional volume depends on acquisition, scanner, sequence, segmentation software and quality control.",
+        "Volume is a tissue-level morphometric observation and is not a direct measurement of neuronal viability or synaptic function.",
+        "Intracranial-volume adjustment and longitudinal scanner harmonization must be declared and versioned."
+      ],
+      "references": [
+        {
+          "organization": "Alzheimer's Association",
+          "title": "DETeCD-ADRD clinical practice guideline: Executive summary of recommendations for primary care",
+          "year": 2024,
+          "doi": "10.1002/alz.14333",
+          "url": "https://doi.org/10.1002/alz.14333"
+        },
+        {
+          "organization": "Alzheimer's Disease Neuroimaging Initiative",
+          "title": "ADNI General Procedures Manual",
+          "year": 2024,
+          "url": "https://adni.loni.usc.edu/wp-content/uploads/2024/02/ADNI_General_Procedures_Manual.pdf"
+        }
+      ]
+    },
+    {
+      "measurement_id": "ad_adas_cog_total",
+      "disease": "alzheimer",
+      "canonical_feature": "ADAS_Cog_total",
+      "source_feature_aliases": [],
+      "modality": "clinical_scale",
+      "observation_kind": "cognition",
+      "specimen": null,
+      "analyte_or_metric": "Alzheimer's Disease Assessment Scale cognitive subscale total score",
+      "value_type": "ordinal",
+      "canonical_unit": "score",
+      "accepted_units": [
+        "score"
+      ],
+      "value_direction": "Higher scores indicate greater measured cognitive impairment; reverse-direction interpretation is required when modelling functional capacity Q.",
+      "target_domain": "Q",
+      "target_subconstruct": "cognitive_function",
+      "construct_relation": "phenotype_indicator",
+      "uncertainty_policy": "recommended",
+      "accepted_uncertainty_kinds": [
+        "standard_deviation",
+        "standard_error"
+      ],
+      "assay_required": false,
+      "required_extra_keys": [
+        "instrument_version",
+        "administration_language"
+      ],
+      "required_provenance_source_version": true,
+      "required_provenance_raw_hash": true,
+      "limitations": [
+        "A cognitive scale measures one phenotype domain and is not a direct measurement of neuronal integrity or the full functional-capacity construct.",
+        "Versions, language, assessor procedures, education and practice effects may affect comparability.",
+        "The score direction is impairment-oriented and must not be mistaken for the positive polarity of Q."
+      ],
+      "references": [
+        {
+          "organization": "Alzheimer's Association",
+          "title": "DETeCD-ADRD clinical practice guideline: Executive summary of recommendations for primary care",
+          "year": 2024,
+          "doi": "10.1002/alz.14333",
+          "url": "https://doi.org/10.1002/alz.14333"
+        },
+        {
+          "organization": "Alzheimer's Association Workgroup",
+          "title": "Revised criteria for diagnosis and staging of Alzheimer's disease",
+          "year": 2024,
+          "doi": "10.1002/alz.13859",
+          "url": "https://doi.org/10.1002/alz.13859"
+        }
+      ]
+    },
+    {
+      "measurement_id": "pd_csf_alpha_syn_saa",
+      "disease": "parkinson",
+      "canonical_feature": "CSF_alphaSyn_SAA_result",
+      "source_feature_aliases": [],
+      "modality": "csf_biomarker",
+      "observation_kind": "biomarker",
+      "specimen": "cerebrospinal fluid",
+      "analyte_or_metric": "CSF alpha-synuclein seed amplification assay result",
+      "value_type": "binary",
+      "canonical_unit": "binary",
+      "accepted_units": [
+        "binary"
+      ],
+      "value_direction": "Positive indicates detectable alpha-synuclein seeding activity under the specified assay protocol; negative does not exclude every Parkinson-related pathology or subtype.",
+      "target_domain": "Pr",
+      "target_subconstruct": "aggregation_trafficking",
+      "construct_relation": "candidate_proxy",
+      "uncertainty_policy": "not_applicable",
+      "accepted_uncertainty_kinds": [],
+      "assay_required": true,
+      "required_extra_keys": [
+        "assay_protocol_version"
+      ],
+      "required_provenance_source_version": true,
+      "required_provenance_raw_hash": true,
+      "limitations": [
+        "A seed-amplification assay detects seeding activity for the assay substrate and protocol; it does not quantify total proteostasis capacity, autophagic flux or all alpha-synuclein species.",
+        "Assay performance and interpretation vary with synucleinopathy subtype, specimen, protocol and cohort; a negative result does not define absence of every disease mechanism.",
+        "Protocols and preanalytical factors require standardization and version tracking."
+      ],
+      "references": [
+        {
+          "organization": "Journal of Neurochemistry",
+          "title": "Seed Amplification Assays for Parkinson's Disease: A Review of α-Synuclein Assays in Body Fluids and Tissues",
+          "year": 2026,
+          "doi": "10.1111/jnc.70435",
+          "pmid": "42141805",
+          "url": "https://doi.org/10.1111/jnc.70435"
+        },
+        {
+          "organization": "JAMA Neurology",
+          "title": "Limitations of the α-Synuclein Seed Amplification Assay in Clinical Practice: Understanding the Pathological Diversity of Parkinson Syndrome",
+          "year": 2024,
+          "doi": "10.1001/jamaneurol.2024.2381",
+          "pmid": "39102226",
+          "url": "https://doi.org/10.1001/jamaneurol.2024.2381"
+        },
+        {
+          "organization": "Parkinson's Progression Markers Initiative",
+          "title": "Guidance Resources: data dictionary, code list, Data User Guide and biomarker resources",
+          "year": 2026,
+          "url": "https://www.ppmi-info.org/access-data-specimens/guidance-resources"
+        },
+        {
+          "organization": "Parkinson's Progression Markers Initiative",
+          "title": "PPMI Data User Guide",
+          "year": 2024,
+          "url": "https://www.ppmi-info.org/sites/default/files/docs/PPMI%20Data%20User%20Guide.pdf"
+        }
+      ]
+    },
+    {
+      "measurement_id": "pd_mds_updrs_part_iii",
+      "disease": "parkinson",
+      "canonical_feature": "MDS_UPDRS_part_III",
+      "source_feature_aliases": [],
+      "modality": "clinical_scale",
+      "observation_kind": "clinical",
+      "specimen": null,
+      "analyte_or_metric": "Movement Disorder Society-sponsored revision of the Unified Parkinson's Disease Rating Scale, Part III motor examination",
+      "value_type": "ordinal",
+      "canonical_unit": "score",
+      "accepted_units": [
+        "score"
+      ],
+      "value_direction": "Higher scores indicate greater motor impairment; reverse-direction interpretation is required when modelling functional capacity Q.",
+      "target_domain": "Q",
+      "target_subconstruct": "motor_function",
+      "construct_relation": "phenotype_indicator",
+      "uncertainty_policy": "recommended",
+      "accepted_uncertainty_kinds": [
+        "standard_deviation",
+        "standard_error"
+      ],
+      "assay_required": false,
+      "required_extra_keys": [
+        "instrument_version",
+        "assessment_state"
+      ],
+      "required_provenance_source_version": true,
+      "required_provenance_raw_hash": true,
+      "limitations": [
+        "Part III is a motor examination and does not represent all non-motor function or activities of daily living.",
+        "Medication state, assessor training, instrument version and visit protocol influence comparability.",
+        "The score is impairment-oriented and must not be mapped directly to the positively oriented Q latent state."
+      ],
+      "references": [
+        {
+          "organization": "Parkinson's Progression Markers Initiative",
+          "title": "PPMI Data User Guide",
+          "year": 2024,
+          "url": "https://www.ppmi-info.org/sites/default/files/docs/PPMI%20Data%20User%20Guide.pdf"
+        },
+        {
+          "organization": "Parkinson's Progression Markers Initiative",
+          "title": "Guidance Resources: data dictionary, code list, Data User Guide and biomarker resources",
+          "year": 2026,
+          "url": "https://www.ppmi-info.org/access-data-specimens/guidance-resources"
+        },
+        {
+          "organization": "Parkinson's Progression Markers Initiative",
+          "title": "Access Data: individual-level clinical, imaging, omics, genetic, sensor and biomarker data",
+          "year": 2026,
+          "url": "https://bank.ppmi-info.org/access-data-specimens/download-data"
+        }
+      ]
+    },
+    {
+      "measurement_id": "pd_plasma_nfl",
+      "disease": "parkinson",
+      "canonical_feature": "plasma_NfL",
+      "source_feature_aliases": [],
+      "modality": "blood_biomarker",
+      "observation_kind": "biomarker",
+      "specimen": "plasma",
+      "analyte_or_metric": "neurofilament light chain concentration",
+      "value_type": "continuous",
+      "canonical_unit": "pg/mL",
+      "accepted_units": [
+        "pg/mL",
+        "ng/L"
+      ],
+      "value_direction": "Higher values indicate greater neuroaxonal injury signal but are not specific to Parkinson's disease.",
+      "target_domain": "N",
+      "target_subconstruct": "axonal_integrity",
+      "construct_relation": "candidate_proxy",
+      "uncertainty_policy": "required",
+      "accepted_uncertainty_kinds": [
+        "standard_deviation",
+        "standard_error",
+        "coefficient_of_variation"
+      ],
+      "assay_required": true,
+      "required_extra_keys": [
+        "assay_platform"
+      ],
+      "required_provenance_source_version": true,
+      "required_provenance_raw_hash": true,
+      "limitations": [
+        "NfL is a neuroaxonal injury marker and not a direct measure of preserved neuronal integrity.",
+        "NfL is not specific to Parkinson's disease and may reflect other neurological processes.",
+        "Assay platform, sample handling, units and batch information must be retained."
+      ],
+      "references": [
+        {
+          "organization": "Parkinson's Progression Markers Initiative",
+          "title": "PPMI Data User Guide",
+          "year": 2024,
+          "url": "https://www.ppmi-info.org/sites/default/files/docs/PPMI%20Data%20User%20Guide.pdf"
+        },
+        {
+          "organization": "Parkinson's Progression Markers Initiative",
+          "title": "Guidance Resources: data dictionary, code list, Data User Guide and biomarker resources",
+          "year": 2026,
+          "url": "https://www.ppmi-info.org/access-data-specimens/guidance-resources"
+        },
+        {
+          "organization": "Parkinson's Progression Markers Initiative",
+          "title": "Access Data: individual-level clinical, imaging, omics, genetic, sensor and biomarker data",
+          "year": 2026,
+          "url": "https://bank.ppmi-info.org/access-data-specimens/download-data"
+        }
+      ]
+    }
+  ]
+}

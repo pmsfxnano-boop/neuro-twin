@@ -1,0 +1,1126 @@
+{
+  "schema_version": "1.0.0",
+  "disease": "alzheimer",
+  "catalog_status": "research_hypothesis_registry_not_validated_causal_dag",
+  "scope_statement": "A multiscale evidence-graded inventory of candidate mechanisms and interactions in Alzheimer disease. This catalogue is a research map, not a proven universal sequence, an executable causal DAG, a patient-specific model, or a source of fitted coefficients.",
+  "nodes": [
+    {
+      "node_id": "familial_app_psen_variants",
+      "label": "Pathogenic APP / PSEN1 / PSEN2 variants",
+      "biological_scale": "genetic",
+      "module": "amyloid_biology",
+      "biological_role": "susceptibility",
+      "evidence_grade": "established",
+      "description": "Rare pathogenic variants can alter APP processing and cause autosomal-dominant Alzheimer disease with high penetrance. They provide the clearest human genetic route into amyloid biology.",
+      "limitations": [
+        "This route explains a small minority of cases and must not be generalized as the sole origin of sporadic Alzheimer disease."
+      ],
+      "source_refs": [
+        "10.1038/s44400-025-00047-7"
+      ]
+    },
+    {
+      "node_id": "sporadic_polygenic_susceptibility",
+      "label": "Polygenic late-onset susceptibility",
+      "biological_scale": "genetic",
+      "module": "genetic_risk",
+      "biological_role": "susceptibility",
+      "evidence_grade": "strong",
+      "description": "Common and rare variants across lipid transport, endosomal trafficking and innate immune biology modify risk for late-onset Alzheimer disease.",
+      "limitations": [
+        "Risk loci are not interchangeable; some signals may be pleiotropic, cell-type-specific or not directly causal."
+      ],
+      "source_refs": [
+        "10.1186/s13195-026-02235-w",
+        "10.1186/s13024-026-00934-4"
+      ]
+    },
+    {
+      "node_id": "aging_homeostatic_decline",
+      "label": "Age-related loss of tissue homeostasis",
+      "biological_scale": "systemic",
+      "module": "aging_and_resilience",
+      "biological_role": "susceptibility",
+      "evidence_grade": "strong",
+      "description": "Age-related changes in proteostasis, vascular function, immune regulation, mitochondrial quality control and repair can lower resilience to multiple pathogenic stresses.",
+      "limitations": [
+        "Age is a major risk determinant, not a complete mechanistic explanation or an individually sufficient cause."
+      ],
+      "source_refs": [
+        "10.1007/s12035-025-05602-0",
+        "10.1186/s13024-026-00934-4"
+      ]
+    },
+    {
+      "node_id": "apoe_lipid_transport",
+      "label": "APOE-dependent lipid transport and clearance",
+      "biological_scale": "molecular",
+      "module": "lipid_neurobiology",
+      "biological_role": "susceptibility",
+      "evidence_grade": "strong",
+      "description": "APOE isoforms influence lipid transport, glial biology, amyloid handling and cellular responses; APOE epsilon-4 is the strongest common genetic risk allele for late-onset disease.",
+      "limitations": [
+        "APOE epsilon-4 is probabilistic rather than deterministic; effects vary by sex, ancestry, age, cell type and co-pathology."
+      ],
+      "source_refs": [
+        "10.1111/joim.70036",
+        "10.1007/s12035-025-05602-0"
+      ]
+    },
+    {
+      "node_id": "vascular_risk_exposures",
+      "label": "Life-course vascular and metabolic exposures",
+      "biological_scale": "systemic",
+      "module": "vascular_metabolic",
+      "biological_role": "susceptibility",
+      "evidence_grade": "moderate",
+      "description": "Midlife hypertension, diabetes, obesity and smoking are associated with later cognitive impairment and may affect perfusion, endothelial function and clearance.",
+      "limitations": [
+        "Observational associations are confounded and do not establish that each exposure initiates Alzheimer-specific pathology."
+      ],
+      "source_refs": [
+        "10.1002/trc2.70287",
+        "10.1016/j.pharmr.2025.100052"
+      ]
+    },
+    {
+      "node_id": "app_amyloidogenic_processing",
+      "label": "Amyloidogenic APP cleavage",
+      "biological_scale": "molecular",
+      "module": "amyloid_biology",
+      "biological_role": "initiating_process",
+      "evidence_grade": "established",
+      "description": "Sequential beta- and gamma-secretase cleavage of APP produces amyloid-beta peptides; inherited APP and presenilin variants can alter this pathway.",
+      "limitations": [
+        "APP processing is physiological and generates multiple peptide species; total amyloid concentration alone does not capture production, aggregation, clearance or toxicity."
+      ],
+      "source_refs": [
+        "10.1016/j.pharmr.2025.100052",
+        "10.1038/s44400-025-00047-7"
+      ]
+    },
+    {
+      "node_id": "abeta_soluble_oligomer_stress",
+      "label": "Soluble amyloid-beta oligomer stress",
+      "biological_scale": "molecular",
+      "module": "amyloid_biology",
+      "biological_role": "amplifier",
+      "evidence_grade": "strong",
+      "description": "Soluble A-beta assemblies are candidate synaptotoxic and signaling-active species that can affect synaptic function, glia and tau-related pathways.",
+      "limitations": [
+        "Species, conformation, assay and brain compartment matter; fluid concentration is not a direct measure of toxic synaptic exposure."
+      ],
+      "source_refs": [
+        "10.1002/alz.70404",
+        "10.1186/s40001-025-02886-9"
+      ]
+    },
+    {
+      "node_id": "abeta_fibrillar_plaques_caa",
+      "label": "Parenchymal plaques and cerebral amyloid angiopathy",
+      "biological_scale": "tissue",
+      "module": "amyloid_biology",
+      "biological_role": "damage_substrate",
+      "evidence_grade": "strong",
+      "description": "Fibrillar amyloid-beta accumulates in parenchymal plaques and vessel walls, with distinct regional, cellular and clearance contexts.",
+      "limitations": [
+        "Plaque burden is not a complete proxy for oligomer toxicity, tau burden, vascular injury or clinical severity."
+      ],
+      "source_refs": [
+        "10.1002/alz.13859",
+        "10.1002/trc2.70287"
+      ]
+    },
+    {
+      "node_id": "endosomal_sorting_defect",
+      "label": "Endosomal sorting and trafficking impairment",
+      "biological_scale": "cellular",
+      "module": "proteostasis_clearance",
+      "biological_role": "initiating_process",
+      "evidence_grade": "strong",
+      "description": "Altered endosomal trafficking and recycling can perturb APP processing, receptor turnover and delivery of proteins to degradative pathways.",
+      "limitations": [
+        "Human association does not by itself establish temporal primacy; cell type and subcellular compartment are critical."
+      ],
+      "source_refs": [
+        "10.1007/s12035-025-05602-0",
+        "10.1186/s13024-026-00934-4"
+      ]
+    },
+    {
+      "node_id": "lysosomal_autophagy_failure",
+      "label": "Autophagy-lysosome clearance failure",
+      "biological_scale": "cellular",
+      "module": "proteostasis_clearance",
+      "biological_role": "amplifier",
+      "evidence_grade": "strong",
+      "description": "Impaired autophagosome maturation, lysosomal acidification or cargo clearance can promote persistence of protein aggregates and damaged organelles.",
+      "limitations": [
+        "Autophagy markers can rise when flux is blocked; static abundance must not be mistaken for effective clearance flux."
+      ],
+      "source_refs": [
+        "10.1007/s12035-025-05602-0",
+        "10.1186/s13024-026-00934-4"
+      ]
+    },
+    {
+      "node_id": "proteasome_chaperone_overload",
+      "label": "Ubiquitin-proteasome and chaperone overload",
+      "biological_scale": "cellular",
+      "module": "proteostasis_clearance",
+      "biological_role": "amplifier",
+      "evidence_grade": "moderate",
+      "description": "Chaperone capacity and ubiquitin-proteasome degradation participate in protein quality control and may be overwhelmed by persistent misfolded cargo.",
+      "limitations": [
+        "Pathway-level evidence is heterogeneous and is not directly represented by a single protein concentration."
+      ],
+      "source_refs": [
+        "10.1007/s12035-025-05602-0",
+        "10.1186/s13024-026-00934-4"
+      ]
+    },
+    {
+      "node_id": "tau_misprocessing",
+      "label": "Tau phosphorylation and mislocalization",
+      "biological_scale": "molecular",
+      "module": "tau_biology",
+      "biological_role": "amplifier",
+      "evidence_grade": "strong",
+      "description": "Abnormal tau phosphorylation, conformation and compartmentalization can impair microtubule-associated functions and increase aggregation propensity.",
+      "limitations": [
+        "Tau phosphorylation is site-specific and stage-dependent; plasma p-tau biomarkers are not interchangeable with intracellular tau pathology."
+      ],
+      "source_refs": [
+        "10.1002/alz.13859",
+        "10.1002/alz.70404"
+      ]
+    },
+    {
+      "node_id": "tau_seeded_spread",
+      "label": "Tau seeding and network propagation",
+      "biological_scale": "circuit",
+      "module": "tau_biology",
+      "biological_role": "amplifier",
+      "evidence_grade": "strong",
+      "description": "Misfolded tau assemblies can seed further tau misfolding and spread along connected neural systems, contributing to the regional pattern of pathology.",
+      "limitations": [
+        "In vivo human directionality, strain effects and the extent of activity-dependent spread remain incompletely resolved."
+      ],
+      "source_refs": [
+        "10.1002/alz.70404",
+        "10.1007/s12035-025-05602-0"
+      ]
+    },
+    {
+      "node_id": "microglial_state_shift",
+      "label": "Microglial state dysregulation",
+      "biological_scale": "cellular",
+      "module": "neuroimmune",
+      "biological_role": "amplifier",
+      "evidence_grade": "strong",
+      "description": "Microglia can clear amyloid and debris, but persistent or context-specific states may alter inflammatory signaling, phagocytosis and tissue support.",
+      "limitations": [
+        "Microglia are not a binary good/bad cell class; states change with region, age, pathology and disease stage."
+      ],
+      "source_refs": [
+        "10.1002/alz.70404",
+        "10.1002/trc2.70287"
+      ]
+    },
+    {
+      "node_id": "complement_synapse_elimination",
+      "label": "Complement-associated synaptic elimination",
+      "biological_scale": "cellular",
+      "module": "neuroimmune",
+      "biological_role": "amplifier",
+      "evidence_grade": "moderate",
+      "description": "Complement signaling and glial phagocytosis are candidate mechanisms for excessive removal of vulnerable synapses in neurodegenerative settings.",
+      "limitations": [
+        "Much mechanistic evidence is preclinical; contribution and timing in human sporadic Alzheimer disease require stronger validation."
+      ],
+      "source_refs": [
+        "10.1007/s12035-025-05602-0",
+        "10.1186/s13024-026-00934-4"
+      ]
+    },
+    {
+      "node_id": "astrocytic_metabolic_support_failure",
+      "label": "Astrocytic lipid and metabolic support alteration",
+      "biological_scale": "cellular",
+      "module": "metabolic_glial",
+      "biological_role": "amplifier",
+      "evidence_grade": "moderate",
+      "description": "Astrocytes regulate lipid transport, glucose/lactate support, glutamate handling and vascular coupling; altered support can affect neuronal resilience.",
+      "limitations": [
+        "Astrocytic states are heterogeneous and can be adaptive or maladaptive; peripheral metabolic biomarkers are not direct brain measures."
+      ],
+      "source_refs": [
+        "10.1111/joim.70036",
+        "10.1002/trc2.70287"
+      ]
+    },
+    {
+      "node_id": "mitochondrial_bioenergetic_failure",
+      "label": "Mitochondrial bioenergetic and quality-control failure",
+      "biological_scale": "organelle",
+      "module": "metabolic_redox",
+      "biological_role": "amplifier",
+      "evidence_grade": "moderate",
+      "description": "Mitochondrial changes can impair ATP production, organelle quality control, calcium handling and communication with the endoplasmic reticulum and glia.",
+      "limitations": [
+        "Mitochondrial dysfunction may be cause, consequence or amplifier depending on stage and cell type."
+      ],
+      "source_refs": [
+        "10.1111/joim.70036",
+        "10.1007/s12035-025-05602-0"
+      ]
+    },
+    {
+      "node_id": "redox_calcium_dysregulation",
+      "label": "Redox and calcium homeostasis failure",
+      "biological_scale": "organelle",
+      "module": "metabolic_redox",
+      "biological_role": "amplifier",
+      "evidence_grade": "moderate",
+      "description": "Oxidative stress, antioxidant capacity and calcium dysregulation can reinforce mitochondrial and synaptic dysfunction.",
+      "limitations": [
+        "Oxidative-stress markers are highly context-dependent and are not specific proof of an initiating lesion."
+      ],
+      "source_refs": [
+        "10.1007/s12035-025-05602-0",
+        "10.1186/s13024-026-00934-4"
+      ]
+    },
+    {
+      "node_id": "glucose_lipid_dysregulation",
+      "label": "Glucose and lipid metabolic dysregulation",
+      "biological_scale": "systemic",
+      "module": "metabolic_redox",
+      "biological_role": "susceptibility",
+      "evidence_grade": "moderate",
+      "description": "Altered glucose utilization and lipid handling may interact with APOE, mitochondria, membrane composition and glial support across the Alzheimer continuum.",
+      "limitations": [
+        "FDG-PET is a regional glucose-utilization measure, not a direct readout of mitochondrial ATP production or whole-body metabolic state."
+      ],
+      "source_refs": [
+        "10.1111/joim.70036",
+        "10.1186/s13024-026-00934-4"
+      ]
+    },
+    {
+      "node_id": "neurovascular_unit_failure",
+      "label": "Neurovascular unit and blood-brain barrier dysfunction",
+      "biological_scale": "tissue",
+      "module": "neurovascular",
+      "biological_role": "amplifier",
+      "evidence_grade": "moderate",
+      "description": "Endothelial, pericyte, astrocytic and smooth-muscle dysfunction can disturb perfusion, barrier integrity, neurovascular coupling and trophic support.",
+      "limitations": [
+        "Timing and causal contribution vary across individuals; available MRI markers do not capture all microvascular pathology."
+      ],
+      "source_refs": [
+        "10.1016/j.pharmr.2025.100052",
+        "10.1002/trc2.70287"
+      ]
+    },
+    {
+      "node_id": "perivascular_clearance_failure",
+      "label": "Perivascular and glymphatic clearance impairment",
+      "biological_scale": "tissue",
+      "module": "neurovascular",
+      "biological_role": "amplifier",
+      "evidence_grade": "emerging",
+      "description": "Altered perivascular drainage and clearance may reduce amyloid-beta elimination and interact with vascular basement membrane changes.",
+      "limitations": [
+        "Mechanisms and measurement in living humans remain challenging; glymphatic claims require careful operational definitions."
+      ],
+      "source_refs": [
+        "10.1016/j.pharmr.2025.100052",
+        "10.1002/trc2.70287"
+      ]
+    },
+    {
+      "node_id": "synaptic_circuit_dysfunction",
+      "label": "Synaptic plasticity and circuit dysfunction",
+      "biological_scale": "circuit",
+      "module": "neuronal_integrity",
+      "biological_role": "damage_substrate",
+      "evidence_grade": "strong",
+      "description": "Synaptic failure includes altered transmission, plasticity, network activity and connectivity and is closely linked to cognitive impairment.",
+      "limitations": [
+        "Clinical scales and structural MRI do not directly measure synaptic efficacy; network-level deficits may be partly compensated."
+      ],
+      "source_refs": [
+        "10.1002/alz.70404",
+        "10.1186/s13024-026-00934-4"
+      ]
+    },
+    {
+      "node_id": "axonal_transport_failure",
+      "label": "Axonal transport and neuritic integrity failure",
+      "biological_scale": "cellular",
+      "module": "neuronal_integrity",
+      "biological_role": "damage_substrate",
+      "evidence_grade": "moderate",
+      "description": "Tau-related microtubule disruption, energetic failure and proteostatic stress can compromise axonal transport and neuritic maintenance.",
+      "limitations": [
+        "Neurofilament levels indicate aspects of axonal injury but do not localize cause or quantify all forms of tissue damage."
+      ],
+      "source_refs": [
+        "10.1007/s12035-025-05602-0",
+        "10.1002/alz.14333"
+      ]
+    },
+    {
+      "node_id": "neuronal_cell_loss",
+      "label": "Neuronal degeneration and cell loss",
+      "biological_scale": "cellular",
+      "module": "neuronal_integrity",
+      "biological_role": "damage_substrate",
+      "evidence_grade": "strong",
+      "description": "Persistent neuronal dysfunction can progress to cell loss and regional tissue atrophy, reducing the substrate available for neural computation.",
+      "limitations": [
+        "Atrophy is an indirect, region-dependent measure and is affected by aging and co-pathology."
+      ],
+      "source_refs": [
+        "10.1002/alz.13859",
+        "10.1186/s40001-025-02886-9"
+      ]
+    },
+    {
+      "node_id": "persistent_accumulated_damage",
+      "label": "Persistent accumulated structural damage",
+      "biological_scale": "tissue",
+      "module": "damage_accumulation",
+      "biological_role": "damage_substrate",
+      "evidence_grade": "moderate",
+      "description": "A cumulative burden of persistent synaptic, neuritic, neuronal and neurovascular injury can retain the history of damaging exposure beyond the current stress state.",
+      "limitations": [
+        "A scalar global score would hide tissue compartment and regional differences; this construct requires longitudinal operationalization."
+      ],
+      "source_refs": [
+        "10.1002/trc2.70287",
+        "10.1007/s12035-025-05602-0"
+      ]
+    },
+    {
+      "node_id": "cognitive_reserve_compensation",
+      "label": "Cognitive reserve and compensatory capacity",
+      "biological_scale": "clinical",
+      "module": "resilience",
+      "biological_role": "compensatory_process",
+      "evidence_grade": "moderate",
+      "description": "Reserve and network compensation can modify how much accumulated brain pathology is expressed as measurable clinical impairment.",
+      "limitations": [
+        "Reserve is difficult to measure directly and may vary by domain, life history, education, network health and co-pathology."
+      ],
+      "source_refs": [
+        "10.1002/alz.13859",
+        "10.1038/s44400-025-00047-7"
+      ]
+    },
+    {
+      "node_id": "clinical_cognitive_decline",
+      "label": "Clinical cognitive and functional decline",
+      "biological_scale": "clinical",
+      "module": "clinical_phenotype",
+      "biological_role": "phenotype",
+      "evidence_grade": "strong",
+      "description": "Clinical decline emerges from the interaction of Alzheimer pathology, accumulated damage, regional network vulnerability, reserve and other co-pathologies.",
+      "limitations": [
+        "Symptoms are downstream phenotype and must not be used as a direct measurement of a single molecular mechanism."
+      ],
+      "source_refs": [
+        "10.1002/alz.13859",
+        "10.1038/s44400-025-00047-7"
+      ]
+    },
+    {
+      "node_id": "copathology_tdp43_lewy_vascular",
+      "label": "TDP-43, Lewy-body and vascular co-pathology",
+      "biological_scale": "tissue",
+      "module": "copathology",
+      "biological_role": "copathology",
+      "evidence_grade": "strong",
+      "description": "Additional proteinopathies and vascular lesions can co-occur with Alzheimer pathology and alter cognitive expression, progression and apparent response to amyloid-directed treatment.",
+      "limitations": [
+        "Co-pathology prevalence, burden and regional distribution vary; detection is incomplete in living participants and does not imply a single shared origin."
+      ],
+      "source_refs": [
+        "10.1002/trc2.70287"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": "familial_variant_to_app_processing",
+      "source_node": "familial_app_psen_variants",
+      "target_node": "app_amyloidogenic_processing",
+      "relationship": "pathogenic_variant alters APP cleavage or gamma-secretase processing",
+      "directionality": "directed_candidate",
+      "causal_status": "genetically_supported",
+      "evidence_grade": "established",
+      "evidence_types": [
+        "human_genetics",
+        "human_biomarker",
+        "review_synthesis"
+      ],
+      "context": "Autosomal-dominant familial Alzheimer disease due to APP, PSEN1 or PSEN2 variants.",
+      "limitations": [
+        "Applies to rare familial forms; not a universal account of late-onset disease."
+      ],
+      "source_refs": [
+        "10.1038/s44400-025-00047-7"
+      ]
+    },
+    {
+      "edge_id": "polygenic_to_endosomal",
+      "source_node": "sporadic_polygenic_susceptibility",
+      "target_node": "endosomal_sorting_defect",
+      "relationship": "susceptibility loci implicate endosomal trafficking and clearance pathways",
+      "directionality": "directed_candidate",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "strong",
+      "evidence_types": [
+        "human_genetics",
+        "review_synthesis"
+      ],
+      "context": "Late-onset Alzheimer risk architecture includes endosomal and trafficking biology.",
+      "limitations": [
+        "Risk loci are heterogeneous; individual gene-to-mechanism direction requires locus-specific colocalization and functional validation."
+      ],
+      "source_refs": [
+        "10.1186/s13195-026-02235-w",
+        "10.1186/s13024-026-00934-4"
+      ]
+    },
+    {
+      "edge_id": "apoe_to_lipid_transport",
+      "source_node": "sporadic_polygenic_susceptibility",
+      "target_node": "apoe_lipid_transport",
+      "relationship": "genetic susceptibility acts partly through APOE and lipid biology",
+      "directionality": "directed_candidate",
+      "causal_status": "genetically_supported",
+      "evidence_grade": "strong",
+      "evidence_types": [
+        "human_genetics",
+        "review_synthesis"
+      ],
+      "context": "APOE is a major common genetic risk locus and influences lipid handling in brain cells.",
+      "limitations": [
+        "Do not interpret APOE genotype as deterministically predicting an individual's disease or trajectory."
+      ],
+      "source_refs": [
+        "10.1111/joim.70036"
+      ]
+    },
+    {
+      "edge_id": "aging_to_clearance",
+      "source_node": "aging_homeostatic_decline",
+      "target_node": "perivascular_clearance_failure",
+      "relationship": "age-related vascular and clearance changes may lower A-beta elimination",
+      "directionality": "directed_candidate",
+      "causal_status": "association_only",
+      "evidence_grade": "moderate",
+      "evidence_types": [
+        "longitudinal_human",
+        "human_neuropathology",
+        "animal_model",
+        "review_synthesis"
+      ],
+      "context": "Aging and vascular basement-membrane changes may affect perivascular clearance.",
+      "limitations": [
+        "Part of the evidence is preclinical; direct causal timing in sporadic human disease is unresolved."
+      ],
+      "source_refs": [
+        "10.1016/j.pharmr.2025.100052"
+      ]
+    },
+    {
+      "edge_id": "vascular_risk_to_nv_unit",
+      "source_node": "vascular_risk_exposures",
+      "target_node": "neurovascular_unit_failure",
+      "relationship": "vascular risk exposures may impair perfusion and endothelial-pericyte function",
+      "directionality": "directed_candidate",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "moderate",
+      "evidence_types": [
+        "longitudinal_human",
+        "human_imaging",
+        "review_synthesis"
+      ],
+      "context": "Midlife vascular risk associates with later cognitive impairment and vascular brain injury.",
+      "limitations": [
+        "Confounding and reverse causality must be addressed; not every vascular exposure is an Alzheimer-specific initiator."
+      ],
+      "source_refs": [
+        "10.1002/trc2.70287",
+        "10.1016/j.pharmr.2025.100052"
+      ]
+    },
+    {
+      "edge_id": "app_to_abeta_oligomers",
+      "source_node": "app_amyloidogenic_processing",
+      "target_node": "abeta_soluble_oligomer_stress",
+      "relationship": "amyloidogenic APP processing generates A-beta species that can form soluble assemblies",
+      "directionality": "directed_candidate",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "strong",
+      "evidence_types": [
+        "human_genetics",
+        "human_biomarker",
+        "in_vitro",
+        "animal_model",
+        "review_synthesis"
+      ],
+      "context": "APP and presenilin genetics, biochemical assays and experimental models support an A-beta production-to-aggregation route.",
+      "limitations": [
+        "Specific toxic species and the relation between fluid measures, oligomers and plaque burden are unresolved."
+      ],
+      "source_refs": [
+        "10.1002/alz.70404",
+        "10.1016/j.pharmr.2025.100052"
+      ]
+    },
+    {
+      "edge_id": "endosomal_to_app",
+      "source_node": "endosomal_sorting_defect",
+      "target_node": "app_amyloidogenic_processing",
+      "relationship": "endosomal compartment changes can alter APP trafficking and cleavage context",
+      "directionality": "directed_candidate",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "moderate",
+      "evidence_types": [
+        "human_genetics",
+        "human_neuropathology",
+        "in_vitro",
+        "review_synthesis"
+      ],
+      "context": "Endosomal biology is genetically and mechanistically implicated in Alzheimer pathophysiology.",
+      "limitations": [
+        "The direction and magnitude depend on cell type, compartment and disease stage."
+      ],
+      "source_refs": [
+        "10.1007/s12035-025-05602-0"
+      ]
+    },
+    {
+      "edge_id": "endosomal_to_lysosome",
+      "source_node": "endosomal_sorting_defect",
+      "target_node": "lysosomal_autophagy_failure",
+      "relationship": "endosomal trafficking and lysosomal delivery are coupled clearance pathways",
+      "directionality": "directed_candidate",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "moderate",
+      "evidence_types": [
+        "human_genetics",
+        "in_vitro",
+        "animal_model",
+        "review_synthesis"
+      ],
+      "context": "Trafficking defects can alter cargo delivery and lysosomal processing.",
+      "limitations": [
+        "Static marker changes cannot distinguish defective flux from compensatory upregulation."
+      ],
+      "source_refs": [
+        "10.1007/s12035-025-05602-0"
+      ]
+    },
+    {
+      "edge_id": "clearance_to_abeta",
+      "source_node": "perivascular_clearance_failure",
+      "target_node": "abeta_fibrillar_plaques_caa",
+      "relationship": "reduced clearance may increase retention and deposition of amyloid-beta",
+      "directionality": "directed_candidate",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "moderate",
+      "evidence_types": [
+        "human_neuropathology",
+        "human_biomarker",
+        "animal_model",
+        "review_synthesis"
+      ],
+      "context": "Perivascular clearance impairment is a candidate contributor to amyloid accumulation and CAA.",
+      "limitations": [
+        "Human causal ordering and in-vivo clearance quantification remain uncertain."
+      ],
+      "source_refs": [
+        "10.1016/j.pharmr.2025.100052"
+      ]
+    },
+    {
+      "edge_id": "oligomers_to_tau",
+      "source_node": "abeta_soluble_oligomer_stress",
+      "target_node": "tau_misprocessing",
+      "relationship": "A-beta and tau pathophysiology interact through signaling and cellular stress pathways",
+      "directionality": "directed_candidate",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "moderate",
+      "evidence_types": [
+        "human_biomarker",
+        "human_neuropathology",
+        "in_vitro",
+        "animal_model",
+        "review_synthesis"
+      ],
+      "context": "Current models support interaction between A-beta and tau processes, not a simple one-way chain in every subject.",
+      "limitations": [
+        "Temporal precedence and causal strength vary across models and human disease subtypes."
+      ],
+      "source_refs": [
+        "10.1002/alz.70404"
+      ]
+    },
+    {
+      "edge_id": "tau_to_spread",
+      "source_node": "tau_misprocessing",
+      "target_node": "tau_seeded_spread",
+      "relationship": "misprocessed tau can seed and propagate conformational pathology",
+      "directionality": "directed_candidate",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "strong",
+      "evidence_types": [
+        "human_neuropathology",
+        "human_imaging",
+        "in_vitro",
+        "animal_model",
+        "review_synthesis"
+      ],
+      "context": "Tau aggregation and regional spread are supported by neuropathological, imaging and experimental work.",
+      "limitations": [
+        "Human in-vivo transfer mechanisms and strain specificity remain active research questions."
+      ],
+      "source_refs": [
+        "10.1002/alz.70404",
+        "10.1007/s12035-025-05602-0"
+      ]
+    },
+    {
+      "edge_id": "abeta_to_microglia",
+      "source_node": "abeta_soluble_oligomer_stress",
+      "target_node": "microglial_state_shift",
+      "relationship": "amyloid species alter microglial sensing, phagocytosis and inflammatory state",
+      "directionality": "directed_candidate",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "strong",
+      "evidence_types": [
+        "human_neuropathology",
+        "human_biomarker",
+        "in_vitro",
+        "animal_model",
+        "review_synthesis"
+      ],
+      "context": "A-beta and innate immune systems interact at plaque and tissue interfaces.",
+      "limitations": [
+        "Microglial responses are heterogeneous and may be protective or harmful by context."
+      ],
+      "source_refs": [
+        "10.1002/alz.70404",
+        "10.1002/trc2.70287"
+      ]
+    },
+    {
+      "edge_id": "microglia_to_complement",
+      "source_node": "microglial_state_shift",
+      "target_node": "complement_synapse_elimination",
+      "relationship": "microglial immune state can alter complement-mediated synapse tagging and removal",
+      "directionality": "directed_candidate",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "moderate",
+      "evidence_types": [
+        "human_neuropathology",
+        "in_vitro",
+        "animal_model",
+        "review_synthesis"
+      ],
+      "context": "Complement and glial phagocytosis are candidate routes to synaptic loss.",
+      "limitations": [
+        "Causal role and timing in human late-onset disease need further validation."
+      ],
+      "source_refs": [
+        "10.1007/s12035-025-05602-0"
+      ]
+    },
+    {
+      "edge_id": "complement_to_synapse",
+      "source_node": "complement_synapse_elimination",
+      "target_node": "synaptic_circuit_dysfunction",
+      "relationship": "excessive synaptic elimination can reduce synaptic substrate and circuit function",
+      "directionality": "directed_candidate",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "moderate",
+      "evidence_types": [
+        "human_neuropathology",
+        "in_vitro",
+        "animal_model",
+        "review_synthesis"
+      ],
+      "context": "Synapse elimination is one plausible mechanism connecting immune activity to circuit dysfunction.",
+      "limitations": [
+        "Not all synaptic loss is complement-mediated; regional and stage effects matter."
+      ],
+      "source_refs": [
+        "10.1007/s12035-025-05602-0",
+        "10.1186/s13024-026-00934-4"
+      ]
+    },
+    {
+      "edge_id": "lysosome_to_tau_proteostasis",
+      "source_node": "lysosomal_autophagy_failure",
+      "target_node": "tau_misprocessing",
+      "relationship": "reduced degradative flux may contribute to persistence of abnormal tau species",
+      "directionality": "directed_candidate",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "moderate",
+      "evidence_types": [
+        "human_neuropathology",
+        "in_vitro",
+        "animal_model",
+        "review_synthesis"
+      ],
+      "context": "Autophagy-lysosome systems participate in clearance of protein and organelle cargo.",
+      "limitations": [
+        "The relationship can be bidirectional; static measurements cannot establish flux or direction."
+      ],
+      "source_refs": [
+        "10.1007/s12035-025-05602-0"
+      ]
+    },
+    {
+      "edge_id": "proteasome_to_accumulation",
+      "source_node": "proteasome_chaperone_overload",
+      "target_node": "tau_misprocessing",
+      "relationship": "overloaded protein quality-control systems may increase persistence of misfolded tau",
+      "directionality": "directed_candidate",
+      "causal_status": "hypothesis_only",
+      "evidence_grade": "emerging",
+      "evidence_types": [
+        "in_vitro",
+        "animal_model",
+        "review_synthesis"
+      ],
+      "context": "Protein quality control interacts with tau biology and general proteotoxic stress.",
+      "limitations": [
+        "This is a candidate mechanism, not a calibrated or universally demonstrated human causal edge."
+      ],
+      "source_refs": [
+        "10.1186/s13024-026-00934-4"
+      ]
+    },
+    {
+      "edge_id": "apoe_to_clearance",
+      "source_node": "apoe_lipid_transport",
+      "target_node": "endosomal_sorting_defect",
+      "relationship": "APOE isoform and lipidation state can modify cellular trafficking and amyloid handling",
+      "directionality": "directed_candidate",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "moderate",
+      "evidence_types": [
+        "human_genetics",
+        "human_neuropathology",
+        "in_vitro",
+        "animal_model",
+        "review_synthesis"
+      ],
+      "context": "APOE links genetic risk, lipid transport, glial responses and amyloid handling.",
+      "limitations": [
+        "Do not reduce the pleiotropic APOE effects to one endosomal pathway."
+      ],
+      "source_refs": [
+        "10.1111/joim.70036",
+        "10.1007/s12035-025-05602-0"
+      ]
+    },
+    {
+      "edge_id": "astrocyte_to_mito",
+      "source_node": "astrocytic_metabolic_support_failure",
+      "target_node": "mitochondrial_bioenergetic_failure",
+      "relationship": "altered astrocytic substrate and lipid support may worsen neuronal energy stress",
+      "directionality": "directed_candidate",
+      "causal_status": "hypothesis_only",
+      "evidence_grade": "emerging",
+      "evidence_types": [
+        "human_biomarker",
+        "in_vitro",
+        "animal_model",
+        "review_synthesis"
+      ],
+      "context": "Astrocyte-neuron metabolic coupling is a plausible bridge between systemic metabolism and neuronal vulnerability.",
+      "limitations": [
+        "Human directionality and effect size are not established; cell-specific data are needed."
+      ],
+      "source_refs": [
+        "10.1111/joim.70036"
+      ]
+    },
+    {
+      "edge_id": "glucose_lipid_to_mito",
+      "source_node": "glucose_lipid_dysregulation",
+      "target_node": "mitochondrial_bioenergetic_failure",
+      "relationship": "substrate and lipid dysregulation can alter mitochondrial energy metabolism",
+      "directionality": "bidirectional",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "moderate",
+      "evidence_types": [
+        "human_biomarker",
+        "human_imaging",
+        "in_vitro",
+        "animal_model",
+        "review_synthesis"
+      ],
+      "context": "Metabolic and mitochondrial pathways interact across the Alzheimer continuum.",
+      "limitations": [
+        "Metabolic dysfunction may be upstream, downstream or mutually reinforcing by stage."
+      ],
+      "source_refs": [
+        "10.1111/joim.70036"
+      ]
+    },
+    {
+      "edge_id": "mito_to_redox",
+      "source_node": "mitochondrial_bioenergetic_failure",
+      "target_node": "redox_calcium_dysregulation",
+      "relationship": "mitochondrial stress can disturb redox and calcium homeostasis",
+      "directionality": "bidirectional",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "moderate",
+      "evidence_types": [
+        "human_biomarker",
+        "in_vitro",
+        "animal_model",
+        "review_synthesis"
+      ],
+      "context": "Mitochondrial energy and quality-control defects interact with redox and calcium pathways.",
+      "limitations": [
+        "Bidirectional feedback and cell-type specificity prevent a single fixed direction."
+      ],
+      "source_refs": [
+        "10.1111/joim.70036",
+        "10.1007/s12035-025-05602-0"
+      ]
+    },
+    {
+      "edge_id": "redox_to_synapse",
+      "source_node": "redox_calcium_dysregulation",
+      "target_node": "synaptic_circuit_dysfunction",
+      "relationship": "redox and calcium disturbances can impair synaptic signaling and plasticity",
+      "directionality": "directed_candidate",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "moderate",
+      "evidence_types": [
+        "human_neuropathology",
+        "in_vitro",
+        "animal_model",
+        "review_synthesis"
+      ],
+      "context": "Oxidative and calcium stress are linked to synaptic dysfunction in mechanistic models.",
+      "limitations": [
+        "Oxidative markers are nonspecific and may represent consequence as well as cause."
+      ],
+      "source_refs": [
+        "10.1007/s12035-025-05602-0"
+      ]
+    },
+    {
+      "edge_id": "nv_to_clearance",
+      "source_node": "neurovascular_unit_failure",
+      "target_node": "perivascular_clearance_failure",
+      "relationship": "vascular and pericyte dysfunction may impair perivascular drainage and amyloid clearance",
+      "directionality": "directed_candidate",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "moderate",
+      "evidence_types": [
+        "human_neuropathology",
+        "human_biomarker",
+        "animal_model",
+        "review_synthesis"
+      ],
+      "context": "Pericyte, endothelial and basement-membrane changes interact with perfusion and clearance.",
+      "limitations": [
+        "Not all clearance routes are equally measurable in living humans."
+      ],
+      "source_refs": [
+        "10.1016/j.pharmr.2025.100052"
+      ]
+    },
+    {
+      "edge_id": "nv_to_abeta",
+      "source_node": "neurovascular_unit_failure",
+      "target_node": "abeta_fibrillar_plaques_caa",
+      "relationship": "vascular injury may affect amyloid retention and cerebral amyloid angiopathy",
+      "directionality": "bidirectional",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "moderate",
+      "evidence_types": [
+        "human_neuropathology",
+        "human_imaging",
+        "animal_model",
+        "review_synthesis"
+      ],
+      "context": "Vascular and amyloid pathology can reinforce each other, including CAA-associated vascular injury.",
+      "limitations": [
+        "Directionality may differ between parenchymal plaques and vascular amyloid."
+      ],
+      "source_refs": [
+        "10.1002/trc2.70287",
+        "10.1016/j.pharmr.2025.100052"
+      ]
+    },
+    {
+      "edge_id": "tau_to_synapse",
+      "source_node": "tau_seeded_spread",
+      "target_node": "synaptic_circuit_dysfunction",
+      "relationship": "regional tau pathology is associated with synaptic and circuit dysfunction",
+      "directionality": "directed_candidate",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "strong",
+      "evidence_types": [
+        "longitudinal_human",
+        "human_imaging",
+        "human_neuropathology",
+        "review_synthesis"
+      ],
+      "context": "Tau burden and topography track neuronal injury and clinical progression more closely than plaque burden in many cohorts.",
+      "limitations": [
+        "Association does not fully establish molecular mediation or an identical route in every subtype."
+      ],
+      "source_refs": [
+        "10.1002/alz.13859",
+        "10.1002/alz.70404"
+      ]
+    },
+    {
+      "edge_id": "synapse_to_damage",
+      "source_node": "synaptic_circuit_dysfunction",
+      "target_node": "persistent_accumulated_damage",
+      "relationship": "persistent synaptic structural loss contributes to cumulative tissue injury burden",
+      "directionality": "directed_candidate",
+      "causal_status": "hypothesis_only",
+      "evidence_grade": "emerging",
+      "evidence_types": [
+        "longitudinal_human",
+        "human_imaging",
+        "human_neuropathology",
+        "review_synthesis"
+      ],
+      "context": "A cumulative damage compartment can represent persistent loss that is not identical to current synaptic stress.",
+      "limitations": [
+        "Requires operational definitions and longitudinal measurement; must not double-count synaptic markers."
+      ],
+      "source_refs": [
+        "10.1002/trc2.70287"
+      ]
+    },
+    {
+      "edge_id": "axon_to_damage",
+      "source_node": "axonal_transport_failure",
+      "target_node": "persistent_accumulated_damage",
+      "relationship": "sustained neuritic and axonal injury contributes to persistent damage",
+      "directionality": "directed_candidate",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "moderate",
+      "evidence_types": [
+        "human_biomarker",
+        "human_imaging",
+        "human_neuropathology",
+        "review_synthesis"
+      ],
+      "context": "Axonal injury markers and regional tissue loss support persistent injury processes.",
+      "limitations": [
+        "NfL is not a direct measure of irreversible axon loss and is not disease-specific."
+      ],
+      "source_refs": [
+        "10.1002/alz.14333",
+        "10.1002/trc2.70287"
+      ]
+    },
+    {
+      "edge_id": "cell_loss_to_damage",
+      "source_node": "neuronal_cell_loss",
+      "target_node": "persistent_accumulated_damage",
+      "relationship": "neuronal cell loss contributes directly to persistent accumulated tissue damage",
+      "directionality": "directed_candidate",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "strong",
+      "evidence_types": [
+        "human_neuropathology",
+        "human_imaging",
+        "review_synthesis"
+      ],
+      "context": "Neuronal loss and atrophy are persistent structural consequences of neurodegeneration.",
+      "limitations": [
+        "In-vivo imaging measures are indirect and should carry regional uncertainty."
+      ],
+      "source_refs": [
+        "10.1002/alz.13859",
+        "10.1007/s12035-025-05602-0"
+      ]
+    },
+    {
+      "edge_id": "damage_to_function",
+      "source_node": "persistent_accumulated_damage",
+      "target_node": "clinical_cognitive_decline",
+      "relationship": "persistent damage reduces available neural substrate and contributes to functional decline",
+      "directionality": "directed_candidate",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "strong",
+      "evidence_types": [
+        "longitudinal_human",
+        "human_imaging",
+        "human_neuropathology",
+        "review_synthesis"
+      ],
+      "context": "Accumulated neuropathologic and vascular burden relates to clinical expression and functional outcomes.",
+      "limitations": [
+        "The mapping is nonlinear and modified by regional distribution, reserve and co-pathology."
+      ],
+      "source_refs": [
+        "10.1002/alz.13859",
+        "10.1002/trc2.70287"
+      ]
+    },
+    {
+      "edge_id": "reserve_buffers_decline",
+      "source_node": "cognitive_reserve_compensation",
+      "target_node": "clinical_cognitive_decline",
+      "relationship": "reserve and compensation can buffer or delay clinical expression of brain pathology",
+      "directionality": "directed_candidate",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "moderate",
+      "evidence_types": [
+        "longitudinal_human",
+        "human_imaging",
+        "review_synthesis"
+      ],
+      "context": "Biological and clinical staging are distinct; reserve and resistance modify their relationship.",
+      "limitations": [
+        "Reserve is latent, multidimensional and difficult to separate from education, baseline ability and life-course factors."
+      ],
+      "source_refs": [
+        "10.1002/alz.13859"
+      ]
+    },
+    {
+      "edge_id": "copathology_to_clinical",
+      "source_node": "copathology_tdp43_lewy_vascular",
+      "target_node": "clinical_cognitive_decline",
+      "relationship": "co-pathologies can add to or interact with Alzheimer pathology in shaping clinical decline",
+      "directionality": "directed_candidate",
+      "causal_status": "convergent_candidate",
+      "evidence_grade": "strong",
+      "evidence_types": [
+        "longitudinal_human",
+        "human_neuropathology",
+        "human_biomarker",
+        "review_synthesis"
+      ],
+      "context": "Co-pathologies contribute to cognitive variability, progression and treatment-response heterogeneity.",
+      "limitations": [
+        "This edge represents effect modification and additive/mixed pathology, not a single common causal chain."
+      ],
+      "source_refs": [
+        "10.1002/trc2.70287"
+      ]
+    }
+  ]
+}
