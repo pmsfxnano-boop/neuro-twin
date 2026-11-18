@@ -57,6 +57,7 @@ An additive six-domain network package is being developed under `backend/neuro_t
 - A parameter-ensemble summarizer propagates only caller-supplied parameter draws. A held-out predictive scoring module compares rival architecture forecasts on a common observation mask using Gaussian log predictive density, RMSE and interval coverage.
 - A versioned mechanism-level observation operator maps explicit node-state combinations to transformed measurement features. It requires an explicit H matrix, units, noise covariance, source-catalog hash and transformation version; it creates no biomarker mappings by default.
 - A constrained nonlinear least-squares calibration module fits only caller-selected mechanism parameters within explicit bounds, whitens residuals with the versioned observation covariance, and reports local Jacobian rank/conditioning. Fits remain candidate estimates and never auto-promote model parameters to validated.
+- An end-to-end architecture comparison runner executes parameter-draw ensembles for multiple competing origin hypotheses, applies architecture-specific but outcome-compatible observation operators, and scores all forecasts on the same held-out time grid and observation mask.
 - The Alzheimer systems reverse-engineering dossier is in `docs/ALZHEIMER_SYSTEMS_REVERSE_ENGINEERING_V1.md`; it documents the decomposition, rival origin hypotheses, feedback loops, candidate intervention layers and validation requirements.
 
 See `docs/NEURO_TWIN_SIX_DOMAIN_NETWORK_V1.md` for the mathematical and validation contract.
