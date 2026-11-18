@@ -317,6 +317,14 @@ class MechanisticArchitectureModel:
         state = initial.copy()
 
         for event_index, event_time in enumerate(event_times):
+            # A clamp is right-continuous: its target state is changed at the
+            # intervention start before recording that boundary time.
+            starting_clamps = tuple(
+                x for x in interventions
+                if x.mode == "clamp" and x.start_time == event_time
+            )
+            for item in starting_clamps:
+                state[node_index[item.target_node]] = item.intensity
             if event_time in requested:
                 output[requested[event_time]] = state
             if event_index == len(event_times) - 1:
@@ -327,9 +335,6 @@ class MechanisticArchitectureModel:
                 x for x in interventions
                 if x.start_time <= midpoint < x.end_time
             )
-            for item in active:
-                if item.mode == "clamp" and item.start_time == event_time:
-                    state[node_index[item.target_node]] = item.intensity
             clamped = {
                 node_index[x.target_node] for x in active if x.mode == "clamp"
             }
@@ -383,9 +388,18 @@ class MechanisticArchitectureModel:
         initial_damage: np.ndarray,
         interventions: tuple[InterventionProtocol, ...] = (),
     ) -> MechanisticSimulationResult:
+        requested_time = _validate_time(time)
+        integration_time = np.asarray(
+            sorted(
+                set(float(x) for x in requested_time)
+                | {float(x.start_time) for x in interventions}
+                | {float(x.end_time) for x in interventions}
+            ),
+            dtype=float,
+        )
         mechanism = self.simulate(
-            catalog=catalog, registry=registry, time=time, initial_activity=initial_activity,
-            interventions=interventions,
+            catalog=catalog, registry=registry, time=integration_time,
+            initial_activity=initial_activity, interventions=interventions,
         )
         index = {name: i for i, name in enumerate(mechanism.node_ids)}
         damaging = mechanism.activity[:, [index[name] for name in self.damage_model.driver_names]]
@@ -419,13 +433,23 @@ def compare_intervention(
     """Compare baseline and perturbed trajectories under identical assumptions."""
     if not interventions:
         raise ValueError("at least one intervention protocol is required")
+    requested_time = _validate_time(time)
+    comparison_time = np.asarray(
+        sorted(
+            set(float(x) for x in requested_time)
+            | {float(x.start_time) for x in interventions}
+            | {float(x.end_time) for x in interventions}
+        ),
+        dtype=float,
+    )
     baseline = model.simulate_with_damage(
-        catalog=catalog, registry=registry, time=time, initial_activity=initial_activity,
-        initial_damage=initial_damage,
+        catalog=catalog, registry=registry, time=comparison_time,
+        initial_activity=initial_activity, initial_damage=initial_damage,
     )
     treated = model.simulate_with_damage(
-        catalog=catalog, registry=registry, time=time, initial_activity=initial_activity,
-        initial_damage=initial_damage, interventions=interventions,
+        catalog=catalog, registry=registry, time=comparison_time,
+        initial_activity=initial_activity, initial_damage=initial_damage,
+        interventions=interventions,
     )
     prevented_final = baseline.damage.cumulative_damage[-1] - treated.damage.cumulative_damage[-1]
     baseline_auc = np.trapezoid(baseline.damage.cumulative_damage, baseline.damage.time, axis=0)
