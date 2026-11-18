@@ -140,9 +140,9 @@ It should gain support if independent datasets show that a defined metabolic les
 
 ## 6. What has and has not been done
 
-**Done in this audit:** source discovery; confirmation of public accession and sample metadata; extraction of quantitative results and limitations from two 2026 analyses of public human datasets; a first evidence-based comparative interpretation.
+**Done in this audit:** source discovery; confirmation of public accession and sample metadata; extraction of quantitative results and limitations from two 2026 analyses of public human datasets; independent raw-count ingestion and donor-level pseudobulk analysis of GSE157783; a first evidence-based comparative interpretation.
 
-**Not done yet:** raw GEO matrices downloaded into Neuro-Twin; independent reanalysis; cell-type pseudobulk regeneration; gene-set scoring from raw counts; coefficient estimation; temporal precedence testing; integrated AD-versus-PD model fitting. No biological result is labelled as discovered by Neuro-Twin.
+**Still not done:** raw GEO files are not retained in the repository (they were downloaded to an ephemeral CI runner and deleted after analysis); no independent raw-count analysis of an Alzheimer cohort; no temporal precedence testing; no longitudinal AD-versus-PD model fitting. No biological result is labelled as discovery of disease origin by Neuro-Twin.
 
 **Immediate next computational gate:** ingest GSE157783 first (the processed UMI matrix TAR is ~123.3 MB), validate the donor map and count provenance, and run prespecified donor-level pseudobulk energy-module tests. In parallel, use GSE174367's processed snRNA matrix (~261.3 MB) or GSE138852's public count/metadata resources for an AD cell-resolved pilot, after reconciling sample metadata. Then replicate with GSE184950 and GSE157827. The large raw packages for GSE184950 and GSE157827 are about 1.7 GB and 1.2 GB respectively. The current branch does not yet contain these count matrices or an independent raw-data result.
 
@@ -162,3 +162,59 @@ It should gain support if independent datasets show that a defined metabolic les
 - ADNI access: https://adni.loni.usc.edu/data-samples/adni-data/
 - PPMI access: https://www.ppmi-info.org/access-data-specimens/download-data
 - AMP-AD access policy: https://help.adknowledgeportal.org/apd/access-data
+
+
+## 7. Neuro-Twin executed raw-count pilot: Parkinson GSE157783 (18 November 2026)
+
+This is the first raw-count analysis executed by Neuro-Twin itself, not copied from the published secondary papers. The run is reproducible from the branch scripts and its aggregate output artifact:
+
+- GitHub Actions run: [44279937682 — Neuro-Twin public metabolic data pilot](https://github.com/pmsfxnano-boop/neuro-twin/actions/runs/44279937682)
+- Output artifact: \`neuro-twin-gse157783-pseudobulk-evidence\` (source hashes + aggregate analysis JSON; 14-day GitHub artifact retention at time of run)
+- Raw public GEO input is downloaded to the ephemeral runner and deleted after analysis. No participant-level count matrix was committed to GitHub.
+
+### Source and design
+
+- Matrix: 26,737 genes × 41,435 nuclei, dense TSV contained within a GEO TAR archive.
+- Donors: 5 idiopathic PD and 6 controls.
+- Cell annotations: 12 classes. Aggregation produced 123 donor × cell-type pseudobulk profiles.
+- Gene mapping: 19,981 Ensembl IDs mapped to HGNC symbols; 6,756 remained unmapped.
+- Eight predefined Reactome modules, Reactome Content Service release 98: glycolysis; pyruvate metabolism; protein lipoylation; TCA cycle; respiratory electron transport; PINK1–PRKN mitophagy; macroautophagy; lysosome vesicle biogenesis.
+- The independent statistical unit was the donor. Nuclei were not treated as independent replicates.
+- Module scores used donor-cell-type pseudobulk raw UMI counts, log2 CPM with a 0.5 pseudocount, per-gene standardisation across donors within each cell type and the mean module z-score. Two-sided exact label permutation was performed over donors, followed by Benjamini–Hochberg correction over all estimable module × cell-type contrasts.
+
+### Result
+
+| Result | Estimate |
+|---|---:|
+| Potential module × cell-type contrasts | 96 |
+| Estimable contrasts | 72 |
+| FDR q below 0.05 | **0** |
+| Smallest nominal p-value | 0.0541 |
+| Smallest FDR q-value | 0.7925 |
+
+The smallest nominal result was **pyruvate metabolism in oligodendrocytes**, higher in PD than controls in this score (PD-minus-control = +0.367 z; Hedges' g = +1.21; exact p = 0.0541; q = 0.7925). This is not a statistically significant discovery. Other relatively small nominal p-values pointed in different directions: lysosome vesicle biogenesis in OPCs was lower (−0.362 z; p = 0.0649; q = 0.7925); TCA score in endothelial cells was lower (−0.245 z; p = 0.0844; q = 0.7925); PINK1–PRKN mitophagy scores were nominally higher in pericytes (+0.198 z; p = 0.0931) and astrocytes (+0.254 z; p = 0.1190). None survived multiple-testing correction.
+
+The marker-level descriptive analysis also showed cell-type heterogeneity rather than a uniform mitochondrial shutdown. For example, PDHA1 had positive standardized differences in endothelial cells (+0.93) and oligodendrocytes (+0.66), but negative differences in microglia (−0.61) and excitatory neurons (−0.59). These marker summaries were not subjected to a separate confirmatory gene-level model and must not be interpreted as gene-level significance.
+
+### Critical coverage problem
+
+The cell class annotated as dopaminergic neurons (DaNs) had only 48 nuclei from two donors meeting the minimum-cell threshold (one PD and one control). That is not enough for an inferential group comparison. CADPS2-positive neurons were observed only in three PD donors and no control donors. The pilot therefore does **not** directly test the most vulnerable dopaminergic neuron population with adequate donor replication.
+
+### Interpretation
+
+This pilot does not support a uniform, statistically robust reduction in glycolysis, PDH/lipoylation, TCA, OXPHOS or mitophagy across the sampled Parkinson midbrain cell types. The observed directions are mixed and cell-type-dependent. It modestly downgrades the simplest version of a shared, generalised mitochondrial-energy shutdown in established postmortem PD tissue.
+
+It does **not** falsify metabolic dysfunction as an early vulnerability or amplifier because:
+
+1. the cohort is small (5 PD, 6 controls);
+2. the vulnerable dopaminergic cell class is not adequately represented for inference;
+3. the study is postmortem and cross-sectional;
+4. RNA abundance is not PDH activity, carbon flux, oxygen consumption, ATP production, NADH/NAD+ ratio, ROS, calcium flux or mitochondrial membrane potential;
+5. age, sex, postmortem interval and clinical covariates were not included in this first pilot model;
+6. the multiple-testing family covers 72 contrasts, so power for subtle changes is limited.
+
+The correct present conclusion is **no robust pathway-level evidence in this pilot**, not “mitochondria are normal” and not “metabolism is disproven”.
+
+### Next independent replication
+
+The next Parkinson cohort is [GSE184950](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE184950): a larger postmortem substantia nigra atlas with 34 GEO samples. The published 2024 primary paper describes 32 donors (23 idiopathic PD, 9 controls) and 315,867 high-quality nuclei; a 2026 secondary reanalysis uses a three-group control/PD/PDD classification and reports 34 biological samples. The different sample/group denominators must be reconciled from the source-level sample metadata before analysis; do not pool or relabel donors by filename heuristics. The intended comparison is control vs idiopathic PD first, with PDD kept as a distinct severity/stage group rather than merged automatically.
