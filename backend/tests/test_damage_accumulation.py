@@ -115,3 +115,22 @@ def test_damage_hash_is_deterministic_and_disease_scoped():
     assert first.config_hash != parkinson.config_hash
     assert len(first.config_hash) == 64
     assert first.component_names == DAMAGE_COMPONENTS
+
+
+def test_damage_model_can_explicitly_assign_no_repair_credit():
+    model = DamageAccumulationModel(
+        disease="alzheimer",
+        time_unit="year",
+        driver_names=("stress",),
+        repair_names=(),
+        damage_weights=np.ones((4, 1)),
+        repair_weights=np.zeros((4, 0)),
+        rate_scale=np.ones(4),
+    )
+    result = model.accumulate(
+        time=np.asarray([0.0, 1.0]),
+        damaging_exposures=np.asarray([[0.4], [0.4]]),
+        repair_capacity=np.zeros((2, 0)),
+        initial_damage=np.zeros(4),
+    )
+    np.testing.assert_allclose(result.cumulative_damage[-1], np.full(4, 0.4))
