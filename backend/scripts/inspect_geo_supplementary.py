@@ -7,7 +7,10 @@ or disease effects. Archives are inspected in place and never extracted here.
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
+import io
+import itertools
 import json
 import tarfile
 import time
@@ -56,27 +59,46 @@ def download(url: str, destination: Path, attempts: int = 4) -> tuple[int, str]:
     raise RuntimeError(f"failed to download {url}: {last_error}") from last_error
 
 
+def preview_tsv(archive: tarfile.TarFile, member: tarfile.TarInfo) -> dict[str, Any]:
+    """Read only a few initial TSV rows to establish schema without loading the matrix."""
+    stream = archive.extractfile(member)
+    if stream is None:
+        raise RuntimeError(f"could not read TAR member: {member.name}")
+    rows: list[dict[str, Any]] = []
+    with stream, io.TextIOWrapper(stream, encoding="utf-8", errors="replace", newline="") as text:
+        reader = csv.reader(text, delimiter="\\t")
+        for row in itertools.islice(reader, 5):
+            rows.append({
+                "field_count": len(row),
+                "first_values": row[:12],
+            })
+    return {"preview_rows": rows}
+
+
 def inspect_tar(path: Path) -> dict[str, Any]:
-    """Read archive directory only; do not extract untrusted paths."""
+    """Read archive directory and TSV schema previews without extracting files."""
     try:
         with tarfile.open(path, mode="r:gz") as archive:
             members = archive.getmembers()
+            regular = [member for member in members if member.isfile()]
+            files = []
+            for member in regular:
+                record: dict[str, Any] = {
+                    "name": member.name,
+                    "size_bytes": member.size,
+                    "suffixes": "".join(Path(member.name).suffixes),
+                }
+                if member.name.lower().endswith((".tsv", ".tsv.gz", ".txt")):
+                    record.update(preview_tsv(archive, member))
+                files.append(record)
     except (tarfile.TarError, OSError) as exc:
         raise RuntimeError(f"invalid gzip TAR archive: {path.name}: {exc}") from exc
 
-    regular = [member for member in members if member.isfile()]
     return {
         "member_count": len(members),
         "regular_file_count": len(regular),
         "directories": sorted({str(Path(m.name).parent) for m in members if m.isdir()}),
-        "files": [
-            {
-                "name": member.name,
-                "size_bytes": member.size,
-                "suffixes": "".join(Path(member.name).suffixes),
-            }
-            for member in regular
-        ],
+        "files": files,
     }
 
 
@@ -139,6 +161,8 @@ def main() -> None:
         )
         for member in archive["files"][:20]:
             print(f"  {member['name']} ({member['size_bytes']} bytes)")
+            for row in member.get("preview_rows", []):
+                print(f"    TSV row: {row}")
     print(f"manifest: {args.manifest}")
 
 
