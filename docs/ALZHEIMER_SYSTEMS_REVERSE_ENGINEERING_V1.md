@@ -45,6 +45,22 @@ The engineering interpretation is that susceptibility may alter several coupled 
 
 A genetic association is not automatically a molecular mechanism. Every locus-to-mechanism link needs variant-level evidence, relevant tissue/cell context, colocalization or equivalent fine-mapping where appropriate, and functional validation.
 
+### 2.5 Competing origin architectures that Neuro-Twin must compare
+
+The engine should not encode a single origin story as a fact. It should maintain at least the following rival, potentially coexisting architectures:
+
+| Candidate architecture | Proposed early vulnerability / initiating pressure | Predicted downstream pattern | Key falsification requirement |
+|---|---|---|---|
+| Amyloid-production dominant | APP dosage/processing or secretase/peptide-species shift | Early A-beta change followed by tau, neuroimmune activation and injury | Show that upstream production/species change temporally precedes downstream changes and that genetic/experimental perturbation alters the chain |
+| Amyloid-clearance dominant | APOE/lipidation, endosomal-lysosomal, vascular/perivascular or enzymatic clearance impairment | Reduced clearance precedes net amyloid accumulation; production can remain near baseline | Separate production from clearance flux in longitudinal data; static A-beta concentration is insufficient |
+| Tau / neuronal vulnerability dominant | Tau misprocessing, cell-specific susceptibility, age-related proteostasis decline | Regional tau and synaptic/circuit changes may arise with weaker or later amyloid coupling | Demonstrate a tau-first subgroup with robust temporal and orthogonal evidence, not merely a tau biomarker association |
+| Neurovascular dominant | Pericyte/endothelial/BBB dysfunction, perfusion or drainage changes | Vascular injury and clearance disturbance precede or accelerate proteinopathy and tissue loss | Establish temporal precedence and independent effects after vascular confounding and co-pathology are modeled |
+| Immune / glial dominant | Innate immune susceptibility, microglial/astrocytic state changes or poor resolution | Altered clearance, complement/synapse pruning and inflammatory feedback | Distinguish protective phagocytosis from damaging inflammation; test cell-state-specific temporal direction |
+| Metabolic / mitochondrial dominant | Bioenergetic, lipid or redox vulnerability | Reduced energetic reserve amplifies proteostasis failure and synaptic fragility | Demonstrate that metabolic change precedes, predicts and causally modifies downstream pathology in a defined subtype |
+| Mixed / multi-hit | Several vulnerabilities cross a threshold together | Nonlinear transition after accumulated susceptibility and stress | Show that a multi-hit model predicts held-out trajectories better than any single-driver model without overfitting |
+
+These are model classes, not mutually exclusive clinical labels. The most plausible explanation may be different for distinct biological subtypes, ages, cell types or regions. Neuro-Twin should compare them using model evidence, counterfactual predictions, negative controls and independent data, not select a winner because it produces an attractive narrative.
+
 ### 2.4 Aging, vascular and life-course modifiers
 
 Aging changes proteostasis, mitochondrial quality control, vascular integrity, immune regulation and repair capacity. Midlife hypertension, diabetes, obesity and smoking are associated with later vascular brain injury and cognitive risk. These exposures may influence Alzheimer-specific mechanisms, add independent vascular injury, or both.
