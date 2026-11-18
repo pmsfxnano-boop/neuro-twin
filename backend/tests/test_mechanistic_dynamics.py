@@ -158,7 +158,7 @@ def test_simulator_rejects_edges_with_unresolved_or_bidirectional_direction():
 
 
 def test_intervention_must_target_a_modeled_mechanism_node():
-    catalog, model = _model()
+    catalog, registry, model = _model()
     with pytest.raises(ValueError, match="not modeled"):
         model.simulate(
             catalog=catalog,
