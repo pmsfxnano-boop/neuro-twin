@@ -207,6 +207,14 @@ value constraints. Scanner and center effects remain explicit warnings for
 downstream harmonization and sensitivity analysis; they are not silently
 corrected.
 
+The coverage report summarizes which subconstructs have at least one
+measurement proxy, which measurement types are blocked, and which are absent
+from a dataset. It deliberately labels this as **measurement-proxy coverage**.
+It does not call a domain observed, compute latent observability, infer missing
+measurements, or authorize state estimation. Six-domain latent observability
+continues to be evaluated only through an explicit versioned latent operator
+and the separate network diagnostics.
+
 The catalog is validated against the hierarchical ontology. In particular,
 regional MRI morphometry has a separate N subconstruct
 `regional_structure`; it is not treated as a neuronal cell count.
