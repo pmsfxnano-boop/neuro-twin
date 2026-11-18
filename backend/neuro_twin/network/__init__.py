@@ -11,6 +11,14 @@ from neuro_twin.network.model import (
     simulate_network,
 )
 from neuro_twin.network.observation import LinearNetworkObservationModel
+from neuro_twin.network.diagnostics import (
+    FiniteHorizonObservabilityReport,
+    LocalParameterIdentifiabilityReport,
+    StructuralObservabilityReport,
+    finite_horizon_observability_report,
+    local_parameter_identifiability_report,
+    structural_observability_report,
+)
 from neuro_twin.network.state_space import (
     NetworkFilterResult,
     NetworkSmootherResult,
@@ -24,6 +32,9 @@ from neuro_twin.network.state_space import (
 __all__ = [
     "DOMAIN_NAMES",
     "DOMAIN_POLARITY",
+    "FiniteHorizonObservabilityReport",
+    "LocalParameterIdentifiabilityReport",
+    "StructuralObservabilityReport",
     "LinearNetworkObservationModel",
     "NetworkFilterResult",
     "NetworkSmootherResult",
@@ -33,6 +44,9 @@ __all__ = [
     "exact_affine_transition",
     "exact_network_transition",
     "filter_and_smooth_network",
+    "finite_horizon_observability_report",
+    "local_parameter_identifiability_report",
+    "structural_observability_report",
     "kalman_filter_network",
     "rts_smoother_network",
     "simulate_network",
